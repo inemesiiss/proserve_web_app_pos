@@ -1,0 +1,24 @@
+{
+  "main": [
+    { "id": "outpatient", "name": "Outpatient", "icon": "🧑‍⚕️" },
+    { "id": "results", "name": "Results", "icon": "📄" },
+    { "id": "billing", "name": "Billing", "icon": "💵" },
+    { "id": "lab", "name": "Diagnostics and Laboratory", "icon": "🧪" },
+    { "id": "pharmacy", "name": "Pharmacy Pickup", "icon": "💊" },
+    { "id": "other", "name": "Other Services", "icon": "➕" }
+  ],
+  "other": [
+    { "id": "cardiology", "name": "Cardiology", "icon": "❤️" },
+    { "id": "ortho", "name": "Orthopedic Surgery", "icon": "🦴" },
+    { "id": "psychiatry", "name": "Psychiatry & Mental Health", "icon": "😊" },
+    { "id": "radiology", "name": "Radiology & Imaging", "icon": "🩻" },
+    { "id": "therapy", "name": "Physical Therapy", "icon": "🏃" },
+    { "id": "ent", "name": "ENT (Ear, Nose, Throat)", "icon": "👂" },
+    { "id": "pediatrics", "name": "Pediatrics", "icon": "🧸" },
+    { "id": "oncology", "name": "Oncology Center", "icon": "🎗️" },
+    { "id": "ophthalmology", "name": "Ophthalmology", "icon": "👁️" },
+    { "id": "neurology", "name": "Neurology", "icon": "🧠" },
+    { "id": "dermatology", "name": "Dermatology Clinic", "icon": "🧴" },
+    { "id": "dental", "name": "Dental", "icon": "🦷" }
+  ]
+}

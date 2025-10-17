@@ -1,0 +1,146 @@
+{
+  "cardiology": [
+    {
+      "id": "cardio1",
+      "name": "Dr. Maria Santos",
+      "picture": "/images/doctors/maria_santos.jpg",
+      "specialty": "Cardiologist",
+      "schedule": [
+        { "day": "Monday", "time": "9:00 AM - 12:00 PM" },
+        { "day": "Wednesday", "time": "1:00 PM - 4:00 PM" }
+      ]
+    }
+  ],
+  "orthopedic": [
+    {
+      "id": "ortho1",
+      "name": "Dr. Miguel Cruz",
+      "picture": "/images/doctors/miguel_cruz.jpg",
+      "specialty": "Orthopedic Surgeon",
+      "schedule": [
+        { "day": "Tuesday", "time": "9:00 AM - 12:00 PM" },
+        { "day": "Thursday", "time": "1:00 PM - 4:00 PM" }
+      ]
+    }
+  ],
+  "psychiatry": [
+    {
+      "id": "psych1",
+      "name": "Dr. Elena Bautista",
+      "picture": "/images/doctors/elena_bautista.jpg",
+      "specialty": "Psychiatrist",
+      "schedule": [
+        { "day": "Monday", "time": "9:00 AM - 1:00 PM" },
+        { "day": "Friday", "time": "2:00 PM - 6:00 PM" }
+      ]
+    }
+  ],
+  "radiology": [
+    {
+      "id": "radio1",
+      "name": "Dr. Paolo Navarro",
+      "picture": "/images/doctors/paolo_navarro.jpg",
+      "specialty": "Radiologist",
+      "schedule": [
+        { "day": "Wednesday", "time": "8:00 AM - 12:00 PM" },
+        { "day": "Saturday", "time": "9:00 AM - 1:00 PM" }
+      ]
+    }
+  ],
+  "therapy": [
+    {
+      "id": "ther1",
+      "name": "Dr. Carla Villanueva",
+      "picture": "/images/doctors/carla_villanueva.jpg",
+      "specialty": "Physical Therapist",
+      "schedule": [
+        { "day": "Monday", "time": "1:00 PM - 4:00 PM" },
+        { "day": "Thursday", "time": "10:00 AM - 2:00 PM" }
+      ]
+    }
+  ],
+  "ent": [
+    {
+      "id": "ent1",
+      "name": "Dr. Roberto Lim",
+      "picture": "/images/doctors/roberto_lim.jpg",
+      "specialty": "ENT Specialist",
+      "schedule": [
+        { "day": "Tuesday", "time": "2:00 PM - 6:00 PM" },
+        { "day": "Friday", "time": "9:00 AM - 12:00 PM" }
+      ]
+    }
+  ],
+  "pediatrics": [
+    {
+      "id": "ped1",
+      "name": "Dr. Lucia Mendoza",
+      "picture": "/images/doctors/lucia_mendoza.jpg",
+      "specialty": "Pediatrician",
+      "schedule": [
+        { "day": "Monday", "time": "10:00 AM - 2:00 PM" },
+        { "day": "Thursday", "time": "1:00 PM - 5:00 PM" }
+      ]
+    }
+  ],
+  "oncology": [
+    {
+      "id": "onco1",
+      "name": "Dr. Juan Dela Cruz",
+      "picture": "/images/doctors/juan_delacruz.jpg",
+      "specialty": "Oncologist",
+      "schedule": [
+        { "day": "Wednesday", "time": "9:00 AM - 12:00 PM" },
+        { "day": "Saturday", "time": "10:00 AM - 1:00 PM" }
+      ]
+    }
+  ],
+  "ophthalmology": [
+    {
+      "id": "oph1",
+      "name": "Dr. Ana Reyes",
+      "picture": "/images/doctors/ana_reyes.jpg",
+      "specialty": "Ophthalmologist",
+      "schedule": [
+        { "day": "Tuesday", "time": "8:00 AM - 12:00 PM" },
+        { "day": "Friday", "time": "1:00 PM - 4:00 PM" }
+      ]
+    }
+  ],
+  "neurology": [
+    {
+      "id": "neuro1",
+      "name": "Dr. Jose Ramirez",
+      "picture": "/images/doctors/jose_ramirez.jpg",
+      "specialty": "Neurologist",
+      "schedule": [
+        { "day": "Monday", "time": "2:00 PM - 6:00 PM" },
+        { "day": "Thursday", "time": "9:00 AM - 12:00 PM" }
+      ]
+    }
+  ],
+  "dermatology": [
+    {
+      "id": "derma1",
+      "name": "Dr. Sofia Ramos",
+      "picture": "/images/doctors/sofia_ramos.jpg",
+      "specialty": "Dermatologist",
+      "schedule": [
+        { "day": "Wednesday", "time": "1:00 PM - 5:00 PM" },
+        { "day": "Saturday", "time": "9:00 AM - 12:00 PM" }
+      ]
+    }
+  ],
+  "dental": [
+    {
+      "id": "dent1",
+      "name": "Dr. Daniel Flores",
+      "picture": "/images/doctors/daniel_flores.jpg",
+      "specialty": "Dentist",
+      "schedule": [
+        { "day": "Tuesday", "time": "9:00 AM - 1:00 PM" },
+        { "day": "Friday", "time": "2:00 PM - 6:00 PM" }
+      ]
+    }
+  ]
+}
