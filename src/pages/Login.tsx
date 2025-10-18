@@ -35,7 +35,8 @@ export default function LoginPage({ onLogin }: LoginProps) {
           // notify parent and navigate
           onLogin?.();
           setLoading(false);
-          navigate("/services");
+          // navigate("/services");
+          navigate("/admin/dashboard");
         } else {
           alert("❌ Invalid admin credentials");
           setLoading(false);

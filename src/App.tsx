@@ -25,6 +25,14 @@ import FoodTransactionPage from "./pages/food/cashier/TransactionCashierPage";
 import IndoorLayout from "./components/indoor/layout";
 import IndoorAmusementTransactionPage from "./pages/indoor/cashier/TransactionCashierPage";
 import HomeIndoorPage from "./pages/indoor/cashier/HomeCashierPage";
+import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminAccounts from "./pages/admin/Accounts";
+import AdminBranch from "./pages/admin/Branch";
+import AdminProduct from "./pages/admin/Product";
+import AdminReports from "./pages/admin/Reports";
+import AdminTerminal from "./pages/admin/Terminal";
+import AdminUser from "./pages/admin/User";
 
 function AppRoutes({
   loggedIn,
@@ -166,6 +174,14 @@ function AppRoutes({
               </IndoorLayout>
             }
           />
+          {/* For Admin */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/account" element={<AdminAccounts />} />
+          <Route path="/admin/branch" element={<AdminBranch />} />
+          <Route path="/admin/product" element={<AdminProduct />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/terminal" element={<AdminTerminal />} />
+          <Route path="/admin/users" element={<AdminUser />} />
         </>
       )}
     </Routes>
