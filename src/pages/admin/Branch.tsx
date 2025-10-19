@@ -1,6 +1,6 @@
 import { SideBar } from "@/components/admin/SideBar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function AdminBranch() {
   const sidebarRef = useRef<HTMLDivElement>(null);

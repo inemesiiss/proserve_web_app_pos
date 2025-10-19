@@ -25,7 +25,7 @@ import FoodTransactionPage from "./pages/food/cashier/TransactionCashierPage";
 import IndoorLayout from "./components/indoor/layout";
 import IndoorAmusementTransactionPage from "./pages/indoor/cashier/TransactionCashierPage";
 import HomeIndoorPage from "./pages/indoor/cashier/HomeCashierPage";
-import Admin from "./pages/Admin";
+// import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminAccounts from "./pages/admin/Accounts";
 import AdminBranch from "./pages/admin/Branch";

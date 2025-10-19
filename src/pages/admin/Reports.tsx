@@ -1,6 +1,6 @@
 import { SideBar } from "@/components/admin/SideBar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function AdminReports() {
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -8,7 +8,6 @@ function AdminReports() {
 
   useEffect(() => {
     if (!sidebarRef.current) return;
-
     const updateWidth = () => {
       const width = sidebarRef.current?.getBoundingClientRect().width || 0;
       setSidebarWidth(width);
