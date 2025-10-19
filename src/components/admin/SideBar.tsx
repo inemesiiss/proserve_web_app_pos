@@ -4,16 +4,16 @@ import * as React from "react";
 import {
   BookText,
   Building2,
-  CalendarDays,
-  ChevronRight,
-  Clock5,
+  // CalendarDays,
+  // ChevronRight,
+  // Clock5,
   Combine,
   LayoutDashboard,
-  Link2,
-  MapPinCheckInside,
+  // Link2,
+  // MapPinCheckInside,
   MonitorStop,
   Package,
-  SquareChartGantt,
+  // SquareChartGantt,
   User,
 } from "lucide-react";
 
@@ -26,25 +26,25 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
+  // SidebarMenuSub,
+  // SidebarMenuSubButton,
+  // SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+  // CollapsibleContent,
+  // CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link, useLocation } from "react-router-dom";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useColorBranding } from "../reusables/ColorBranding";
+// import {
+//   Popover,
+//   PopoverContent,
+//   PopoverTrigger,
+// } from "@/components/ui/popover";
+// import { useColorBranding } from "../reusables/ColorBranding";
 import Logo from "@/assets/PROSERVELOGO.png";
 
 // 💡 Convert SideBar to forwardRef
@@ -52,10 +52,10 @@ export const SideBar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof Sidebar>
 >((props, ref) => {
-  const apiDomain = import.meta.env.VITE_API_BASE;
+  // const apiDomain = import.meta.env.VITE_API_BASE;
   const location = useLocation();
-  const brandColor = localStorage.getItem("color") ?? "black";
-  const textColor = useColorBranding(brandColor);
+  // const brandColor = localStorage.getItem("color") ?? "black";
+  // const textColor = useColorBranding(brandColor);
 
   const navs = [
     {
@@ -131,9 +131,9 @@ export const SideBar = React.forwardRef<
     return location.pathname === linkPath;
   };
 
-  const isGroupActive = (item: (typeof navs)[number]) => {
-    return true;
-  };
+  // const isGroupActive = (item: (typeof navs)[number]) => {
+  //   return true;
+  // };
 
   const { state } = useSidebar();
   const isRailMode = state === "collapsed";
@@ -162,7 +162,7 @@ export const SideBar = React.forwardRef<
                   <Collapsible
                     key={item.title}
                     asChild
-                    defaultOpen={isGroupActive(item)}
+                    // defaultOpen={isGroupActive(item)}
                     className="group/collapsible"
                   >
                     <SidebarMenuItem>
