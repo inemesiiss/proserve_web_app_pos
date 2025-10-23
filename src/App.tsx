@@ -33,6 +33,7 @@ import AdminProduct from "./pages/admin/Product";
 import AdminReports from "./pages/admin/Reports";
 import AdminTerminal from "./pages/admin/Terminal";
 import AdminUser from "./pages/admin/User";
+import AdminSettings from "./pages/admin/Settings";
 
 function AppRoutes({
   loggedIn,
@@ -182,6 +183,7 @@ function AppRoutes({
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/terminal" element={<AdminTerminal />} />
           <Route path="/admin/users" element={<AdminUser />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </>
       )}
     </Routes>
