@@ -1,8 +1,8 @@
 import { useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
-import UpperNavBar from "./components/UpperNavBar";
-import FoodOrderSummary from "./components/OrderSummary";
-import FoodTotalDiscountPaymentSection from "./components/OrderTotalDIscountPayment";
+import UpperNavBar from "./components/cashier/UpperNavBar";
+import FoodOrderSummary from "./components/cashier/OrderSummary";
+import FoodTotalDiscountPaymentSection from "./components/cashier/OrderTotalDIscountPayment";
 
 interface LayoutProps {
   children: ReactNode;

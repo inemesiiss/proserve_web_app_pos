@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 // import { TrendingUp } from "lucide-react";
 import {
@@ -44,29 +44,16 @@ import {
 
 function AdminDashboard() {
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const [sidebarWidth, setSidebarWidth] = useState<number>(0);
-
-  useEffect(() => {
-    if (!sidebarRef.current) return;
-
-    const updateWidth = () => {
-      const width = sidebarRef.current?.getBoundingClientRect().width || 0;
-      setSidebarWidth(width);
-    };
-
-    // Initial measurement
-    updateWidth();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateWidth();
-    });
-
-    resizeObserver.observe(sidebarRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
+  // use persisted collapsed state to compute initial sidebar width and
+  // update via callback from SideBar to avoid following animated width.
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    try {
+      const v = localStorage.getItem("sidebar_collapsed");
+      return v === "1" ? 90 : 200;
+    } catch (e) {
+      return 200;
+    }
+  });
 
   // Chart
   const chartData = [
@@ -154,7 +141,12 @@ function AdminDashboard() {
   return (
     <>
       <SidebarProvider>
-        <SideBar ref={sidebarRef} />
+        <SideBar
+          ref={sidebarRef}
+          onCollapsedChange={(collapsed) =>
+            setSidebarWidth(collapsed ? 90 : 200)
+          }
+        />
         <div
           className={`w-full h-screen `}
           style={{

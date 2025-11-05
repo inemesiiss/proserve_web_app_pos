@@ -3,7 +3,7 @@ import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { invoke } from "@tauri-apps/api/core";
 import { message } from "@tauri-apps/plugin-dialog";
 import dayjs from "dayjs";
-import ConfirmModal from "../../modals/ComfimModal";
+import ConfirmModal from "../../modals/food/ConfirmModal";
 
 type PaymentMode = "cash" | "cashless";
 type CashlessType = "maya" | "qrph" | "card";

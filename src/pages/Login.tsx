@@ -17,10 +17,8 @@ type LoginProps = {
 };
 
 export default function LoginPage({ onLogin }: LoginProps) {
-  const [mode, setMode] = useState<"kiosk" | "user" | "admin">("admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [kioskId, setKioskId] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -30,35 +28,13 @@ export default function LoginPage({ onLogin }: LoginProps) {
     setLoading(true);
 
     setTimeout(() => {
-      if (mode === "admin") {
-        if (email === "demo_admin" && password === "passpass") {
-          // notify parent and navigate
-          onLogin?.();
-          setLoading(false);
-          // navigate("/services");
-          navigate("/admin/dashboard");
-        } else {
-          alert("❌ Invalid admin credentials");
-          setLoading(false);
-        }
-      } else if (mode === "user") {
-        if (email === "demo_manager" && password === "passpass") {
-          onLogin?.();
-          setLoading(false);
-          navigate("/property_manager/dashboard");
-        } else {
-          alert("❌ Invalid manager credentials");
-          setLoading(false);
-        }
-      } else if (mode === "kiosk") {
-        if (kioskId === "passpass") {
-          onLogin?.();
-          setLoading(false);
-          navigate("/services");
-        } else {
-          alert("❌ Invalid kiosk ID");
-          setLoading(false);
-        }
+      if (email === "user" && password === "passpass") {
+        onLogin?.();
+        setLoading(false);
+        navigate("/food/main");
+      } else {
+        alert("❌ Invalid manager credentials");
+        setLoading(false);
       }
     }, 1200);
   };
@@ -92,98 +68,55 @@ export default function LoginPage({ onLogin }: LoginProps) {
             <span className="text-green-500">Pos</span> System
           </h1>
 
-          <h2 className="text-lg font-medium text-center text-gray-600 dark:text-gray-300 mb-6">
-            Sign in as
+          <h2 className="text-lg font-medium text-center text-gray-600 dark:text-gray-300 mb-6 ">
+            Sign in to your account
           </h2>
-
-          {/* Mode Switch Tabs */}
-          <div className="flex justify-center mb-6">
-            <div className="flex gap-4 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-              {["kiosk", "user", "admin"].map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m as "kiosk" | "user" | "admin")}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                    mode === m
-                      ? "bg-blue-600 text-white shadow"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  }`}
-                >
-                  {m.charAt(0).toUpperCase() + m.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Dynamic Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <AnimatePresence mode="wait">
-              {mode === "admin" || mode === "user" ? (
-                <motion.div
-                  key={`${mode}-form`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4"
-                >
-                  <Input
-                    id="email"
-                    type="text"
-                    placeholder="example.email@gmail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="rounded-lg"
-                  />
+              <motion.div
+                key={`login-form`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <Input
+                  id="email"
+                  type="text"
+                  placeholder="example.email@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="rounded-lg"
+                />
 
-                  {/* Password with toggle */}
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="rounded-lg pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="kiosk-form"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4"
-                >
+                {/* Password with toggle */}
+                <div className="relative">
                   <Input
-                    id="kioskId"
-                    type="text"
-                    placeholder="Enter your Kiosk ID"
-                    value={kioskId}
-                    onChange={(e) => setKioskId(e.target.value)}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="rounded-lg"
+                    className="rounded-lg pr-10"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Example: KS123456
-                  </p>
-                </motion.div>
-              )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </motion.div>
             </AnimatePresence>
 
             {/* Submit Button */}
