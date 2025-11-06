@@ -15,14 +15,14 @@ export default function AdminLayout({
   // const location = useLocation();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* 🔹 UPPER NAVBAR */}
       <UpperNavBar setLoggedIn={setLoggedIn} isBlank={showUpperNavBar} />
 
       {/* 🔹 MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden">
         {/* MAIN CONTENT */}
-        <main className={`flex-1 overflow-y-auto no-scrollbar p-6 `}>
+        <main className={`flex-1 overflow-y-auto no-scrollbar p-6`}>
           {children}
         </main>
       </div>

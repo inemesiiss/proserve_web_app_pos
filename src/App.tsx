@@ -6,25 +6,43 @@ import {
   // useNavigate,
 } from "react-router-dom";
 import { useState } from "react";
-import Login from "./pages/Login";
+import Login from "./pages/authentication/Login";
 // Enter the food imports
 import { FoodOrderProvider } from "./context/food/FoodOrderProvider";
+import { ThemeProvider } from "./context/ThemeProvider";
 import FoodLayout from "./components/food/layout";
+// super admin imports
+// dashboard
+// reports
+// accounts
+// branch
+// terminal
+// user
+// product
+// settings
+// pos
+
+// director
+import AdminDashboard from "./pages/branch_manager/Dashboard";
 import HomeCashierPage from "./pages/food/cashier/HomeCashierPage";
 import FoodTransactionPage from "./pages/food/cashier/TransactionCashierPage";
 import DirectorySelection from "./pages/BranchDirectory";
 // import Admin from "./pages/Admin";
 import AdminLayout from "./components/admin/layout";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminAccounts from "./pages/admin/Accounts";
-import AdminBranch from "./pages/admin/Branch";
-import AdminProduct from "./pages/admin/Product";
-import AdminReports from "./pages/admin/Reports";
-import AdminTerminal from "./pages/admin/Terminal";
-import AdminUser from "./pages/admin/User";
+
+// branch manager
+// reports
+//accounts
+import AdminBranch from "./pages/branch_manager/Branch";
+import AdminAccounts from "./pages/branch_manager/Accounts";
+import AdminProduct from "./pages/branch_manager/Product";
+import AdminTerminal from "./pages/branch_manager/Terminal";
+import AdminUser from "./pages/branch_manager/User";
 // Reports Pages
-import ReportTransaction from "./pages/reports/Transaction";
-import InventoryReport from "./pages/reports/Inventory";
+import ReportTransaction from "./pages/branch_manager/reports/Transaction";
+import InventoryReport from "./pages/branch_manager/reports/Inventory";
+import ProductMixReport from "./pages/branch_manager/reports/ProductReport";
+import AttendanceReport from "./pages/branch_manager/reports/AttendanceReport";
 
 function AppRoutes({
   loggedIn,
@@ -93,7 +111,6 @@ function AppRoutes({
           <Route path="/admin/account" element={<AdminAccounts />} />
           <Route path="/admin/branch" element={<AdminBranch />} />
           <Route path="/admin/product" element={<AdminProduct />} />
-          <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/terminal" element={<AdminTerminal />} />
           <Route path="/admin/users" element={<AdminUser />} />
           <Route
@@ -112,6 +129,22 @@ function AppRoutes({
               </AdminLayout>
             }
           />
+          <Route
+            path="/admin/reports/product"
+            element={
+              <AdminLayout setLoggedIn={setLoggedIn}>
+                <ProductMixReport />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/reports/attendance"
+            element={
+              <AdminLayout setLoggedIn={setLoggedIn}>
+                <AttendanceReport />
+              </AdminLayout>
+            }
+          />
         </>
       )}
     </Routes>
@@ -123,9 +156,11 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <FoodOrderProvider>
-        <AppRoutes loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
-      </FoodOrderProvider>
+      <ThemeProvider>
+        <FoodOrderProvider>
+          <AppRoutes loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
+        </FoodOrderProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

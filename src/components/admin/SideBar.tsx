@@ -4,7 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
-  BookText,
+  // BookText,
   Building2,
   Combine,
   MonitorStop,
@@ -24,6 +24,7 @@ type NavItem = {
   subPaths?: Array<{
     label: string;
     path: string;
+    icon?: React.ReactNode;
   }>;
 };
 
@@ -52,11 +53,11 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         path: "/admin/dashboard",
         icon: <LayoutDashboard className="w-6 h-6" />,
       },
-      {
-        label: "Reports",
-        path: "/admin/reports",
-        icon: <BookText className="w-6 h-6" />,
-      },
+      // {
+      //   label: "Reports",
+      //   path: "/admin/reports",
+      //   icon: <BookText className="w-6 h-6" />,
+      // },
       {
         label: "Account",
         path: "/admin/account",
@@ -66,10 +67,6 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         label: "Branch",
         path: "/admin/branch",
         icon: <Combine className="w-6 h-6" />,
-        subPaths: [
-          { label: "Add Branch", path: "/admin/branch/add" },
-          { label: "Manage Branch", path: "/admin/branch/manage" },
-        ],
       },
       {
         label: "Terminal",
@@ -106,7 +103,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       setOpenMap((s) => ({ ...s, [key]: !s[key] }));
 
     const asideClass = cn(
-      "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden",
+      "fixed left-0 top-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg flex flex-col overflow-hidden",
       className
     );
 
@@ -118,12 +115,12 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         className={asideClass}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           {!collapsed && (
             <motion.h3
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-lg font-semibold text-gray-700"
+              className="text-lg font-semibold text-gray-700 dark:text-gray-200"
             >
               <div className="flex justify-center mt-6">
                 <img src={Logo} alt="App Logo" className="w-36 h-auto" />
@@ -144,12 +141,12 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                 return next;
               });
             }}
-            className="p-2 rounded-md hover:bg-gray-100 transition"
+            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             {collapsed ? (
-              <Menu className="w-5 h-5 text-gray-600" />
+              <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             ) : (
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             )}
           </button>
         </div>
@@ -161,7 +158,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
             const parentActive = isParentActive(item.path);
             const hasChildren =
               Array.isArray(item.subPaths) && item.subPaths.length > 0;
-            const isOpen = !!openMap[item.label] || parentActive;
+            const isOpen = !!openMap[item.label];
 
             return (
               <motion.div
@@ -174,8 +171,8 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                     className={cn(
                       "flex items-center justify-between w-full p-3 rounded-lg transition-all",
                       parentActive
-                        ? "bg-indigo-100 text-indigo-600 border border-indigo-300"
-                        : "hover:bg-gray-100 text-gray-700 border border-transparent"
+                        ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent"
                     )}
                   >
                     <button
@@ -186,7 +183,9 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                       <div
                         className={cn(
                           "flex items-center justify-center rounded-md p-2",
-                          parentActive ? "bg-indigo-50" : "bg-gray-50"
+                          parentActive
+                            ? "bg-indigo-50 dark:bg-indigo-800"
+                            : "bg-gray-50 dark:bg-gray-700"
                         )}
                       >
                         {item.icon}
@@ -212,7 +211,9 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                         onClick={() => toggleOpen(item.label)}
                         className={cn(
                           "p-1 rounded",
-                          isOpen ? "text-indigo-600" : "text-gray-400"
+                          isOpen
+                            ? "text-indigo-600 dark:text-indigo-400"
+                            : "text-gray-400 dark:text-gray-500"
                         )}
                         aria-label={`Toggle ${item.label}`}
                       >
@@ -231,14 +232,16 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                     className={cn(
                       "flex items-center gap-3 w-full p-3 rounded-lg transition-all",
                       active
-                        ? "bg-indigo-100 text-indigo-600 border border-indigo-300"
-                        : "hover:bg-gray-100 text-gray-700 border border-transparent"
+                        ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent"
                     )}
                   >
                     <div
                       className={cn(
                         "flex items-center justify-center rounded-md p-2",
-                        active ? "bg-indigo-50" : "bg-gray-50"
+                        active
+                          ? "bg-indigo-50 dark:bg-indigo-800"
+                          : "bg-gray-50 dark:bg-gray-700"
                       )}
                     >
                       {item.icon}
@@ -261,27 +264,54 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                 )}
 
                 {/* children */}
-                {hasChildren && isOpen && !collapsed && (
-                  <div className="pl-10 mt-1 space-y-1">
-                    {item.subPaths!.map((sub) => {
-                      const subActive = isActive(sub.path);
-                      return (
-                        <Link
-                          key={sub.label}
-                          to={sub.path || "#"}
-                          className={cn(
-                            "block w-full p-2 rounded text-sm",
-                            subActive
-                              ? "bg-indigo-50 text-indigo-600"
-                              : "hover:bg-gray-100 text-gray-700"
-                          )}
-                        >
-                          {sub.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+                <AnimatePresence>
+                  {hasChildren && isOpen && !collapsed && (
+                    <motion.div
+                      className="pl-10 mt-1 space-y-1 overflow-hidden"
+                      initial={{ opacity: 0, height: 0, y: -10 }}
+                      animate={{ opacity: 1, height: "auto", y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -10 }}
+                      transition={{
+                        duration: 0.3,
+                        ease: [0.4, 0, 0.2, 1],
+                        opacity: { duration: 0.2 },
+                      }}
+                    >
+                      {item.subPaths!.map((sub, index) => {
+                        const subActive = isActive(sub.path);
+                        return (
+                          <motion.div
+                            key={sub.label}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{
+                              delay: index * 0.05,
+                              duration: 0.2,
+                              ease: "easeOut",
+                            }}
+                          >
+                            <Link
+                              to={sub.path || "#"}
+                              className={cn(
+                                "flex items-center gap-2 w-full p-2 rounded text-sm transition-all duration-200",
+                                subActive
+                                  ? "bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300"
+                                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                              )}
+                            >
+                              {sub.icon && (
+                                <span className="flex-shrink-0 w-4 h-4">
+                                  {sub.icon}
+                                </span>
+                              )}
+                              <span>{sub.label}</span>
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             );
           })}
@@ -295,7 +325,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="p-4 border-t border-gray-200 text-xs text-center text-gray-500"
+              className="p-4 border-t border-gray-200 dark:border-gray-700 text-xs text-center text-gray-500 dark:text-gray-400"
             >
               © 2025 ProServe Admin
             </motion.div>

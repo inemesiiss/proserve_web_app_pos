@@ -64,8 +64,8 @@ export default function LoginPage({ onLogin }: LoginProps) {
         <CardContent className="p-8">
           {/* Title */}
           <h1 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-gray-100">
-            Welcome to <span className="text-blue-500">Pro</span>
-            <span className="text-green-500">Pos</span> System
+            Welcome to <span className="text-primary">Pro</span>
+            <span className="text-secondary">Pos</span> System
           </h1>
 
           <h2 className="text-lg font-medium text-center text-gray-600 dark:text-gray-300 mb-6 ">

@@ -6,7 +6,7 @@ import ActionButtons from "@/components/admin/table/Buttons";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
-import { reportNavs } from "@/navigations/ReportNavigations";
+import { reportNavs } from "@/navigattion/ReportNaviation";
 
 const data = [
   {
@@ -123,7 +123,7 @@ function InventoryReport() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <SideBar navs={reportNavs} onCollapsedChange={setSidebarCollapsed} />
 
       <div
@@ -131,7 +131,9 @@ function InventoryReport() {
         style={{ marginLeft: sidebarCollapsed ? "90px" : "200px" }}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Inventory Report</h1>
+          <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+            Inventory Report
+          </h1>
 
           <div className="flex items-center justify-between mb-4">
             <TabsHeader
