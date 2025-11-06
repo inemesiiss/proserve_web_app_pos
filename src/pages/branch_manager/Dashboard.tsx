@@ -1,20 +1,17 @@
 import { SideBar } from "@/components/admin/SideBar";
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  // SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useRef, useState } from "react";
 
-// import { TrendingUp } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -165,26 +162,26 @@ function AdminDashboard() {
                 <div className="p-4 ">
                   <span className="text-xl">Sales Summary</span>
                   <div className="grid grid-cols-2 md:grid-cols-4 pt-2  gap-6">
-                    <div className="bg-[#DE3B40FF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Total Sales</p>
                       <p className="text-white font-bold text-3xl pt-2">
                         1200.00
                       </p>
                     </div>
 
-                    <div className="bg-[#BCC1CAFF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">No. of Transactions</p>
                       <p className="text-white font-bold text-3xl pt-2">1</p>
                     </div>
 
-                    <div className="bg-[#DE3B40FF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">
                         Average Transaction Value
                       </p>
                       <p className="text-white font-bold text-3xl pt-2">5</p>
                     </div>
 
-                    <div className="bg-[#BCC1CAFF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Total Discount</p>
                       <p className="text-white font-bold text-3xl pt-2">0</p>
                     </div>
@@ -194,22 +191,22 @@ function AdminDashboard() {
                 <div className="p-4 ">
                   <span className="text-xl">Sales by Channel</span>
                   <div className="grid grid-cols-2 md:grid-cols-4 pt-2  gap-6">
-                    <div className="bg-[#BCC1CAFF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Gcash</p>
                       <p className="text-white font-bold text-3xl pt-2">0</p>
                     </div>
 
-                    <div className="bg-[#DE3B40FF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Paymaya</p>
                       <p className="text-white font-bold text-3xl pt-2">90</p>
                     </div>
 
-                    <div className="bg-[#BCC1CAFF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Visa</p>
                       <p className="text-white font-bold text-3xl pt-2">3</p>
                     </div>
 
-                    <div className="bg-[#DE3B40FF] rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Mastercard</p>
                       <p className="text-white font-bold text-3xl pt-2">8</p>
                     </div>
@@ -503,12 +500,7 @@ function AdminDashboard() {
                             cursor={false}
                             content={<ChartTooltipContent hideLabel />}
                           />
-                          <Bar
-                            dataKey="value"
-                            // fill="var(--color-desktop)"
-                            fill="#22CCB2FF"
-                            radius={8}
-                          />
+                          <Bar dataKey="value" fill="#22CCB2FF" radius={8} />
                         </BarChart>
                       </ChartContainer>
                     </CardContent>
@@ -544,7 +536,6 @@ function AdminDashboard() {
                           />
                           <Bar
                             dataKey="value"
-                            // fill="var(--color-desktop)"
                             fill="#22CCB2FF"
                             radius={8}
                             label={{
@@ -578,7 +569,6 @@ function AdminDashboard() {
                             dataKey="value"
                             nameKey="name"
                             outerRadius={80}
-                            // label
                           >
                             {pieChartData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
@@ -589,17 +579,6 @@ function AdminDashboard() {
                             />
                           </Pie>
                         </PieChart>
-                        {/* <PieChart>
-                          <Pie
-                            data={pieChartData}
-                            dataKey="value"
-                            nameKey="name"
-                          />
-                          <ChartLegend
-                            content={<ChartLegendContent nameKey="name" />}
-                            className="-translate-y-2 flex-wrap gap-2 *:basis-1/4 *:justify-center"
-                          />
-                        </PieChart> */}
                       </ChartContainer>
                     </CardContent>
                     <CardFooter className="flex-col items-start gap-2 text-sm"></CardFooter>
