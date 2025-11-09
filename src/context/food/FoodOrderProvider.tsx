@@ -20,6 +20,22 @@ export interface OrderItem {
   itemTotalDiscount?: number;
   percentDiscount?: number;
   discount_type?: "pwd" | "sc";
+
+  // --- Upgrade tracking ---
+  upgrades?: {
+    drinkUpgrade?: {
+      originalId: number;
+      upgradedId: number;
+      addedPrice: number;
+    };
+    friesUpgrade?: {
+      originalId: number;
+      upgradedId: number;
+      addedPrice: number;
+    };
+  };
+  basePrice?: number; // Original price before upgrades
+  mealProductIds?: number[]; // For meal items, track component product IDs
 }
 
 interface FoodOrderContextType {
@@ -44,6 +60,32 @@ interface FoodOrderContextType {
     type: "meal" | "product",
     discountType: "pwd" | "sc"
   ) => void;
+
+  // --- Upgrade helpers ---
+  upgradeDrink: (
+    id: number,
+    type: "meal" | "product",
+    toProductId: number
+  ) => void;
+  upgradeFries: (
+    id: number,
+    type: "meal" | "product",
+    toProductId: number
+  ) => void;
+  getAvailableUpgrades: (item: OrderItem) => {
+    drinks: {
+      productId: number;
+      name: string;
+      price: number;
+      additionalPrice: number;
+    }[];
+    fries: {
+      productId: number;
+      name: string;
+      price: number;
+      additionalPrice: number;
+    }[];
+  };
 }
 
 const FoodOrderContext = createContext<FoodOrderContextType | undefined>(
@@ -143,6 +185,191 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  // --- Get available upgrades for an item ---
+  const getAvailableUpgrades = (item: OrderItem) => {
+    const result = { drinks: [] as any[], fries: [] as any[] };
+
+    // For meals, check if they contain regular drinks or fries
+    if (item.type === "meal" && item.mealProductIds) {
+      const hasRegularDrink = item.mealProductIds.includes(8); // Regular Drink ID
+      const hasRegularFries = item.mealProductIds.includes(5); // Regular Fries ID
+
+      if (hasRegularDrink || item.upgrades?.drinkUpgrade) {
+        menuData.upgrades.drinks.forEach((upgrade) => {
+          const product = menuData.products.find(
+            (p) => p.id === upgrade.to_product_id
+          );
+          if (product) {
+            result.drinks.push({
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              additionalPrice: upgrade.additional_price,
+            });
+          }
+        });
+      }
+
+      if (hasRegularFries || item.upgrades?.friesUpgrade) {
+        menuData.upgrades.fries.forEach((upgrade) => {
+          const product = menuData.products.find(
+            (p) => p.id === upgrade.to_product_id
+          );
+          if (product) {
+            result.fries.push({
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              additionalPrice: upgrade.additional_price,
+            });
+          }
+        });
+      }
+    }
+
+    // For individual products
+    if (item.type === "product") {
+      if (item.id === 8) {
+        // Regular Drink
+        menuData.upgrades.drinks.forEach((upgrade) => {
+          const product = menuData.products.find(
+            (p) => p.id === upgrade.to_product_id
+          );
+          if (product) {
+            result.drinks.push({
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              additionalPrice: upgrade.additional_price,
+            });
+          }
+        });
+      }
+      if (item.id === 5) {
+        // Regular Fries
+        menuData.upgrades.fries.forEach((upgrade) => {
+          const product = menuData.products.find(
+            (p) => p.id === upgrade.to_product_id
+          );
+          if (product) {
+            result.fries.push({
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              additionalPrice: upgrade.additional_price,
+            });
+          }
+        });
+      }
+    }
+
+    return result;
+  };
+
+  // --- Upgrade drink ---
+  const upgradeDrink = (
+    id: number,
+    type: "meal" | "product",
+    toProductId: number
+  ) => {
+    const setGroup = type === "meal" ? setMeals : setProducts;
+    const group = type === "meal" ? meals : products;
+
+    setGroup(
+      group.map((item) => {
+        if (item.id !== id) return item;
+
+        const upgrade = menuData.upgrades.drinks.find(
+          (u) => u.to_product_id === toProductId
+        );
+        if (!upgrade) return item;
+
+        const newProduct = menuData.products.find((p) => p.id === toProductId);
+        if (!newProduct) return item;
+
+        // Store base price on first upgrade
+        const basePrice = item.basePrice ?? item.price;
+
+        // Calculate new price
+        let newPrice = basePrice;
+
+        // Remove old drink upgrade price if exists
+        if (item.upgrades?.drinkUpgrade) {
+          newPrice -= item.upgrades.drinkUpgrade.addedPrice;
+        }
+
+        // Add new upgrade price
+        newPrice += upgrade.additional_price;
+
+        return {
+          ...item,
+          basePrice,
+          price: newPrice,
+          upgrades: {
+            ...item.upgrades,
+            drinkUpgrade: {
+              originalId: 8,
+              upgradedId: toProductId,
+              addedPrice: upgrade.additional_price,
+            },
+          },
+        };
+      })
+    );
+  };
+
+  // --- Upgrade fries ---
+  const upgradeFries = (
+    id: number,
+    type: "meal" | "product",
+    toProductId: number
+  ) => {
+    const setGroup = type === "meal" ? setMeals : setProducts;
+    const group = type === "meal" ? meals : products;
+
+    setGroup(
+      group.map((item) => {
+        if (item.id !== id) return item;
+
+        const upgrade = menuData.upgrades.fries.find(
+          (u) => u.to_product_id === toProductId
+        );
+        if (!upgrade) return item;
+
+        const newProduct = menuData.products.find((p) => p.id === toProductId);
+        if (!newProduct) return item;
+
+        // Store base price on first upgrade
+        const basePrice = item.basePrice ?? item.price;
+
+        // Calculate new price
+        let newPrice = basePrice;
+
+        // Remove old fries upgrade price if exists
+        if (item.upgrades?.friesUpgrade) {
+          newPrice -= item.upgrades.friesUpgrade.addedPrice;
+        }
+
+        // Add new upgrade price
+        newPrice += upgrade.additional_price;
+
+        return {
+          ...item,
+          basePrice,
+          price: newPrice,
+          upgrades: {
+            ...item.upgrades,
+            friesUpgrade: {
+              originalId: 5,
+              upgradedId: toProductId,
+              addedPrice: upgrade.additional_price,
+            },
+          },
+        };
+      })
+    );
+  };
+
   // --- Totals calculation ---
   const { subTotal, totalDiscount, grandTotal } = useMemo(() => {
     const allItems = [...meals, ...products];
@@ -174,6 +401,9 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
         toggleVoid,
         updateQty,
         applyDiscount,
+        upgradeDrink,
+        upgradeFries,
+        getAvailableUpgrades,
         subTotal,
         totalDiscount,
         grandTotal,

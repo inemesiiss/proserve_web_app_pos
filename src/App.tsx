@@ -11,28 +11,13 @@ import Login from "./pages/authentication/Login";
 import { FoodOrderProvider } from "./context/food/FoodOrderProvider";
 import { ThemeProvider } from "./context/ThemeProvider";
 import FoodLayout from "./components/food/layout";
-// super admin imports
-// dashboard
-// reports
-// accounts
-// branch
-// terminal
-// user
-// product
-// settings
-// pos
 
-// director
+// admin pages
 import AdminDashboard from "./pages/branch_manager/Dashboard";
 import HomeCashierPage from "./pages/food/cashier/HomeCashierPage";
 import FoodTransactionPage from "./pages/food/cashier/TransactionCashierPage";
 import DirectorySelection from "./pages/BranchDirectory";
-// import Admin from "./pages/Admin";
 import AdminLayout from "./components/admin/layout";
-
-// branch manager
-// reports
-//accounts
 import AdminBranch from "./pages/branch_manager/Branch";
 import AdminAccounts from "./pages/branch_manager/Accounts";
 import AdminProduct from "./pages/branch_manager/Product";
@@ -43,6 +28,10 @@ import ReportTransaction from "./pages/branch_manager/reports/Transaction";
 import InventoryReport from "./pages/branch_manager/reports/Inventory";
 import ProductMixReport from "./pages/branch_manager/reports/ProductReport";
 import AttendanceReport from "./pages/branch_manager/reports/AttendanceReport";
+// Kiosk Pages
+import KioskMenuPage from "./pages/food/kiosk/MenuKiosk";
+import KioskHome from "./pages/food/kiosk/KioskHome";
+import OrderTypeSelection from "./pages/food/kiosk/OrderTypeSelection";
 
 function AppRoutes({
   loggedIn,
@@ -147,6 +136,10 @@ function AppRoutes({
           />
         </>
       )}
+      {/* For Kiosk */}
+      <Route path="/kiosk/home" element={<KioskHome />} />
+      <Route path="/kiosk/order-type" element={<OrderTypeSelection />} />
+      <Route path="/kiosk/menu" element={<KioskMenuPage />} />
     </Routes>
   );
 }
