@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
-import Header from "@/components/entertainment/components/Header";
-import FoodSidebarNav from "@/components/food/components/SideBarNav";
+import Header from "@/components/food/components/cashier/Header";
+import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import { menuData } from "@/data/food/products";
 
 export default function FoodTransactionPage() {
@@ -51,7 +51,7 @@ export default function FoodTransactionPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Header headerText="🍔 Food Menu" to="/food" />
+        <Header headerText="🍔 Food Menu" to="/food/main" />
         {/* 
         <h1 className="text-xl font-semibold text-gray-700 mb-6">
           Showing: <span className="text-blue-600">{filteredCategory}</span>
@@ -86,7 +86,7 @@ export default function FoodTransactionPage() {
                   </div>
                   <Button
                     onClick={() => handleAdd(meal, "meal")}
-                    className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                    className="w-full bg-gray-600 text-white hover:bg-green-700"
                   >
                     Add Meal
                   </Button>
@@ -146,7 +146,7 @@ export default function FoodTransactionPage() {
 
                   <Button
                     onClick={() => handleAdd(product, "product")}
-                    className="w-full bg-green-600 text-white hover:bg-green-700"
+                    className="w-full bg-gray-600 text-white hover:bg-green-700"
                   >
                     Add Item
                   </Button>

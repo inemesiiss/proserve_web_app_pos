@@ -1,8 +1,8 @@
 import { useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
-import UpperNavBar from "./components/UpperNavBar";
-import FoodOrderSummary from "./components/OrderSummary";
-import FoodTotalDiscountPaymentSection from "./components/OrderTotalDIscountPayment";
+import UpperNavBar from "./components/cashier/UpperNavBar";
+import FoodOrderSummary from "./components/cashier/OrderSummary";
+import FoodTotalDiscountPaymentSection from "./components/cashier/OrderTotalDIscountPayment";
 
 interface LayoutProps {
   children: ReactNode;
@@ -28,11 +28,7 @@ export default function FoodLayout({
       {/* 🔹 MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden">
         {/* MAIN CONTENT */}
-        <main
-          className={`flex-1 overflow-y-auto no-scrollbar p-6 ${
-            showOrderSummary ? "pr-4" : ""
-          }`}
-        >
+        <main className={`flex-1 overflow-y-auto no-scrollbar`}>
           {children}
         </main>
 

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import BackButton from "@/components/entertainment/components/BackButton";
+import BackButton from "@/components/food/components/cashier/BackButton";
 // import { useEffect, useState } from "react";
 
 export default function HomeCashierPage() {
