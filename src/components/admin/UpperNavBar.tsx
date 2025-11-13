@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
-import { LogOut, User, X } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 // import { QuickThemeToggle } from "@/components/reusables/QuickThemeToggle";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 // import Logo from "@/assets/PROSERVELOGO.png";
 
 interface UpperNavBarProps {
@@ -24,16 +23,6 @@ export default function UpperNavBar({
     navigate("/food/main");
   };
 
-  const handleExitApp = async () => {
-    try {
-      const appWindow = getCurrentWindow();
-      await appWindow.close();
-    } catch (error) {
-      console.error("Failed to close app:", error);
-    }
-  };
-
-  // 🎨 Blank variant — solid black bar
   if (isBlank) {
     return (
       <header className="shrink-0 bg-white dark:bg-gray-800 h-[64px] shadow-md border-b border-gray-200 dark:border-gray-700" />
