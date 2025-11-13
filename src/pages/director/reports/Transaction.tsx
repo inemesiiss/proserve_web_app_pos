@@ -1,80 +1,53 @@
 import { useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
+import TabsHeader from "@/components/admin/table/Tabs";
 import FiltersBar from "@/components/admin/table/Filters";
 import ActionButtons from "@/components/admin/table/Buttons";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
 import { reportNavs } from "@/navigattion/ReportNaviation";
-
 const data = [
   {
-    category: "Burgers",
-    productName: "Product 1",
+    date: "06/21/24 14:25",
+    or: "062124-0036",
+    branch: "Makati",
     amount: 500,
-    qty: 55,
-    branch: "Pasig",
+    tax: 55,
+    discount: 10,
+    cashier: "Superman",
   },
   {
-    category: "Pasta",
-    productName: "Product 2",
-    amount: "",
-    qty: "",
-    branch: "Pasig",
-  },
-  {
-    category: "Meal",
-    productName: "Product 3",
-    amount: "",
-    qty: "",
-    branch: "Makati",
-  },
-  {
-    category: "Promo",
-    productName: "Product 4",
-    amount: "",
-    qty: "",
-    branch: "Makati",
-  },
-  {
-    category: "Promo",
-    productName: "Product 5",
-    amount: "",
-    qty: "",
-    branch: "Pasig",
-  },
-  {
-    category: "Burgers",
-    productName: "Product 7",
-    amount: "",
-    qty: "",
-    branch: "QC",
-  },
-  {
-    category: "Burgers",
-    productName: "Product 8",
-    amount: "",
-    qty: "",
-    branch: "Taguig",
+    date: "06/21/24 13:25",
+    or: "062124-0037",
+    branch: "Ortigas",
+    amount: 100,
+    tax: "",
+    discount: 100,
+    cashier: "",
   },
 ];
 
 const columns = [
-  { key: "category", label: "Category" },
-  { key: "productName", label: "Product Name" },
+  { key: "date", label: "Date of Purchase" },
+  { key: "or", label: "OR Number" },
+  { key: "branch", label: "Branch Name" },
   { key: "amount", label: "Amount" },
-  { key: "qty", label: "Qty" },
-  { key: "branch", label: "Branch" },
+  { key: "tax", label: "Tax" },
+  { key: "discount", label: "Discount" },
+  { key: "cashier", label: "Cashier" },
 ];
 
-function ProductMixReport() {
+function DirectorReportTransaction() {
+  const [activeTab, setActiveTab] = useState("completed");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [useShowMore] = useState(false);
+  const [useShowMore] = useState(false); // Changed to false to show pagination
 
-  const totalItems = 50;
+  // Mock total items - replace with actual data length
+  const totalItems = 100;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,16 +59,17 @@ function ProductMixReport() {
   };
 
   const handleShowMore = () => {
+    // Load more data logic here
     console.log("Loading more data...");
   };
 
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <SideBar navs={reportNavs} onCollapsedChange={setSidebarCollapsed} />
 
       <div
@@ -103,9 +77,19 @@ function ProductMixReport() {
         style={{ marginLeft: sidebarCollapsed ? "90px" : "200px" }}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Product Mix Report</h1>
+          <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+            Transaction Sale
+          </h1>
 
-          <div className="flex items-center justify-end mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <TabsHeader
+              tabs={[
+                { value: "completed", label: "Completed (12)" },
+                { value: "refund", label: "Refund" },
+              ]}
+              value={activeTab}
+              onChange={setActiveTab}
+            />
             <Search
               placeholder="Search"
               value={searchQuery}
@@ -116,7 +100,7 @@ function ProductMixReport() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-            <FiltersBar showClientFilter={false} />
+            <FiltersBar />
             <ActionButtons />
           </div>
 
@@ -139,5 +123,4 @@ function ProductMixReport() {
     </div>
   );
 }
-
-export default ProductMixReport;
+export default DirectorReportTransaction;

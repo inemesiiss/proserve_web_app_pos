@@ -28,11 +28,7 @@ export default function FoodLayout({
       {/* 🔹 MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden">
         {/* MAIN CONTENT */}
-        <main
-          className={`flex-1 overflow-y-auto no-scrollbar p-6 ${
-            showOrderSummary ? "pr-4" : ""
-          }`}
-        >
+        <main className={`flex-1 overflow-y-auto no-scrollbar`}>
           {children}
         </main>
 

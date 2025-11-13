@@ -6,18 +6,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import ClientFilter from "./ClientFilter";
 
 interface FiltersBarProps {
   onFilterChange?: (filters: Record<string, string>) => void;
   showSearch?: boolean;
+  showClientFilter?: boolean;
 }
 
 export default function FiltersBar({
   onFilterChange,
   showSearch = true,
+  showClientFilter = true,
 }: FiltersBarProps) {
   return (
     <div className="flex flex-wrap gap-3 items-center">
+      {/* Client Filter */}
+      {showClientFilter && (
+        <ClientFilter onValueChange={(v) => onFilterChange?.({ client: v })} />
+      )}
+
       <Select onValueChange={(v) => onFilterChange?.({ date: v })}>
         <SelectTrigger className="w-[160px]">
           <SelectValue placeholder="Filter Date" />

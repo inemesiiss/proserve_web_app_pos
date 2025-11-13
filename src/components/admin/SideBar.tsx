@@ -50,7 +50,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
     const defaultNavs: NavItem[] = [
       {
         label: "Dashboard",
-        path: "/admin/dashboard",
+        path: "/bm/dashboard",
         icon: <LayoutDashboard className="w-6 h-6" />,
       },
       // {
@@ -60,27 +60,27 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       // },
       {
         label: "Account",
-        path: "/admin/account",
+        path: "/bm/accounts",
         icon: <Building2 className="w-6 h-6" />,
       },
       {
         label: "Branch",
-        path: "/admin/branch",
+        path: "/bm/branch",
         icon: <Combine className="w-6 h-6" />,
       },
       {
         label: "Terminal",
-        path: "/admin/terminal",
+        path: "/bm/terminal",
         icon: <MonitorStop className="w-6 h-6" />,
       },
       {
         label: "User",
-        path: "/admin/users",
+        path: "/bm/users",
         icon: <User className="w-6 h-6" />,
       },
       {
         label: "Product",
-        path: "/admin/product",
+        path: "/bm/product",
         icon: <Package className="w-6 h-6" />,
       },
     ];

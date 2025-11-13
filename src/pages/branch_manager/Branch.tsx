@@ -62,7 +62,7 @@ const branchColumns = [
   { key: "edit", label: "EDIT" },
 ];
 
-function AdminBranch() {
+function BMBranch() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -203,4 +203,4 @@ function AdminBranch() {
   );
 }
 
-export default AdminBranch;
+export default BMBranch;

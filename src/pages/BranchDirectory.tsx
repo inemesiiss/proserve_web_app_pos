@@ -32,7 +32,7 @@ export default function DirectorySelection() {
       id: "dashboard",
       name: "Analytic Dashboard",
       animation: animations.dashboard,
-      path: "/admin/dashboard",
+      path: "/bm/dashboard",
       passcode: "123456",
       textMessage: "Enter 4-digit access code for Analytics",
       digitCount: 6,
@@ -41,7 +41,7 @@ export default function DirectorySelection() {
       id: "reports",
       name: "Reports",
       animation: animations.reports,
-      path: "/admin/reports/transaction",
+      path: "/bm/reports/transaction",
       passcode: "123456",
       textMessage: "Enter manager code to access Reports",
       digitCount: 6,
@@ -71,56 +71,108 @@ export default function DirectorySelection() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-4 relative gap-20">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4 relative gap-16 py-8">
       {/* Header */}
-      <motion.h2
-        initial={{ opacity: 0, y: -10 }}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="text-3xl font-semibold text-gray-800 mb-10 text-center"
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center gap-3"
       >
-        Welcome Ayala, Makati Branch
-      </motion.h2>
+        <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2 shadow-lg">
+          <svg
+            className="w-12 h-12 text-blue-600 dark:text-blue-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
+          </svg>
+        </div>
+        <h1 className="text-5xl font-bold text-blue-600 dark:text-blue-400">
+          ProServe Cafe
+        </h1>
+        <p className="text-xl text-gray-700 dark:text-gray-300 font-semibold">
+          Makati Branch
+        </p>
+        <div className="h-1.5 w-32 bg-blue-500 rounded-full mt-2 shadow-sm"></div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 w-full max-w-5xl justify-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 w-full max-w-6xl justify-items-center">
         {directory.map((item, index) => (
           <motion.div
             key={item.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.15 }}
+            transition={{ delay: index * 0.15, type: "spring", stiffness: 100 }}
+            className="w-full max-w-[300px]"
           >
             <Button
               onClick={() => handleItemClick(item)}
               disabled={!item.animation}
-              className={`w-60 h-64 bg-white text-purple-600 rounded-3xl shadow-xl 
-                hover:bg-purple-600 hover:text-white 
-                transition-all transform hover:scale-105 active:scale-95`}
+              className={`w-full h-80 bg-white dark:bg-gray-800 rounded-3xl shadow-xl 
+                border-2 border-gray-200 dark:border-gray-700
+                hover:border-blue-400 dark:hover:border-blue-500
+                hover:shadow-2xl hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30
+                transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 active:scale-95
+                disabled:opacity-50 disabled:cursor-not-allowed
+                group relative overflow-hidden`}
             >
+              {/* Animated background on hover */}
+              <div className="absolute inset-0 bg-blue-50 dark:bg-blue-950/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
               <motion.div
-                className="flex flex-col items-center justify-center"
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 200 }}
+                className="flex flex-col items-center justify-center relative z-10 h-full p-6"
+                whileHover={{ y: -10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
                 <motion.div
-                  className="w-36 h-36 mb-4"
-                  whileHover={{ scale: 1.2 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  className="w-44 h-44 mb-6 rounded-full bg-blue-100 dark:bg-blue-900/30 p-6 shadow-lg
+                    group-hover:shadow-xl group-hover:shadow-blue-300/50 dark:group-hover:shadow-blue-800/30
+                    transition-all duration-300"
+                  whileHover={{ rotate: 5, scale: 1.15 }}
+                  transition={{ type: "spring", stiffness: 400 }}
                 >
                   {item.animation ? (
                     <Lottie animationData={item.animation} loop autoplay />
                   ) : (
-                    <p className="text-gray-400 text-sm">Loading...</p>
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-gray-400 text-sm">Loading...</p>
+                    </div>
                   )}
                 </motion.div>
-                <p className="text-xl font-semibold tracking-wide">
+                <p
+                  className="text-2xl font-bold text-gray-800 dark:text-gray-100 
+                  group-hover:text-blue-600
+                  dark:group-hover:text-blue-400
+                  transition-all duration-300 px-4 text-center"
+                >
                   {item.name}
                 </p>
+                <motion.div
+                  className="mt-4 h-1 bg-blue-500 rounded-full w-0 group-hover:w-20 transition-all duration-300"
+                  initial={{ width: 0 }}
+                />
               </motion.div>
             </Button>
           </motion.div>
         ))}
       </div>
+
+      {/* Footer hint */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="text-sm text-gray-600 dark:text-gray-400 mt-8 font-medium"
+      >
+        ✨ Select a service to continue
+      </motion.p>
 
       {selectedItem && (
         <SecurityPasscodeModal

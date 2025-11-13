@@ -100,7 +100,7 @@ function ReportTransaction() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-            <FiltersBar />
+            <FiltersBar showClientFilter={false} />
             <ActionButtons />
           </div>
 

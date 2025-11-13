@@ -115,7 +115,7 @@ const columns = [
   { key: "numOfHours", label: "# of hours" },
 ];
 
-function AttendanceReport() {
+function BMAttendanceReport() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -164,7 +164,7 @@ function AttendanceReport() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-            <FiltersBar />
+            <FiltersBar showClientFilter={false} />
             <ActionButtons />
           </div>
 
@@ -188,4 +188,4 @@ function AttendanceReport() {
   );
 }
 
-export default AttendanceReport;
+export default BMAttendanceReport;

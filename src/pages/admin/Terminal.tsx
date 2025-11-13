@@ -67,7 +67,7 @@ const terminalColumns = [
   { key: "edit", label: "EDIT" },
 ];
 
-function BMTerminal() {
+function AdminTerminal() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -192,4 +192,4 @@ function BMTerminal() {
   );
 }
 
-export default BMTerminal;
+export default AdminTerminal;

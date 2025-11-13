@@ -13,7 +13,10 @@ export default function ActionButtons({
 }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
-      <Button variant="secondary" onClick={onGo}>
+      <Button
+        className="bg-blue-700 hover:bg-blue-800 text-white"
+        onClick={onGo}
+      >
         Go
       </Button>
       <Button variant="outline" onClick={onDownload}>

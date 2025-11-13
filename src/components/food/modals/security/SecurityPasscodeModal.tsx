@@ -127,7 +127,7 @@ export default function SecurityPasscodeModal({
                 Reset
               </Button>
               <Button
-                className="bg-purple-600 text-white hover:bg-purple-700"
+                className="bg-blue-600 text-white hover:bg-blue-700"
                 onClick={handleConfirm}
               >
                 Confirm

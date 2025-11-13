@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Utensils } from "lucide-react";
+import { ArrowRight, Utensils, X } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 export default function KioskHome() {
@@ -8,7 +8,11 @@ export default function KioskHome() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lastActivity, setLastActivity] = useState(Date.now());
 
-  const images = ["cover4.png", "cover3.png", "cover5.png"];
+  const images = [
+    "/kiosk/cover4.png",
+    "/kiosk/cover3.png",
+    "/kiosk/cover5.png",
+  ];
 
   // Reset activity timer on any interaction
   const handleActivity = useCallback(() => {
@@ -52,6 +56,16 @@ export default function KioskHome() {
     navigate("/kiosk/order-type");
   };
 
+  const handleExitApp = async () => {
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const appWindow = getCurrentWindow();
+      await appWindow.close();
+    } catch (error) {
+      console.error("Failed to close app:", error);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -80,6 +94,20 @@ export default function KioskHome() {
 
       {/* Content Overlay */}
       <div className="relative z-10 h-full flex flex-col items-center justify-between px-6 py-16">
+        {/* Exit Button - Top Right Corner */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={handleExitApp}
+          className="absolute top-8 right-8 w-16 h-16 bg-red-500/80 backdrop-blur-sm hover:bg-red-600 rounded-full flex items-center justify-center shadow-2xl transition-colors duration-300 group"
+          title="Exit Application"
+        >
+          <X className="w-8 h-8 text-white group-hover:rotate-90 transition-transform duration-300" />
+        </motion.button>
+
         {/* Top Section - Logo/Brand and Welcome */}
         <div className="flex-1 flex flex-col items-center top-center">
           {/* Logo/Brand Section */}

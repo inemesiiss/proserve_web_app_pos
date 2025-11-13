@@ -9,120 +9,72 @@ import { reportNavs } from "@/navigattion/ReportNaviation";
 
 const data = [
   {
-    nameOfAgent: "Agent 1",
-    assignedBranch: "Branch 1",
-    timeIn: "8:00:00 AM",
-    oneHour: "59:00",
-    thirtyMins: "30:00",
-    fifteenMins: "15:00:00",
-    cr: "5:00:00",
-    coaching: "17:00:00",
-    meeting: "27:00:00",
-    logOut: "5:00:00 PM",
-    numOfHours: 9,
+    category: "Burgers",
+    productName: "Product 1",
+    amount: 500,
+    qty: 55,
+    branch: "Pasig",
   },
   {
-    nameOfAgent: "Agent 2",
-    assignedBranch: "Branch 2",
-    timeIn: "",
-    oneHour: "",
-    thirtyMins: "",
-    fifteenMins: "",
-    cr: "",
-    coaching: "",
-    meeting: "",
-    logOut: "",
-    numOfHours: "",
+    category: "Pasta",
+    productName: "Product 2",
+    amount: "",
+    qty: "",
+    branch: "Pasig",
   },
   {
-    nameOfAgent: "Agent 3",
-    assignedBranch: "Branch 3",
-    timeIn: "",
-    oneHour: "",
-    thirtyMins: "",
-    fifteenMins: "",
-    cr: "",
-    coaching: "",
-    meeting: "",
-    logOut: "",
-    numOfHours: "",
+    category: "Meal",
+    productName: "Product 3",
+    amount: "",
+    qty: "",
+    branch: "Makati",
   },
   {
-    nameOfAgent: "Agent 4",
-    assignedBranch: "Branch 4",
-    timeIn: "",
-    oneHour: "",
-    thirtyMins: "",
-    fifteenMins: "",
-    cr: "",
-    coaching: "",
-    meeting: "",
-    logOut: "",
-    numOfHours: "",
+    category: "Promo",
+    productName: "Product 4",
+    amount: "",
+    qty: "",
+    branch: "Makati",
   },
   {
-    nameOfAgent: "Agent 5",
-    assignedBranch: "Branch 5",
-    timeIn: "",
-    oneHour: "",
-    thirtyMins: "",
-    fifteenMins: "",
-    cr: "",
-    coaching: "",
-    meeting: "",
-    logOut: "",
-    numOfHours: "",
+    category: "Promo",
+    productName: "Product 5",
+    amount: "",
+    qty: "",
+    branch: "Pasig",
   },
   {
-    nameOfAgent: "Agent 6",
-    assignedBranch: "Branch 7",
-    timeIn: "",
-    oneHour: "",
-    thirtyMins: "",
-    fifteenMins: "",
-    cr: "",
-    coaching: "",
-    meeting: "",
-    logOut: "",
-    numOfHours: "",
+    category: "Burgers",
+    productName: "Product 7",
+    amount: "",
+    qty: "",
+    branch: "QC",
   },
   {
-    nameOfAgent: "Agent 7",
-    assignedBranch: "Branch 9",
-    timeIn: "",
-    oneHour: "",
-    thirtyMins: "",
-    fifteenMins: "",
-    cr: "",
-    coaching: "",
-    meeting: "",
-    logOut: "",
-    numOfHours: "",
+    category: "Burgers",
+    productName: "Product 8",
+    amount: "",
+    qty: "",
+    branch: "Taguig",
   },
 ];
 
 const columns = [
-  { key: "nameOfAgent", label: "Name of agent" },
-  { key: "assignedBranch", label: "Assigned Branch" },
-  { key: "timeIn", label: "Time-in" },
-  { key: "oneHour", label: "1 Hour" },
-  { key: "thirtyMins", label: "30 Mins" },
-  { key: "fifteenMins", label: "15 Mins" },
-  { key: "cr", label: "CR" },
-  { key: "coaching", label: "Coaching" },
-  { key: "meeting", label: "Meeting" },
-  { key: "logOut", label: "Log-out" },
-  { key: "numOfHours", label: "# of hours" },
+  { key: "category", label: "Category" },
+  { key: "productName", label: "Product Name" },
+  { key: "amount", label: "Amount" },
+  { key: "qty", label: "Qty" },
+  { key: "branch", label: "Branch" },
 ];
 
-function AttendanceReport() {
+function DirectorProductMixReport() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [useShowMore] = useState(false);
 
-  const totalItems = 45;
+  const totalItems = 50;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,7 +103,7 @@ function AttendanceReport() {
         style={{ marginLeft: sidebarCollapsed ? "90px" : "200px" }}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Attendance Report</h1>
+          <h1 className="text-2xl font-bold mb-4">Product Mix Report</h1>
 
           <div className="flex items-center justify-end mb-4">
             <Search
@@ -188,4 +140,4 @@ function AttendanceReport() {
   );
 }
 
-export default AttendanceReport;
+export default DirectorProductMixReport;

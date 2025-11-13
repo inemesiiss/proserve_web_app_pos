@@ -10,6 +10,7 @@ import BottomNavigator from "@/components/food/components/kiosk/BottomNavigator"
 import CartModal from "@/components/food/components/kiosk/CartModal";
 import MealCustomizationModal from "@/components/food/components/kiosk/MealCustomizationModal";
 import ProductConfirmationModal from "@/components/food/components/kiosk/ProductConfirmationModal";
+import KioskPaymentModal from "@/components/food/components/kiosk/KioskPaymentModal";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -30,6 +31,7 @@ export default function KioskMenuPage() {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isMealModalOpen, setIsMealModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const navigate = useNavigate();
@@ -130,7 +132,7 @@ export default function KioskMenuPage() {
   };
 
   const handleHomeClick = () => {
-    navigate("/kiosk/home");
+    navigate("/");
   };
 
   const handleUpdateQuantity = (id: number, newQty: number) => {
@@ -149,8 +151,13 @@ export default function KioskMenuPage() {
 
   const handleCheckout = () => {
     setIsCartModalOpen(false);
-    // Navigate to checkout or payment page
-    console.log("Proceeding to checkout with items:", allCartItems);
+    // Open payment modal instead of just console.log
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentComplete = () => {
+    // Navigate back to home after payment is complete
+    navigate("/");
   };
 
   // Reusable Card Component for symmetry
@@ -365,6 +372,19 @@ export default function KioskMenuPage() {
         onClose={() => setIsProductModalOpen(false)}
         product={selectedProduct}
         onConfirm={handleProductConfirm}
+      />
+
+      {/* Payment Modal */}
+      <KioskPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        items={allCartItems}
+        total={grandTotal}
+        orderType={
+          (localStorage.getItem("orderType") as "dine-in" | "takeout") ||
+          "dine-in"
+        }
+        onPaymentComplete={handlePaymentComplete}
       />
     </motion.div>
   );

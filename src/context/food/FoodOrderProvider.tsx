@@ -101,17 +101,28 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
     const setGroup = item.type === "meal" ? setMeals : setProducts;
     const group = item.type === "meal" ? meals : products;
 
-    const existing = group.find(
-      (i) => i.id === item.id && i.variation === item.variation
-    );
+    // Check if an identical item exists (including upgrades)
+    const existing = group.find((i) => {
+      // Basic matching
+      if (i.id !== item.id || i.variation !== item.variation) return false;
+
+      // Check drink upgrades match
+      const sameDrinkUpgrade =
+        i.upgrades?.drinkUpgrade?.upgradedId ===
+        item.upgrades?.drinkUpgrade?.upgradedId;
+
+      // Check fries upgrades match
+      const sameFriesUpgrade =
+        i.upgrades?.friesUpgrade?.upgradedId ===
+        item.upgrades?.friesUpgrade?.upgradedId;
+
+      // Only stack if all upgrades match
+      return sameDrinkUpgrade && sameFriesUpgrade;
+    });
 
     if (existing) {
       setGroup(
-        group.map((i) =>
-          i.id === item.id && i.variation === item.variation
-            ? { ...i, qty: i.qty + item.qty }
-            : i
-        )
+        group.map((i) => (i === existing ? { ...i, qty: i.qty + item.qty } : i))
       );
     } else {
       setGroup([...group, { ...item, isVoid: false, isDiscount: false }]);

@@ -67,7 +67,7 @@ const columns = [
   { key: "branch", label: "Branch" },
 ];
 
-function ProductMixReport() {
+function AdminProductMixReport() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,7 +116,7 @@ function ProductMixReport() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-            <FiltersBar showClientFilter={false} />
+            <FiltersBar />
             <ActionButtons />
           </div>
 
@@ -140,4 +140,4 @@ function ProductMixReport() {
   );
 }
 
-export default ProductMixReport;
+export default AdminProductMixReport;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
-import TerminalActionButtons from "@/components/admin/table/TerminalActionButtons";
+import BranchActionButtons from "@/components/admin/table/BranchActionButtons";
+import AddBranchModal from "@/components/admin/modals/AddBranchModal";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
@@ -13,67 +14,62 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Mock data for terminals
-const terminalData = [
+// Mock data for branches
+const branchData = [
   {
-    terminalId: "SN-8997464993303",
+    clientName: "Brent Gas",
     branchCode: "001",
-    branchName: "Branch 1",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Brent Gas",
+    branch: "Branch 1",
+    address: "Lot 8 Block 8 Abraza",
     active: true,
   },
   {
-    terminalId: "SN-8997464993303",
+    clientName: "Onetech",
     branchCode: "002",
-    branchName: "Product 2",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Onetech",
+    branch: "Branch 2",
+    address: "Description 2",
     active: true,
   },
   {
-    terminalId: "SN-8997464993303",
+    clientName: "Brent Gas",
     branchCode: "003",
-    branchName: "Product 3",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Brent Gas",
+    branch: "Branch 3",
+    address: "Description 3",
     active: true,
   },
   {
-    terminalId: "SN-8997464993303",
+    clientName: "Aristocrat",
     branchCode: "004",
-    branchName: "Product 4",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Aristocrat",
+    branch: "Branch 4",
+    address: "Description 4",
     active: true,
   },
   {
-    terminalId: "SN-8997464993303",
+    clientName: "Globe",
     branchCode: "005",
-    branchName: "Product 5",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Globe",
+    branch: "Branch 5",
+    address: "Description 5",
     active: true,
   },
 ];
 
-const terminalColumns = [
-  { key: "terminalId", label: "Terminal ID" },
+const branchColumns = [
+  { key: "clientName", label: "Client Name" },
   { key: "branchCode", label: "Branch Code" },
-  { key: "branchName", label: "Branch Name" },
-  { key: "renewalDate", label: "Renewal Date" },
-  { key: "accountName", label: "Account Name" },
+  { key: "branch", label: "Branch" },
+  { key: "address", label: "ADDRESS" },
   { key: "active", label: "ACTIVE" },
   { key: "edit", label: "EDIT" },
 ];
 
-function BMTerminal() {
+function DirectorBranch() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [useShowMore] = useState(false);
-  const [accountFilter, setAccountFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Mock total items - replace with actual data length
   const totalItems = 100;
@@ -96,8 +92,8 @@ function BMTerminal() {
     setCurrentPage(1);
   };
 
-  const handleAddTerminal = () => {
-    console.log("Add Terminal clicked");
+  const handleAddBranch = () => {
+    setIsAddModalOpen(true);
   };
 
   const handleImportCSV = () => {
@@ -105,11 +101,16 @@ function BMTerminal() {
   };
 
   const handleGo = () => {
-    console.log("Go clicked with filter:", accountFilter);
+    console.log("Go clicked with filter:", departmentFilter);
   };
 
   const handleDownloadCSV = () => {
     console.log("Download CSV clicked");
+  };
+
+  const handleSubmitBranch = (data: any) => {
+    console.log("New branch data:", data);
+    // Add your API call here to save the branch
   };
 
   return (
@@ -122,29 +123,32 @@ function BMTerminal() {
       >
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            Terminal Management
+            Branch Management
           </h1>
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1"></div>
-            <TerminalActionButtons
-              onAddTerminal={handleAddTerminal}
+            <BranchActionButtons
+              onAddBranch={handleAddBranch}
               onImportCSV={handleImportCSV}
             />
           </div>
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Select value={accountFilter} onValueChange={setAccountFilter}>
+              <Select
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+              >
                 <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
-                  <SelectValue placeholder="Account Name" />
+                  <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Accounts</SelectItem>
-                  <SelectItem value="brent-gas">Brent Gas</SelectItem>
-                  <SelectItem value="onetech">Onetech</SelectItem>
-                  <SelectItem value="aristocrat">Aristocrat</SelectItem>
-                  <SelectItem value="globe">Globe</SelectItem>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  <SelectItem value="food">Food</SelectItem>
+                  <SelectItem value="retail">Retail</SelectItem>
+                  <SelectItem value="entertainment">Entertainment</SelectItem>
+                  <SelectItem value="services">Services</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -172,7 +176,7 @@ function BMTerminal() {
             />
           </div>
 
-          <DataTable columns={terminalColumns} data={terminalData} />
+          <DataTable columns={branchColumns} data={branchData} />
 
           <Pagination
             currentPage={currentPage}
@@ -188,8 +192,15 @@ function BMTerminal() {
           />
         </div>
       </div>
+
+      {/* Add Branch Modal */}
+      <AddBranchModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleSubmitBranch}
+      />
     </div>
   );
 }
 
-export default BMTerminal;
+export default DirectorBranch;

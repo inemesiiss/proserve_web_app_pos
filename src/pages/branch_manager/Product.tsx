@@ -73,7 +73,7 @@ const productColumns = [
   { key: "edit", label: "EDIT" },
 ];
 
-function AdminProduct() {
+function BMProduct() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -197,4 +197,4 @@ function AdminProduct() {
   );
 }
 
-export default AdminProduct;
+export default BMProduct;

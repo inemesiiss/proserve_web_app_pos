@@ -2,7 +2,7 @@ import { SideBar } from "@/components/admin/SideBar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect, useRef, useState } from "react";
 
-function BMSettings() {
+function DirectorSettings() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarWidth, setSidebarWidth] = useState<number>(0);
 
@@ -47,4 +47,4 @@ function BMSettings() {
   );
 }
 
-export default BMSettings;
+export default DirectorSettings;

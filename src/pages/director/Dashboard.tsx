@@ -39,7 +39,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 
-function BMDashboard() {
+function DirectorDashboard() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   // use persisted collapsed state to compute initial sidebar width and
   // update via callback from SideBar to avoid following animated width.
@@ -122,10 +122,10 @@ function BMDashboard() {
   } satisfies ChartConfig;
 
   const pieChartData = [
-    { name: "Cash", value: 55, color: "#64748b" },
-    { name: "GCash", value: 22, color: "#3b82f6" },
-    { name: "PayMaya", value: 8, color: "#94a3b8" },
-    { name: "Card", value: 15, color: "#475569" },
+    { name: "Cash", value: 55, color: "#00C49F" },
+    { name: "GCash", value: 22, color: "#0088FE" },
+    { name: "PayMaya", value: 8, color: "#FFBB28" },
+    { name: "Card", value: 15, color: "#FF8042" },
   ];
 
   const pieChartConfig = {
@@ -162,26 +162,26 @@ function BMDashboard() {
                 <div className="p-4 ">
                   <span className="text-xl">Sales Summary</span>
                   <div className="grid grid-cols-2 md:grid-cols-4 pt-2  gap-6">
-                    <div className="bg-slate-600 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Total Sales</p>
                       <p className="text-white font-bold text-3xl pt-2">
                         1200.00
                       </p>
                     </div>
 
-                    <div className="bg-blue-500 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">No. of Transactions</p>
                       <p className="text-white font-bold text-3xl pt-2">1</p>
                     </div>
 
-                    <div className="bg-slate-600 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">
                         Average Transaction Value
                       </p>
                       <p className="text-white font-bold text-3xl pt-2">5</p>
                     </div>
 
-                    <div className="bg-blue-500 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Total Discount</p>
                       <p className="text-white font-bold text-3xl pt-2">0</p>
                     </div>
@@ -191,22 +191,22 @@ function BMDashboard() {
                 <div className="p-4 ">
                   <span className="text-xl">Sales by Channel</span>
                   <div className="grid grid-cols-2 md:grid-cols-4 pt-2  gap-6">
-                    <div className="bg-blue-500 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Gcash</p>
                       <p className="text-white font-bold text-3xl pt-2">0</p>
                     </div>
 
-                    <div className="bg-slate-600 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Paymaya</p>
                       <p className="text-white font-bold text-3xl pt-2">90</p>
                     </div>
 
-                    <div className="bg-blue-500 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#379AE6FF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Visa</p>
                       <p className="text-white font-bold text-3xl pt-2">3</p>
                     </div>
 
-                    <div className="bg-slate-600 rounded-2xl p-4 py-6 shadow">
+                    <div className="bg-[#1DD75BFF] rounded-2xl p-4 py-6 shadow">
                       <p className="text-white text-xl">Mastercard</p>
                       <p className="text-white font-bold text-3xl pt-2">8</p>
                     </div>
@@ -282,7 +282,7 @@ function BMDashboard() {
 
                       <div className="grid  max-w-xs items-center gap-1">
                         <Label>&nbsp;</Label>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Button className="bg-[#EA916EFF] hover:bg-[#ea8259]">
                           Go
                         </Button>
                       </div>
@@ -325,10 +325,10 @@ function BMDashboard() {
                         <Line
                           dataKey="value"
                           type="monotone"
-                          stroke="#3b82f6"
+                          stroke="#22CCB2FF"
                           strokeWidth={2}
                           dot={{
-                            fill: "#3b82f6",
+                            fill: "#22CCB2FF",
                           }}
                           activeDot={{
                             r: 6,
@@ -411,7 +411,7 @@ function BMDashboard() {
 
                       <div className="grid  max-w-xs items-center gap-1">
                         <Label>&nbsp;</Label>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Button className="bg-[#EA916EFF] hover:bg-[#ea8259]">
                           Go
                         </Button>
                       </div>
@@ -452,10 +452,10 @@ function BMDashboard() {
                         <Line
                           dataKey="value"
                           type="monotone"
-                          stroke="#3b82f6"
+                          stroke="#22CCB2FF"
                           strokeWidth={2}
                           dot={{
-                            fill: "#3b82f6",
+                            fill: "#22CCB2FF",
                           }}
                           activeDot={{
                             r: 6,
@@ -500,7 +500,7 @@ function BMDashboard() {
                             cursor={false}
                             content={<ChartTooltipContent hideLabel />}
                           />
-                          <Bar dataKey="value" fill="#64748b" radius={8} />
+                          <Bar dataKey="value" fill="#22CCB2FF" radius={8} />
                         </BarChart>
                       </ChartContainer>
                     </CardContent>
@@ -536,7 +536,7 @@ function BMDashboard() {
                           />
                           <Bar
                             dataKey="value"
-                            fill="#3b82f6"
+                            fill="#22CCB2FF"
                             radius={8}
                             label={{
                               position: "top",
@@ -593,4 +593,4 @@ function BMDashboard() {
   );
 }
 
-export default BMDashboard;
+export default DirectorDashboard;

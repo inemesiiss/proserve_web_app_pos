@@ -54,7 +54,7 @@ const userColumns = [
   { key: "edit", label: "EDIT" },
 ];
 
-function BMUser() {
+function DirectorUser() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -142,4 +142,4 @@ function BMUser() {
   );
 }
 
-export default BMUser;
+export default DirectorUser;

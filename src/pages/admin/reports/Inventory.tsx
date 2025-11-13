@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
+import TabsHeader from "@/components/admin/table/Tabs";
 import FiltersBar from "@/components/admin/table/Filters";
 import ActionButtons from "@/components/admin/table/Buttons";
 import DataTable from "@/components/admin/table/Tables";
@@ -10,71 +11,98 @@ import { reportNavs } from "@/navigattion/ReportNaviation";
 const data = [
   {
     category: "Burgers",
-    productName: "Product 1",
-    amount: 500,
-    qty: 55,
-    branch: "Pasig",
+    product: "Jumbo Cheezy Bacon Burger",
+    beginning: 2,
+    added: 2,
+    deducted: 2,
+    current: 0,
+    branch: "Makati",
   },
   {
     category: "Pasta",
-    productName: "Product 2",
-    amount: "",
-    qty: "",
-    branch: "Pasig",
+    product: "Product2",
+    beginning: 2,
+    added: 2,
+    deducted: 2,
+    current: 0,
+    branch: "Ortigas",
   },
   {
-    category: "Meal",
-    productName: "Product 3",
-    amount: "",
-    qty: "",
-    branch: "Makati",
+    category: "Extras",
+    product: "Product3",
+    beginning: "",
+    added: "",
+    deducted: "",
+    current: "",
+    branch: "",
   },
   {
-    category: "Promo",
-    productName: "Product 4",
-    amount: "",
-    qty: "",
-    branch: "Makati",
+    category: "0004",
+    product: "0004",
+    beginning: "",
+    added: "",
+    deducted: "",
+    current: "",
+    branch: "",
   },
   {
-    category: "Promo",
-    productName: "Product 5",
-    amount: "",
-    qty: "",
-    branch: "Pasig",
+    category: "0005",
+    product: "0005",
+    beginning: "",
+    added: "",
+    deducted: "",
+    current: "",
+    branch: "",
   },
   {
-    category: "Burgers",
-    productName: "Product 7",
-    amount: "",
-    qty: "",
-    branch: "QC",
+    category: "0006",
+    product: "0006",
+    beginning: "",
+    added: "",
+    deducted: "",
+    current: "",
+    branch: "",
   },
   {
-    category: "Burgers",
-    productName: "Product 8",
-    amount: "",
-    qty: "",
-    branch: "Taguig",
+    category: "0007",
+    product: "0007",
+    beginning: "",
+    added: "",
+    deducted: "",
+    current: "",
+    branch: "",
+  },
+  {
+    category: "0008",
+    product: "0008",
+    beginning: "",
+    added: "",
+    deducted: "",
+    current: "",
+    branch: "",
   },
 ];
 
 const columns = [
   { key: "category", label: "Category" },
-  { key: "productName", label: "Product Name" },
-  { key: "amount", label: "Amount" },
-  { key: "qty", label: "Qty" },
+  { key: "product", label: "Product" },
+  { key: "beginning", label: "Beginning" },
+  { key: "added", label: "Added" },
+  { key: "deducted", label: "Deducted" },
+  { key: "current", label: "Current" },
   { key: "branch", label: "Branch" },
 ];
 
-function ProductMixReport() {
+function AdminInventoryReport() {
+  const [activeTab, setActiveTab] = useState("product");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [useShowMore] = useState(false);
 
-  const totalItems = 50;
+  // Mock total items - replace with actual data length
+  const totalItems = 52;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +123,7 @@ function ProductMixReport() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <SideBar navs={reportNavs} onCollapsedChange={setSidebarCollapsed} />
 
       <div
@@ -103,9 +131,19 @@ function ProductMixReport() {
         style={{ marginLeft: sidebarCollapsed ? "90px" : "200px" }}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Product Mix Report</h1>
+          <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+            Inventory Report
+          </h1>
 
-          <div className="flex items-center justify-end mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <TabsHeader
+              tabs={[
+                { value: "product", label: "Product (52)" },
+                { value: "component", label: "Component" },
+              ]}
+              value={activeTab}
+              onChange={setActiveTab}
+            />
             <Search
               placeholder="Search"
               value={searchQuery}
@@ -116,7 +154,7 @@ function ProductMixReport() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-            <FiltersBar showClientFilter={false} />
+            <FiltersBar />
             <ActionButtons />
           </div>
 
@@ -140,4 +178,4 @@ function ProductMixReport() {
   );
 }
 
-export default ProductMixReport;
+export default AdminInventoryReport;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
-import TerminalActionButtons from "@/components/admin/table/TerminalActionButtons";
+import AccountActionButtons from "@/components/admin/table/AccountActionButtons";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
@@ -13,67 +13,74 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Mock data for terminals
-const terminalData = [
+// Mock data for accounts
+const accountData = [
   {
-    terminalId: "SN-8997464993303",
-    branchCode: "001",
-    branchName: "Branch 1",
+    account: "Pasta Machine",
+    contactPerson: "Alma Reyes",
+    startDate: "Dec 25, 2023",
+    endDate: "Dec 25, 2024",
     renewalDate: "Dec 25, 2024",
-    accountName: "Brent Gas",
-    active: true,
+    plan: "Standard",
+    noOfLicenses: "10",
   },
   {
-    terminalId: "SN-8997464993303",
-    branchCode: "002",
-    branchName: "Product 2",
+    account: "Burger Machine",
+    contactPerson: "Tessa Acuna",
+    startDate: "Dec 25, 2023",
+    endDate: "Dec 25, 2024",
     renewalDate: "Dec 25, 2024",
-    accountName: "Onetech",
-    active: true,
+    plan: "Standard",
+    noOfLicenses: "10",
   },
   {
-    terminalId: "SN-8997464993303",
-    branchCode: "003",
-    branchName: "Product 3",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Brent Gas",
-    active: true,
+    account: "",
+    contactPerson: "",
+    startDate: "",
+    endDate: "",
+    renewalDate: "",
+    plan: "",
+    noOfLicenses: "",
   },
   {
-    terminalId: "SN-8997464993303",
-    branchCode: "004",
-    branchName: "Product 4",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Aristocrat",
-    active: true,
+    account: "",
+    contactPerson: "",
+    startDate: "",
+    endDate: "",
+    renewalDate: "",
+    plan: "",
+    noOfLicenses: "",
   },
   {
-    terminalId: "SN-8997464993303",
-    branchCode: "005",
-    branchName: "Product 5",
-    renewalDate: "Dec 25, 2024",
-    accountName: "Globe",
-    active: true,
+    account: "",
+    contactPerson: "",
+    startDate: "",
+    endDate: "",
+    renewalDate: "",
+    plan: "",
+    noOfLicenses: "",
   },
 ];
 
-const terminalColumns = [
-  { key: "terminalId", label: "Terminal ID" },
-  { key: "branchCode", label: "Branch Code" },
-  { key: "branchName", label: "Branch Name" },
+const accountColumns = [
+  { key: "account", label: "Account" },
+  { key: "contactPerson", label: "Contact Person" },
+  { key: "startDate", label: "Start Date" },
+  { key: "endDate", label: "End Date" },
   { key: "renewalDate", label: "Renewal Date" },
-  { key: "accountName", label: "Account Name" },
-  { key: "active", label: "ACTIVE" },
+  { key: "plan", label: "Plan" },
+  { key: "noOfLicenses", label: "No of Licenses" },
   { key: "edit", label: "EDIT" },
 ];
 
-function BMTerminal() {
+function AdminAccounts() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [useShowMore] = useState(false);
   const [accountFilter, setAccountFilter] = useState("");
+  const [planFilter, setPlanFilter] = useState("");
 
   // Mock total items - replace with actual data length
   const totalItems = 100;
@@ -96,8 +103,8 @@ function BMTerminal() {
     setCurrentPage(1);
   };
 
-  const handleAddTerminal = () => {
-    console.log("Add Terminal clicked");
+  const handleAddAccount = () => {
+    console.log("Add Account clicked");
   };
 
   const handleImportCSV = () => {
@@ -105,7 +112,7 @@ function BMTerminal() {
   };
 
   const handleGo = () => {
-    console.log("Go clicked with filter:", accountFilter);
+    console.log("Go clicked with filters:", accountFilter, planFilter);
   };
 
   const handleDownloadCSV = () => {
@@ -122,13 +129,13 @@ function BMTerminal() {
       >
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            Terminal Management
+            Account Management
           </h1>
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1"></div>
-            <TerminalActionButtons
-              onAddTerminal={handleAddTerminal}
+            <AccountActionButtons
+              onAddAccount={handleAddAccount}
               onImportCSV={handleImportCSV}
             />
           </div>
@@ -137,14 +144,24 @@ function BMTerminal() {
             <div className="flex items-center gap-3">
               <Select value={accountFilter} onValueChange={setAccountFilter}>
                 <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
-                  <SelectValue placeholder="Account Name" />
+                  <SelectValue placeholder="Account" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Accounts</SelectItem>
-                  <SelectItem value="brent-gas">Brent Gas</SelectItem>
-                  <SelectItem value="onetech">Onetech</SelectItem>
-                  <SelectItem value="aristocrat">Aristocrat</SelectItem>
-                  <SelectItem value="globe">Globe</SelectItem>
+                  <SelectItem value="pasta">Pasta Machine</SelectItem>
+                  <SelectItem value="burger">Burger Machine</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={planFilter} onValueChange={setPlanFilter}>
+                <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                  <SelectValue placeholder="Plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Plans</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -164,7 +181,7 @@ function BMTerminal() {
             </div>
 
             <Search
-              placeholder="Search Product"
+              placeholder="Search Account"
               value={searchQuery}
               onChange={handleSearch}
               onClear={handleClearSearch}
@@ -172,7 +189,7 @@ function BMTerminal() {
             />
           </div>
 
-          <DataTable columns={terminalColumns} data={terminalData} />
+          <DataTable columns={accountColumns} data={accountData} />
 
           <Pagination
             currentPage={currentPage}
@@ -192,4 +209,4 @@ function BMTerminal() {
   );
 }
 
-export default BMTerminal;
+export default AdminAccounts;

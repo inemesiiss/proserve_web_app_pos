@@ -73,7 +73,7 @@ const accountColumns = [
   { key: "edit", label: "EDIT" },
 ];
 
-function AdminAccounts() {
+function BMAccounts() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -209,4 +209,4 @@ function AdminAccounts() {
   );
 }
 
-export default AdminAccounts;
+export default BMAccounts;

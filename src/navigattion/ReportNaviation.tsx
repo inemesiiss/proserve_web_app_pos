@@ -9,27 +9,27 @@ import {
 export const reportNavs = [
   {
     label: "Reports",
-    path: "/admin/reports",
+    path: "/bm/reports",
     icon: <FileText className="w-6 h-6" />,
     subPaths: [
       {
         label: "Sales and TC",
-        path: "/admin/reports/transaction",
+        path: "/bm/reports/transaction",
         icon: <BookText className="w-6 h-6" />,
       },
       {
         label: "Inventory",
-        path: "/admin/reports/inventory",
+        path: "/bm/reports/inventory",
         icon: <Package className="w-6 h-6" />,
       },
       {
         label: "Product Report",
-        path: "/admin/reports/product",
+        path: "/bm/reports/product",
         icon: <ClipboardList className="w-6 h-6" />,
       },
       {
         label: "Attendance",
-        path: "/admin/reports/attendance",
+        path: "/bm/reports/attendance",
         icon: <Users className="w-6 h-6" />,
       },
     ],
