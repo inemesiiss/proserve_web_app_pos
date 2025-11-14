@@ -28,7 +28,7 @@ function AppRoutes({
             path="/*"
             element={<LoginPage onLogin={() => setLoggedIn(true)} />}
           />
-          {getKioskRoutes()}
+          {/* {getKioskRoutes()} */}
         </>
       ) : (
         <>

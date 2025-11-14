@@ -1,3 +1,4 @@
+// Removed settings modal/button logic
 import { useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
 import UpperNavBar from "./components/cashier/UpperNavBar";
@@ -46,6 +47,7 @@ export default function FoodLayout({
           </aside>
         )}
       </div>
+      {/* Device Settings Modal removed, now handled in UpperNavBar */}
     </div>
   );
 }
