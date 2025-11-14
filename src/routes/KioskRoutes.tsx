@@ -7,7 +7,7 @@ import KioskMenuPage from "@/pages/food/kiosk/MenuKiosk";
 
 export const getKioskRoutes = () => (
   <>
-    <Route path="/kiosk/home" element={<KioskHome />} />
+    <Route path="/" element={<KioskHome />} />
     <Route path="/kiosk/order-type" element={<OrderTypeSelection />} />
     <Route path="/kiosk/menu" element={<KioskMenuPage />} />
   </>

@@ -187,15 +187,15 @@ export default function KioskMenuPage() {
       </div>
 
       {/* Content Container - Consistent padding and spacing */}
-      <div className="p-6 flex flex-col min-h-[200px]">
+      <div className="p-5 flex flex-col min-h-[180px]">
         {/* Product Name */}
-        <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2 min-h-[56px]">
+        <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 min-h-[48px]">
           {item.name}
         </h3>
 
         {/* Price */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-3xl font-black bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+        <div className="flex items-baseline gap-2 mb-3">
+          <span className="text-2xl font-black bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
             ₱{(item.base_price || item.price).toFixed(2)}
           </span>
         </div>
@@ -203,10 +203,11 @@ export default function KioskMenuPage() {
         {/* Add Button - Consistent size */}
         <Button
           onClick={() => handleAdd(item, type)}
-          className={`w-full h-14 text-lg font-bold ${buttonColor} text-white rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 mt-auto`}
+          className={`w-full h-12 text-sm md:text-base font-bold ${buttonColor} text-white rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-1 md:gap-2 mt-auto`}
         >
-          <Plus className="w-5 h-5" />
-          Add to Cart
+          <Plus className="w-4 h-4 md:w-5 md:h-5" />
+          <span className="hidden sm:inline">Add to Cart</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
     </motion.div>
@@ -267,7 +268,7 @@ export default function KioskMenuPage() {
                   Complete meals with sides and drinks
                 </p>
               </motion.div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-4 gap-6">
                 {filteredMeals.map((meal, index) => (
                   <ProductCard
                     key={meal.id}
@@ -296,7 +297,7 @@ export default function KioskMenuPage() {
                   Individual items and sides
                 </p>
               </motion.div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-4 gap-6">
                 {filteredProducts.map((product, index) => (
                   <ProductCard
                     key={product.id}

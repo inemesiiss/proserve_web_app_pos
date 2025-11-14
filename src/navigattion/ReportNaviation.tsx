@@ -35,9 +35,8 @@ export const reportNavs = [
     ],
   },
   {
-    label: "Promotions",
-    path: "/admin/reports",
-    icon: <FileText className="w-6 h-6" />,
-    subPaths: [],
+    label: "Discount & Promotions",
+    path: "/bm/reports/discount-promotion",
+    icon: <Users className="w-6 h-6" />,
   },
 ];

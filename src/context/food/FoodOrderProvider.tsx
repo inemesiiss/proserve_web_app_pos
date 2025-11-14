@@ -19,7 +19,8 @@ export interface OrderItem {
   isDiscount?: boolean;
   itemTotalDiscount?: number;
   percentDiscount?: number;
-  discount_type?: "pwd" | "sc";
+  discount_type?: "pwd" | "sc" | "manual" | "percentage";
+  discount_note?: string;
 
   // --- Upgrade tracking ---
   upgrades?: {
@@ -58,7 +59,9 @@ interface FoodOrderContextType {
   applyDiscount: (
     id: number,
     type: "meal" | "product",
-    discountType: "pwd" | "sc"
+    discountType: "pwd" | "sc" | "manual" | "percentage",
+    value?: number,
+    note?: string
   ) => void;
 
   // --- Upgrade helpers ---
@@ -167,11 +170,13 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  // --- Apply discount (PWD/SC) ---
+  // --- Apply discount (PWD/SC/Manual) ---
   const applyDiscount = (
     id: number,
     type: "meal" | "product",
-    discountType: "pwd" | "sc"
+    discountType: "pwd" | "sc" | "manual" | "percentage",
+    value?: number,
+    note?: string
   ) => {
     const setGroup = type === "meal" ? setMeals : setProducts;
     const group = type === "meal" ? meals : products;
@@ -180,17 +185,32 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
       group.map((i) => {
         if (i.id !== id) return i;
 
-        // Discount is 20% less VAT (12%)
         const basePrice = i.price * i.qty;
-        const discounted = (basePrice * 0.8) / 1.12; // 20% off less 12% VAT
-        const discountAmount = basePrice - discounted;
+        let discountAmount = 0;
+        let percentDiscount = 0;
+
+        if (discountType === "pwd" || discountType === "sc") {
+          // Discount is 20% less VAT (12%)
+          const discounted = (basePrice * 0.8) / 1.12; // 20% off less 12% VAT
+          discountAmount = basePrice - discounted;
+          percentDiscount = 20;
+        } else if (discountType === "percentage" && value) {
+          // Manual percentage discount
+          percentDiscount = value;
+          discountAmount = (basePrice * value) / 100;
+        } else if (discountType === "manual" && value) {
+          // Manual fixed amount discount
+          discountAmount = value;
+          percentDiscount = (value / basePrice) * 100;
+        }
 
         return {
           ...i,
           isDiscount: true,
           discount_type: discountType,
-          percentDiscount: 20,
+          percentDiscount: percentDiscount,
           itemTotalDiscount: discountAmount,
+          discount_note: note,
         };
       })
     );

@@ -6,11 +6,13 @@ import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import Header from "@/components/food/components/cashier/Header";
 import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import { menuData } from "@/data/food/products";
+// Removed DeviceSettingsModal and Settings import
 
 export default function FoodTransactionPage() {
   const { addItem } = useFoodOrder();
   const [selectedSize] = useState<Record<number, string>>({});
   const [filteredCategory, setFilteredCategory] = useState("All");
+  // Removed showDeviceSettings state
 
   // ✅ Filter logic for meals and products
   const filteredMeals = useMemo(() => {
@@ -44,6 +46,8 @@ export default function FoodTransactionPage() {
       {/* 🧭 Sidebar Navigation */}
       <FoodSidebarNav onFilter={setFilteredCategory} />
 
+      {/* Settings Button removed, now handled in layout */}
+
       {/* 🍔 Main Content */}
       <motion.div
         className="flex-1 ml-[150px] w-full max-w-7xl mx-auto p-6"
@@ -51,7 +55,7 @@ export default function FoodTransactionPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Header headerText="🍔 Food Menu" to="/food/main" />
+        <Header headerText="🍔 Food Menu" to="/food/main" showSettings={true} />
         {/* 
         <h1 className="text-xl font-semibold text-gray-700 mb-6">
           Showing: <span className="text-blue-600">{filteredCategory}</span>
@@ -163,6 +167,8 @@ export default function FoodTransactionPage() {
           </div>
         )}
       </motion.div>
+
+      {/* Device Settings Modal removed, now handled in layout */}
     </div>
   );
 }
