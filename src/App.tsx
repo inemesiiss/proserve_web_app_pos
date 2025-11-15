@@ -6,7 +6,7 @@ import { FoodOrderProvider } from "./context/food/FoodOrderProvider";
 import { ThemeProvider } from "./context/ThemeProvider";
 
 // Route Modules
-import { getKioskRoutes } from "./routes/KioskRoutes";
+// import { getKioskRoutes } from "./routes/KioskRoutes";
 import { getFoodRoutes } from "./routes/FoodRoutes";
 import { getAdminRoutes } from "./routes/AdminRoutes";
 import { getDirectorRoutes } from "./routes/DirectorRoutes";
