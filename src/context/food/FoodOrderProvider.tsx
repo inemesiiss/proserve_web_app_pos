@@ -22,6 +22,20 @@ export interface OrderItem {
   discount_type?: "pwd" | "sc" | "manual" | "percentage";
   discount_note?: string;
 
+  // --- Customization details for meals with variances ---
+  customization?: {
+    type: string;
+    label: string;
+    selected:
+      | {
+          id: string;
+          name: string;
+          price: number;
+          isDefault?: boolean;
+        }
+      | undefined;
+  }[];
+
   // --- Upgrade tracking ---
   upgrades?: {
     drinkUpgrade?: {
@@ -51,7 +65,31 @@ interface FoodOrderContextType {
   // --- Totals ---
   subTotal: number;
   totalDiscount: number;
+  orderTotalDiscount: number;
   grandTotal: number;
+
+  // --- Order Total Discount ---
+  applyOrderTotalDiscount: (discountData: {
+    discountCategory: "voucher" | "sc-pwd" | "manual";
+    type: "percentage" | "fixed";
+    value: number;
+    code?: string;
+    cardNumber?: string;
+    cardholderName?: string;
+    expiryDate?: string;
+    note: string;
+  }) => void;
+  removeOrderTotalDiscount: () => void;
+  orderTotalDiscountInfo: {
+    discountCategory: "voucher" | "sc-pwd" | "manual";
+    type: "percentage" | "fixed";
+    value: number;
+    code?: string;
+    cardNumber?: string;
+    cardholderName?: string;
+    expiryDate?: string;
+    note: string;
+  } | null;
 
   // --- Update helpers ---
   toggleVoid: (id: number, type: "meal" | "product") => void;
@@ -98,38 +136,25 @@ const FoodOrderContext = createContext<FoodOrderContextType | undefined>(
 export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   const [meals, setMeals] = useState<OrderItem[]>([]);
   const [products, setProducts] = useState<OrderItem[]>([]);
+  const [orderTotalDiscountInfo, setOrderTotalDiscountInfo] = useState<{
+    discountCategory: "voucher" | "sc-pwd" | "manual";
+    type: "percentage" | "fixed";
+    value: number;
+    code?: string;
+    cardNumber?: string;
+    cardholderName?: string;
+    expiryDate?: string;
+    note: string;
+  } | null>(null);
 
   // --- Core Add Function ---
   const addItem = (item: OrderItem) => {
     const setGroup = item.type === "meal" ? setMeals : setProducts;
     const group = item.type === "meal" ? meals : products;
 
-    // Check if an identical item exists (including upgrades)
-    const existing = group.find((i) => {
-      // Basic matching
-      if (i.id !== item.id || i.variation !== item.variation) return false;
-
-      // Check drink upgrades match
-      const sameDrinkUpgrade =
-        i.upgrades?.drinkUpgrade?.upgradedId ===
-        item.upgrades?.drinkUpgrade?.upgradedId;
-
-      // Check fries upgrades match
-      const sameFriesUpgrade =
-        i.upgrades?.friesUpgrade?.upgradedId ===
-        item.upgrades?.friesUpgrade?.upgradedId;
-
-      // Only stack if all upgrades match
-      return sameDrinkUpgrade && sameFriesUpgrade;
-    });
-
-    if (existing) {
-      setGroup(
-        group.map((i) => (i === existing ? { ...i, qty: i.qty + item.qty } : i))
-      );
-    } else {
-      setGroup([...group, { ...item, isVoid: false, isDiscount: false }]);
-    }
+    // Always create a new instance - no automatic stacking
+    // User can adjust qty manually with +/- buttons
+    setGroup([...group, { ...item, isVoid: false, isDiscount: false }]);
   };
 
   // --- Remove by ID (hard delete) ---
@@ -143,6 +168,7 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   const clearOrder = () => {
     setMeals([]);
     setProducts([]);
+    setOrderTotalDiscountInfo(null);
   };
 
   // --- Get Meal Details ---
@@ -214,6 +240,25 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
         };
       })
     );
+  };
+
+  // --- Apply order total discount ---
+  const applyOrderTotalDiscount = (discountData: {
+    discountCategory: "voucher" | "sc-pwd" | "manual";
+    type: "percentage" | "fixed";
+    value: number;
+    code?: string;
+    cardNumber?: string;
+    cardholderName?: string;
+    expiryDate?: string;
+    note: string;
+  }) => {
+    setOrderTotalDiscountInfo(discountData);
+  };
+
+  // --- Remove order total discount ---
+  const removeOrderTotalDiscount = () => {
+    setOrderTotalDiscountInfo(null);
   };
 
   // --- Get available upgrades for an item ---
@@ -402,22 +447,39 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // --- Totals calculation ---
-  const { subTotal, totalDiscount, grandTotal } = useMemo(() => {
-    const allItems = [...meals, ...products];
+  const { subTotal, totalDiscount, orderTotalDiscount, grandTotal } =
+    useMemo(() => {
+      const allItems = [...meals, ...products];
 
-    const validItems = allItems.filter((i) => !i.isVoid);
+      const validItems = allItems.filter((i) => !i.isVoid);
 
-    const subTotal = validItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const subTotal = validItems.reduce((sum, i) => sum + i.price * i.qty, 0);
 
-    const totalDiscount = validItems.reduce(
-      (sum, i) => sum + (i.itemTotalDiscount ?? 0),
-      0
-    );
+      const totalDiscount = validItems.reduce(
+        (sum, i) => sum + (i.itemTotalDiscount ?? 0),
+        0
+      );
 
-    const grandTotal = subTotal - totalDiscount;
+      // Calculate order total discount on the subtotal after item discounts
+      const afterItemDiscounts = subTotal - totalDiscount;
+      let orderTotalDiscount = 0;
 
-    return { subTotal, totalDiscount, grandTotal };
-  }, [meals, products]);
+      if (orderTotalDiscountInfo && afterItemDiscounts > 0) {
+        if (orderTotalDiscountInfo.type === "percentage") {
+          orderTotalDiscount =
+            (afterItemDiscounts * orderTotalDiscountInfo.value) / 100;
+        } else {
+          orderTotalDiscount = Math.min(
+            orderTotalDiscountInfo.value,
+            afterItemDiscounts
+          );
+        }
+      }
+
+      const grandTotal = afterItemDiscounts - orderTotalDiscount;
+
+      return { subTotal, totalDiscount, orderTotalDiscount, grandTotal };
+    }, [meals, products, orderTotalDiscountInfo]);
 
   return (
     <FoodOrderContext.Provider
@@ -432,11 +494,15 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
         toggleVoid,
         updateQty,
         applyDiscount,
+        applyOrderTotalDiscount,
+        removeOrderTotalDiscount,
+        orderTotalDiscountInfo,
         upgradeDrink,
         upgradeFries,
         getAvailableUpgrades,
         subTotal,
         totalDiscount,
+        orderTotalDiscount,
         grandTotal,
       }}
     >
