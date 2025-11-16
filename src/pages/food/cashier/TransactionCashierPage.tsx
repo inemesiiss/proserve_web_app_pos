@@ -6,12 +6,15 @@ import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import Header from "@/components/food/components/cashier/Header";
 import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import { menuData } from "@/data/food/products";
+import MealCustomizationModal from "@/components/food/modals/MealCustomizationModal";
 // Removed DeviceSettingsModal and Settings import
 
 export default function FoodTransactionPage() {
   const { addItem } = useFoodOrder();
   const [selectedSize] = useState<Record<number, string>>({});
   const [filteredCategory, setFilteredCategory] = useState("All");
+  const [selectedMeal, setSelectedMeal] = useState<any>(null);
+  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   // Removed showDeviceSettings state
 
   // ✅ Filter logic for meals and products
@@ -29,15 +32,36 @@ export default function FoodTransactionPage() {
 
   // ✅ Handle add to cart for either product or meal
   const handleAdd = (item: any, type: "meal" | "product") => {
+    // Check if meal has variances - open customization modal
+    if (type === "meal" && item.variances && item.variances.length > 0) {
+      setSelectedMeal(item);
+      setShowCustomizationModal(true);
+    } else {
+      // Add directly to cart if no variances
+      addItem({
+        id: item.id,
+        name: item.name,
+        qty: 1,
+        price: item.base_price || item.price,
+        size: selectedSize[item.id] || "Regular",
+        type,
+        image: item.image,
+        category: item.category,
+      });
+    }
+  };
+
+  const handleCustomizationConfirm = (customization: any) => {
     addItem({
-      id: item.id,
-      name: item.name,
+      id: customization.meal.id,
+      name: customization.meal.name,
       qty: 1,
-      price: item.base_price || item.price,
-      size: selectedSize[item.id] || "Regular",
-      type,
-      image: item.image,
-      category: item.category,
+      price: customization.totalPrice,
+      size: "Customized",
+      type: "meal",
+      image: customization.meal.image,
+      category: customization.meal.category,
+      customization: customization.customizationDetails,
     });
   };
 
@@ -63,13 +87,13 @@ export default function FoodTransactionPage() {
 
         {/* ==== 🥡 MEALS SECTION ==== */}
         {filteredMeals.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">🍱 Meals</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-3 text-gray-800">Meals</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {filteredMeals.map((meal, index) => (
                 <motion.div
                   key={meal.id}
-                  className="bg-white rounded-2xl shadow hover:shadow-xl transition-all p-4 flex flex-col items-center justify-between text-center h-[340px]"
+                  className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-3 flex flex-col items-center justify-between text-center h-[240px]"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -77,20 +101,19 @@ export default function FoodTransactionPage() {
                   <img
                     src={meal.image}
                     alt={meal.name}
-                    className="w-24 h-24 object-cover rounded-full mb-3 border border-gray-300"
+                    className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
                   />
-                  <div className="flex flex-col items-center">
-                    <div className="text-lg font-bold text-gray-800 mb-1">
-                      {meal.name}
+                  <div className="flex flex-col items-center justify-between flex-1 min-h-0">
+                    <div className="text-sm font-bold text-gray-800 text-center">
+                      {meal.nickname}
                     </div>
-                    {/* <div className="text-gray-600 mb-2">{meal.category}</div> */}
-                    <div className="text-gray-700 font-semibold mb-3">
+                    <div className="text-sm text-gray-700 font-semibold">
                       ₱{meal.base_price.toFixed(2)}
                     </div>
                   </div>
                   <Button
                     onClick={() => handleAdd(meal, "meal")}
-                    className="w-full bg-gray-600 text-white hover:bg-green-700"
+                    className="w-full bg-gray-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
                   >
                     Add Meal
                   </Button>
@@ -103,14 +126,14 @@ export default function FoodTransactionPage() {
         {/* ==== 🍟 ALA CARTE SECTION ==== */}
         {filteredProducts.length > 0 && (
           <section>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              🍔 Ala Carte
+            <h2 className="text-lg font-semibold mb-3 text-gray-800">
+              Ala Carte
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
-                  className="bg-white rounded-2xl shadow hover:shadow-xl transition-all p-4 flex flex-col items-center justify-between text-center h-[340px]"
+                  className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-3 flex flex-col items-center justify-between text-center h-[240px]"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -118,39 +141,20 @@ export default function FoodTransactionPage() {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-24 h-24 object-cover rounded-full mb-3 border border-gray-300"
+                    className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
                   />
-                  <div className="flex flex-col items-center">
-                    <div className="text-lg font-bold text-gray-800 mb-1">
-                      {product.name}
+                  <div className="flex flex-col items-center justify-between flex-1 min-h-0">
+                    <div className="text-sm font-bold text-gray-800 text-center">
+                      {product.nickname}
                     </div>
-                    {/* <div className="text-gray-600 mb-2">{product.category}</div> */}
-                    <div className="text-gray-700 font-semibold mb-3">
+                    <div className="text-sm text-gray-700 font-semibold">
                       ₱{product.price.toFixed(2)}
                     </div>
-
-                    {/* Optional Upgrade dropdown */}
-                    {/* {product.upgradable && (
-                      <select
-                        className="border rounded-lg w-full p-2 text-sm mb-3 focus:ring-2 focus:ring-blue-500"
-                        value={selectedSize[product.id] || "Regular"}
-                        onChange={(e) =>
-                          setSelectedSize({
-                            ...selectedSize,
-                            [product.id]: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="Regular">Regular</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Large">Large</option>
-                      </select>
-                    )} */}
                   </div>
 
                   <Button
                     onClick={() => handleAdd(product, "product")}
-                    className="w-full bg-gray-600 text-white hover:bg-green-700"
+                    className="w-full bg-gray-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
                   >
                     Add Item
                   </Button>
@@ -169,6 +173,14 @@ export default function FoodTransactionPage() {
       </motion.div>
 
       {/* Device Settings Modal removed, now handled in layout */}
+
+      {/* Meal Customization Modal */}
+      <MealCustomizationModal
+        isOpen={showCustomizationModal}
+        onClose={() => setShowCustomizationModal(false)}
+        meal={selectedMeal}
+        onConfirm={handleCustomizationConfirm}
+      />
     </div>
   );
 }

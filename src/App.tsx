@@ -13,35 +13,6 @@ import { getDirectorRoutes } from "./routes/DirectorRoutes";
 import { getBMRoutes } from "./routes/BMRoutes";
 import LoginPage from "./pages/authentication/Login";
 
-function AppRoutes({
-  loggedIn,
-  setLoggedIn,
-}: {
-  loggedIn: boolean;
-  setLoggedIn: (v: boolean) => void;
-}) {
-  return (
-    <Routes>
-      {!loggedIn ? (
-        <>
-          <Route
-            path="/*"
-            element={<LoginPage onLogin={() => setLoggedIn(true)} />}
-          />
-          {/* {getKioskRoutes()} */}
-        </>
-      ) : (
-        <>
-          {getFoodRoutes({ setLoggedIn })}
-          {getAdminRoutes({ setLoggedIn })}
-          {getDirectorRoutes({ setLoggedIn })}
-          {getBMRoutes({ setLoggedIn })}
-        </>
-      )}
-    </Routes>
-  );
-}
-
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
 
@@ -49,7 +20,24 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <FoodOrderProvider>
-          <AppRoutes loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
+          <Routes>
+            {!loggedIn ? (
+              <>
+                <Route
+                  path="/*"
+                  element={<LoginPage onLogin={() => setLoggedIn(true)} />}
+                />
+                {/* {getKioskRoutes()} */}
+              </>
+            ) : (
+              <>
+                {getFoodRoutes({ setLoggedIn })}
+                {getAdminRoutes({ setLoggedIn })}
+                {getDirectorRoutes({ setLoggedIn })}
+                {getBMRoutes({ setLoggedIn })}
+              </>
+            )}
+          </Routes>
         </FoodOrderProvider>
       </ThemeProvider>
     </BrowserRouter>
