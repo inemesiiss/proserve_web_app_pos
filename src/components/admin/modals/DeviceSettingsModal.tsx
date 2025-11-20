@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -73,39 +74,39 @@ export default function DeviceSettingsModal({
   const loadAvailableDevices = async () => {
     setIsLoading(true);
     try {
-      // Simulate device detection - In real implementation, you'd use native APIs or Tauri commands
-      setTimeout(() => {
-        setAvailableDevices({
-          printers: [
-            "Default Printer",
-            "HP LaserJet Pro M404dn",
-            "Epson TM-T88VI Receipt Printer",
-            "Star TSP143III",
-            "Brother QL-820NWB",
-          ],
-          scanners: [
-            "Default Scanner",
-            "Epson Perfection V600",
-            "Canon CanoScan LiDE 400",
-            "Honeywell Barcode Scanner",
-          ],
-          cameras: [
-            "Default Camera",
-            "Integrated Webcam",
-            "Logitech C920",
-            "USB Camera",
-          ],
-          usbDevices: [
-            "Cash Drawer Port 1",
-            "Cash Drawer Port 2",
-            "Card Reader USB 1",
-            "Card Reader USB 2",
-          ],
-        });
-        setIsLoading(false);
-      }, 1000);
+      // Fetch real printers from Tauri
+      const printerList = await invoke<string[]>("list_printers");
+
+      setAvailableDevices({
+        printers: printerList.length > 0 ? printerList : ["No printers found"],
+        scanners: [
+          "Default Scanner",
+          "Epson Perfection V600",
+          "Canon CanoScan LiDE 400",
+          "Honeywell Barcode Scanner",
+        ],
+        cameras: [
+          "Default Camera",
+          "Integrated Webcam",
+          "Logitech C920",
+          "USB Camera",
+        ],
+        usbDevices: [
+          "Cash Drawer Port 1",
+          "Cash Drawer Port 2",
+          "Card Reader USB 1",
+          "Card Reader USB 2",
+        ],
+      });
+      setIsLoading(false);
     } catch (error) {
       console.error("Error loading devices:", error);
+      setAvailableDevices({
+        printers: ["Error loading printers"],
+        scanners: ["Default Scanner"],
+        cameras: ["Default Camera"],
+        usbDevices: ["Cash Drawer Port 1"],
+      });
       setIsLoading(false);
     }
   };

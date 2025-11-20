@@ -92,7 +92,7 @@ interface FoodOrderContextType {
   } | null;
 
   // --- Update helpers ---
-  toggleVoid: (id: number, type: "meal" | "product") => void;
+  toggleVoid: (id: number, type: "meal" | "product", index?: number) => void;
   updateQty: (id: number, type: "meal" | "product", qty: number) => void;
   applyDiscount: (
     id: number,
@@ -181,10 +181,21 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   const getProduct = (id: number) => menuData.products.find((p) => p.id === id);
 
   // --- Toggle void flag ---
-  const toggleVoid = (id: number, type: "meal" | "product") => {
+  const toggleVoid = (id: number, type: "meal" | "product", index?: number) => {
     const setGroup = type === "meal" ? setMeals : setProducts;
     const group = type === "meal" ? meals : products;
-    setGroup(group.map((i) => (i.id === id ? { ...i, isVoid: !i.isVoid } : i)));
+
+    if (index !== undefined) {
+      // Use index to target specific instance
+      setGroup(
+        group.map((i, idx) => (idx === index ? { ...i, isVoid: !i.isVoid } : i))
+      );
+    } else {
+      // Fallback to id-based (affects all with same id)
+      setGroup(
+        group.map((i) => (i.id === id ? { ...i, isVoid: !i.isVoid } : i))
+      );
+    }
   };
 
   // --- Update qty (min 1) ---

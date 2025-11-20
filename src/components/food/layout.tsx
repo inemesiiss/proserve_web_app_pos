@@ -37,11 +37,11 @@ export default function FoodLayout({
         {showOrderSummary && isTransactionPage && (
           <aside className="w-[700px] shrink-0 bg-white border-l border-gray-200 shadow-md overflow-hidden p-4 flex flex-row gap-4">
             {/* Each section independent in width & scroll */}
-            <div className="flex-1 overflow-y-auto border-r border-gray-100 pr-4">
+            <div className="flex-1 overflow-y-auto border-r border-gray-100">
               <FoodOrderSummary />
             </div>
 
-            <div className="flex-1 overflow-y-auto pl-4">
+            <div className="flex-1 overflow-y-auto">
               <FoodTotalDiscountPaymentSection />
             </div>
           </aside>

@@ -2,21 +2,68 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import BackButton from "./BackButton";
 import DeviceSettingsModal from "@/components/admin/modals/DeviceSettingsModal";
+import BreakModal from "./BreakModal";
+import type { BreakType } from "./BreakModal";
+import BreakCameraModal from "./BreakCameraModal";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Coffee } from "lucide-react";
 
 interface HeaderProps {
   headerText: string;
   to?: string; // optional, can skip if no back nav needed
   showSettings?: boolean; // controls visibility of settings button
+  showBreak?: boolean; // controls visibility of break button
 }
 
 export default function Header({
   headerText,
   to,
   showSettings = false,
+  showBreak = false,
 }: HeaderProps) {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
+  const [showBreakModal, setShowBreakModal] = useState(false);
+  const [showBreakCamera, setShowBreakCamera] = useState(false);
+  const [selectedBreak, setSelectedBreak] = useState<BreakType | null>(null);
+  const [breakType, setBreakType] = useState<"break-in" | "break-out">(
+    "break-in"
+  );
+  const [isOnBreak, setIsOnBreak] = useState(false);
+
+  const handleBreakClick = () => {
+    if (isOnBreak) {
+      // End break - go directly to camera
+      setBreakType("break-out");
+      setShowBreakCamera(true);
+    } else {
+      // Start break - show break selection modal
+      setBreakType("break-in");
+      setShowBreakModal(true);
+    }
+  };
+
+  const handleBreakConfirm = (breakData: BreakType) => {
+    setSelectedBreak(breakData);
+    setShowBreakModal(false);
+    setShowBreakCamera(true);
+  };
+
+  const handleCameraCapture = (imageData: string, type: string) => {
+    console.log("Break photo captured:", {
+      type,
+      breakName: selectedBreak?.name,
+      imageData,
+    });
+
+    if (type === "break-in") {
+      setIsOnBreak(true);
+      // Here you can save break start data to backend
+    } else {
+      setIsOnBreak(false);
+      setSelectedBreak(null);
+      // Here you can save break end data to backend
+    }
+  };
 
   return (
     <>
@@ -33,6 +80,23 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-4">
+          {showBreak && (
+            <Button
+              onClick={handleBreakClick}
+              className={`
+                px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-semibold
+                ${
+                  isOnBreak
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                }
+              `}
+              title={isOnBreak ? "End Break" : "Take a Break"}
+            >
+              <Coffee size={18} />
+              {isOnBreak ? "End Break" : "Take a Break"}
+            </Button>
+          )}
           {showSettings && (
             <Button
               onClick={() => setShowDeviceSettings(true)}
@@ -52,6 +116,24 @@ export default function Header({
           isOpen={showDeviceSettings}
           onClose={() => setShowDeviceSettings(false)}
         />
+      )}
+
+      {showBreak && (
+        <>
+          <BreakModal
+            isOpen={showBreakModal}
+            onClose={() => setShowBreakModal(false)}
+            onConfirmBreak={handleBreakConfirm}
+          />
+
+          <BreakCameraModal
+            isOpen={showBreakCamera}
+            onClose={() => setShowBreakCamera(false)}
+            onCapture={handleCameraCapture}
+            breakType={breakType}
+            breakName={selectedBreak?.name || "Break"}
+          />
+        </>
       )}
     </>
   );
