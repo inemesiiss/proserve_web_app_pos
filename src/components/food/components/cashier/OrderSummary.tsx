@@ -2,18 +2,29 @@ import { useState } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, Percent, Receipt } from "lucide-react";
-import SecurityPasscodeModal from "../../modals/security/SecurityPasscodeModal";
 import ManualDiscountModal from "../../modals/security/ManualDiscountModal";
 import PwdScCardModal from "../../modals/security/PwdScCardModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function FoodOrderSummary() {
   const { meals, products, updateQty, toggleVoid, applyDiscount } =
     useFoodOrder();
 
-  const [showPinModal, setShowPinModal] = useState(false);
-  const [voidTarget, setVoidTarget] = useState<{
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<{
     id: number;
     type: "meal" | "product";
+    name: string;
+    index: number;
   } | null>(null);
   const [showManualDiscountModal, setShowManualDiscountModal] = useState(false);
   const [manualDiscountTarget, setManualDiscountTarget] = useState<{
@@ -34,16 +45,31 @@ export default function FoodOrderSummary() {
     ...products.map((i) => ({ ...i, type: "product" as const })),
   ];
 
-  const handleVoidClick = (id: number, type: "meal" | "product") => {
-    setVoidTarget({ id, type });
-    setShowPinModal(true);
+  const handleRemoveClick = (
+    id: number,
+    type: "meal" | "product",
+    name: string,
+    index: number
+  ) => {
+    setRemoveTarget({ id, type, name, index });
+    setShowRemoveConfirm(true);
   };
 
-  const confirmVoid = () => {
-    if (voidTarget) {
-      toggleVoid(voidTarget.id, voidTarget.type);
+  const confirmRemove = () => {
+    if (removeTarget) {
+      // Count how many of this type come before our index in allItems
+      let typeIndex = 0;
+      for (let i = 0; i < removeTarget.index; i++) {
+        if (allItems[i].type === removeTarget.type) {
+          typeIndex++;
+        }
+      }
+
+      // Toggle void on the specific instance
+      toggleVoid(removeTarget.id, removeTarget.type, typeIndex);
     }
-    setShowPinModal(false);
+    setShowRemoveConfirm(false);
+    setRemoveTarget(null);
   };
 
   const handleManualDiscountClick = (
@@ -246,25 +272,43 @@ export default function FoodOrderSummary() {
               <Button
                 size="sm"
                 variant="destructive"
-                className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white h-7 text-xs px-2"
-                onClick={() => handleVoidClick(item.id, item.type)}
+                className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white h-7 text-xs px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() =>
+                  handleRemoveClick(item.id, item.type, item.name, index)
+                }
+                disabled={isVoided}
               >
                 <Trash2 size={12} />
-                Void
+                Remove
               </Button>
             </div>
           </div>
         );
       })}
 
-      {showPinModal && (
-        <SecurityPasscodeModal
-          isOpen={showPinModal}
-          onClose={() => setShowPinModal(false)}
-          onSuccess={confirmVoid}
-          textMessage="Enter passcode to void this item"
-        />
-      )}
+      <AlertDialog open={showRemoveConfirm} onOpenChange={setShowRemoveConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove{" "}
+              <strong>{removeTarget?.name}</strong> from the order? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRemoveTarget(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemove}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {showManualDiscountModal && manualDiscountTarget && (
         <ManualDiscountModal

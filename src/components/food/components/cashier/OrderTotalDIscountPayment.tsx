@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
-import { invoke } from "@tauri-apps/api/core";
+import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import ReceiptPrinter from "@/components/food/components/Print/PrintReceipt";
 import PaymentModal from "../../modals/food/PaymentCashLessModal";
 import OrderTotalDiscountModal from "../../modals/security/OrderTotalDiscountModal";
@@ -17,6 +17,8 @@ export default function FoodTotalDiscountPaymentSection() {
     orderTotalDiscountInfo,
   } = useFoodOrder();
 
+  const { settings: deviceSettings } = useDeviceSettings();
+
   const [paymentMode, setPaymentMode] = useState<
     "cash" | "cashless" | "paymaya" | "card"
   >("cash");
@@ -24,10 +26,6 @@ export default function FoodTotalDiscountPaymentSection() {
   const [shouldPrint, setShouldPrint] = useState(false);
   const [cashlessModalisOpen, setCashlessModalOpen] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
-
-  // 🖨️ printer state
-  const [printers, setPrinters] = useState<string[]>([]);
-  const [selectedPrinter, setSelectedPrinter] = useState("");
 
   // Derived values
   const vat = subTotal * 0.12;
@@ -58,19 +56,32 @@ export default function FoodTotalDiscountPaymentSection() {
     }
   }, [cashReceived, paymentMode, grandTotal]);
 
-  // 🖨️ Fetch printer list from Tauri backend
-  useEffect(() => {
-    invoke<string[]>("list_printers")
-      .then((result) => setPrinters(result))
-      .catch((err) => console.error("Failed to load printers:", err));
-  }, []);
-
   return (
     <div className="p-5 bg-white rounded-xl shadow-md w-full max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">
       <h2 className="text-lg font-semibold mb-4">Discount & Payment</h2>
-      {/* <div className="p-2 bg-gray-800 text-white max-h-32 overflow-y-auto text-sm">
-        <h2>{"printer selected" + selectedPrinter}</h2>
-      </div> */}
+
+      {/* 🖨️ Show configured printer */}
+      {deviceSettings.receiptPrinter && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-blue-700">
+              Receipt Printer:
+            </span>
+            <span className="text-xs text-blue-600">
+              {deviceSettings.receiptPrinter}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {!deviceSettings.receiptPrinter && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-xs text-amber-700">
+            ⚠️ No receipt printer configured. Please configure in Device
+            Settings.
+          </p>
+        </div>
+      )}
 
       {/* 🔹 TOTALS */}
       <div className="space-y-1 text-sm mb-4 border p-3 rounded-lg bg-gray-50">
@@ -205,23 +216,6 @@ export default function FoodTotalDiscountPaymentSection() {
         </div>
       </div>
 
-      {/* 🔹 PRINTER SELECTION dont remove*/}
-      <div className="mb-4">
-        <h3 className="font-semibold text-sm mb-2">Select Printer</h3>
-        <select
-          value={selectedPrinter}
-          onChange={(e) => setSelectedPrinter(e.target.value)}
-          className="border rounded-lg p-2 text-sm w-full"
-        >
-          <option value="">-- Choose Printer --</option>
-          {printers.map((printer) => (
-            <option key={printer} value={printer}>
-              {printer}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* 🔹 CASH HANDLING */}
       {paymentMode === "cash" && (
         <>
@@ -352,17 +346,19 @@ export default function FoodTotalDiscountPaymentSection() {
         isOpen={cashlessModalisOpen}
         onClose={() => setCashlessModalOpen(false)}
         total={grandTotal}
-        selectedPrinter={selectedPrinter}
+        selectedPrinter={deviceSettings.receiptPrinter}
       />
 
       {/* 🔹 AUTO PRINT RECEIPT WHEN CASH ≥ TOTAL */}
-      {shouldPrint && paymentMode === "cash" && selectedPrinter && (
-        <ReceiptPrinter
-          cashReceived={cashReceived}
-          p_name={selectedPrinter}
-          onSuccess={handlePayment}
-        />
-      )}
+      {shouldPrint &&
+        paymentMode === "cash" &&
+        deviceSettings.receiptPrinter && (
+          <ReceiptPrinter
+            cashReceived={cashReceived}
+            p_name={deviceSettings.receiptPrinter}
+            onSuccess={handlePayment}
+          />
+        )}
 
       {/* 🔹 ORDER TOTAL DISCOUNT MODAL */}
       <OrderTotalDiscountModal

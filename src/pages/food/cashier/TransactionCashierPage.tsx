@@ -1,12 +1,14 @@
 "use client";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import Header from "@/components/food/components/cashier/Header";
 import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import { menuData } from "@/data/food/products";
 import MealCustomizationModal from "@/components/food/modals/MealCustomizationModal";
+import { Search } from "lucide-react";
 // Removed DeviceSettingsModal and Settings import
 
 export default function FoodTransactionPage() {
@@ -15,20 +17,41 @@ export default function FoodTransactionPage() {
   const [filteredCategory, setFilteredCategory] = useState("All");
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   // Removed showDeviceSettings state
 
-  // ✅ Filter logic for meals and products
+  // ✅ Filter logic for meals and products with search
   const filteredMeals = useMemo(() => {
-    if (filteredCategory === "All") return menuData.meals;
-    return menuData.meals.filter((meal) => meal.category === filteredCategory);
-  }, [filteredCategory]);
+    let meals =
+      filteredCategory === "All"
+        ? menuData.meals
+        : menuData.meals.filter((meal) => meal.category === filteredCategory);
+    if (searchQuery.trim()) {
+      meals = meals.filter(
+        (meal) =>
+          meal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          meal.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return meals;
+  }, [filteredCategory, searchQuery]);
 
   const filteredProducts = useMemo(() => {
-    if (filteredCategory === "All") return menuData.products;
-    return menuData.products.filter(
-      (product) => product.category === filteredCategory
-    );
-  }, [filteredCategory]);
+    let products =
+      filteredCategory === "All"
+        ? menuData.products
+        : menuData.products.filter(
+            (product) => product.category === filteredCategory
+          );
+    if (searchQuery.trim()) {
+      products = products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return products;
+  }, [filteredCategory, searchQuery]);
 
   // ✅ Handle add to cart for either product or meal
   const handleAdd = (item: any, type: "meal" | "product") => {
@@ -65,6 +88,12 @@ export default function FoodTransactionPage() {
     });
   };
 
+  // Get category header text
+  const getCategoryHeader = () => {
+    if (filteredCategory === "All") return "Choose your Items";
+    return `Choose your ${filteredCategory}`;
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* 🧭 Sidebar Navigation */}
@@ -79,20 +108,48 @@ export default function FoodTransactionPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Header headerText="🍔 Food Menu" to="/food/main" showSettings={true} />
-        {/* 
-        <h1 className="text-xl font-semibold text-gray-700 mb-6">
-          Showing: <span className="text-blue-600">{filteredCategory}</span>
-        </h1> */}
+        <Header
+          headerText="🍔 Food Menu"
+          to="/food/main"
+          showSettings={true}
+          showBreak={true}
+        />
 
-        {/* ==== 🥡 MEALS SECTION ==== */}
-        {filteredMeals.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-3 text-gray-800">Meals</h2>
+        {/* 🔍 Search Bar (Floating Top Right) & Category Header (Top Left) - STICKY */}
+        <div className="sticky top-[10px] z-40 bg-gray-50 pb-4 pt-5 -mx-6 px-6 mb-6">
+          <div className="relative">
+            {/* Category Header - Top Left */}
+            <h1 className="text-2xl font-bold text-gray-800">
+              {getCategoryHeader()}
+            </h1>
+
+            {/* Search Bar - Floating Top Right */}
+            <div className="absolute top-0 right-0 w-80">
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+                <Input
+                  type="text"
+                  placeholder="Search items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ==== 🥡 COMBINED SECTION (when All is selected) ==== */}
+        {filteredCategory === "All" ? (
+          <section>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {/* Render all meals */}
               {filteredMeals.map((meal, index) => (
                 <motion.div
-                  key={meal.id}
+                  key={`meal-${meal.id}`}
                   className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-3 flex flex-col items-center justify-between text-center h-[240px]"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -113,30 +170,20 @@ export default function FoodTransactionPage() {
                   </div>
                   <Button
                     onClick={() => handleAdd(meal, "meal")}
-                    className="w-full bg-gray-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
+                    className="w-full bg-green-600 text-white hover:bg-gray-700 h-8 text-xs mt-auto"
                   >
                     Add Meal
                   </Button>
                 </motion.div>
               ))}
-            </div>
-          </section>
-        )}
-
-        {/* ==== 🍟 ALA CARTE SECTION ==== */}
-        {filteredProducts.length > 0 && (
-          <section>
-            <h2 className="text-lg font-semibold mb-3 text-gray-800">
-              Ala Carte
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {/* Render all products */}
               {filteredProducts.map((product, index) => (
                 <motion.div
-                  key={product.id}
+                  key={`product-${product.id}`}
                   className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-3 flex flex-col items-center justify-between text-center h-[240px]"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: (filteredMeals.length + index) * 0.05 }}
                 >
                   <img
                     src={product.image}
@@ -151,10 +198,9 @@ export default function FoodTransactionPage() {
                       ₱{product.price.toFixed(2)}
                     </div>
                   </div>
-
                   <Button
                     onClick={() => handleAdd(product, "product")}
-                    className="w-full bg-gray-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
+                    className="w-full bg-green-600 text-white hover:bg-gray-700 h-8 text-xs mt-auto"
                   >
                     Add Item
                   </Button>
@@ -162,6 +208,89 @@ export default function FoodTransactionPage() {
               ))}
             </div>
           </section>
+        ) : (
+          /* ==== 🥡 SEPARATED SECTIONS (when specific category is selected) ==== */
+          <>
+            {filteredMeals.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-lg font-semibold mb-3 text-gray-800">
+                  Meals
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {filteredMeals.map((meal, index) => (
+                    <motion.div
+                      key={meal.id}
+                      className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-3 flex flex-col items-center justify-between text-center h-[240px]"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <img
+                        src={meal.image}
+                        alt={meal.name}
+                        className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
+                      />
+                      <div className="flex flex-col items-center justify-between flex-1 min-h-0">
+                        <div className="text-sm font-bold text-gray-800 text-center">
+                          {meal.nickname}
+                        </div>
+                        <div className="text-sm text-gray-700 font-semibold">
+                          ₱{meal.base_price.toFixed(2)}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => handleAdd(meal, "meal")}
+                        className="w-full bg-green-600 text-white hover:bg-gray-700 h-8 text-xs mt-auto"
+                      >
+                        Add Meal
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ==== 🍟 ALA CARTE SECTION ==== */}
+            {filteredProducts.length > 0 && (
+              <section>
+                <h2 className="text-lg font-semibold mb-3 text-gray-800">
+                  Ala Carte
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-3 flex flex-col items-center justify-between text-center h-[240px]"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
+                      />
+                      <div className="flex flex-col items-center justify-between flex-1 min-h-0">
+                        <div className="text-sm font-bold text-gray-800 text-center">
+                          {product.nickname}
+                        </div>
+                        <div className="text-sm text-gray-700 font-semibold">
+                          ₱{product.price.toFixed(2)}
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={() => handleAdd(product, "product")}
+                        className="w-full bg-green-600 text-white hover:bg-gray-700 h-8 text-xs mt-auto"
+                      >
+                        Add Item
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         {/* 🧃 No results */}
