@@ -159,7 +159,7 @@ export default function FoodTransactionPage() {
                   <img
                     src={meal.image}
                     alt={meal.name}
-                    className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
+                    className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
                   />
                   <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                     <div className="text-sm font-bold text-gray-800 text-center">
@@ -189,7 +189,7 @@ export default function FoodTransactionPage() {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
+                    className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
                   />
                   <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                     <div className="text-sm font-bold text-gray-800 text-center">
@@ -229,7 +229,7 @@ export default function FoodTransactionPage() {
                       <img
                         src={meal.image}
                         alt={meal.name}
-                        className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
+                        className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
                       />
                       <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                         <div className="text-sm font-bold text-gray-800 text-center">
@@ -269,7 +269,7 @@ export default function FoodTransactionPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-20 h-20 object-cover rounded-full mb-2 border border-gray-300"
+                        className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
                       />
                       <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                         <div className="text-sm font-bold text-gray-800 text-center">

@@ -62,11 +62,40 @@ export default function DeviceSettingsModal({
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Log settings changes
+  useEffect(() => {
+    console.log("📊 [DeviceSettingsModal] Settings updated:", settings);
+  }, [settings]);
+
   // Load saved settings from localStorage on mount
   useEffect(() => {
+    console.log(
+      "🔍 [DeviceSettingsModal] Component mounted, loading settings..."
+    );
     const savedSettings = localStorage.getItem("deviceSettings");
+    console.log(
+      "📦 [DeviceSettingsModal] Raw localStorage data:",
+      savedSettings
+    );
+
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        console.log(
+          "✅ [DeviceSettingsModal] Parsed settings from localStorage:",
+          parsedSettings
+        );
+        setSettings(parsedSettings);
+      } catch (e) {
+        console.error(
+          "❌ [DeviceSettingsModal] Error parsing saved settings:",
+          e
+        );
+      }
+    } else {
+      console.warn(
+        "⚠️ [DeviceSettingsModal] No saved settings found in localStorage"
+      );
     }
     loadAvailableDevices();
   }, []);
@@ -112,14 +141,32 @@ export default function DeviceSettingsModal({
   };
 
   const handleSave = () => {
+    console.log("💾 [DeviceSettingsModal] Saving settings...");
+    console.log("📝 [DeviceSettingsModal] Current settings state:", settings);
+
     setIsSaving(true);
     // Save to localStorage
-    localStorage.setItem("deviceSettings", JSON.stringify(settings));
+    const settingsJSON = JSON.stringify(settings);
+    localStorage.setItem("deviceSettings", settingsJSON);
+    console.log(
+      "✅ [DeviceSettingsModal] Settings saved to localStorage:",
+      settingsJSON
+    );
+    console.log(
+      "🔍 [DeviceSettingsModal] Receipt Printer specifically:",
+      settings.receiptPrinter
+    );
+    console.log("🔍 [DeviceSettingsModal] All printers:", {
+      defaultPrinter: settings.defaultPrinter,
+      receiptPrinter: settings.receiptPrinter,
+      kitchenPrinter: settings.kitchenPrinter,
+    });
 
     // Simulate save delay
     setTimeout(() => {
       setIsSaving(false);
       setSaveSuccess(true);
+      console.log("✨ [DeviceSettingsModal] Save complete!");
 
       // Hide success message after 2 seconds
       setTimeout(() => {
@@ -211,9 +258,10 @@ export default function DeviceSettingsModal({
                     <div className="flex gap-2">
                       <Select
                         value={settings.defaultPrinter}
-                        onValueChange={(value) =>
-                          setSettings({ ...settings, defaultPrinter: value })
-                        }
+                        onValueChange={(value) => {
+                          console.log("🖨️ [DEFAULT PRINTER] Selected:", value);
+                          setSettings({ ...settings, defaultPrinter: value });
+                        }}
                       >
                         <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select default printer" />
@@ -246,9 +294,10 @@ export default function DeviceSettingsModal({
                     <div className="flex gap-2">
                       <Select
                         value={settings.receiptPrinter}
-                        onValueChange={(value) =>
-                          setSettings({ ...settings, receiptPrinter: value })
-                        }
+                        onValueChange={(value) => {
+                          console.log("🧾 [RECEIPT PRINTER] Selected:", value);
+                          setSettings({ ...settings, receiptPrinter: value });
+                        }}
                       >
                         <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select receipt printer" />
@@ -281,9 +330,10 @@ export default function DeviceSettingsModal({
                     <div className="flex gap-2">
                       <Select
                         value={settings.kitchenPrinter}
-                        onValueChange={(value) =>
-                          setSettings({ ...settings, kitchenPrinter: value })
-                        }
+                        onValueChange={(value) => {
+                          console.log("👨‍🍳 [KITCHEN PRINTER] Selected:", value);
+                          setSettings({ ...settings, kitchenPrinter: value });
+                        }}
                       >
                         <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select kitchen printer" />
