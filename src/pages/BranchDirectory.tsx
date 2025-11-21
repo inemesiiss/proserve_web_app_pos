@@ -95,7 +95,7 @@ export default function DirectorySelection() {
           </svg>
         </div>
         <h1 className="text-5xl font-bold text-blue-600 dark:text-blue-400">
-          ProServ Cafe
+          Proserv Cafe
         </h1>
         <p className="text-xl text-gray-700 dark:text-gray-300 font-semibold">
           Makati Branch

@@ -113,6 +113,7 @@ export default function FoodTransactionPage() {
           to="/food/main"
           showSettings={true}
           showBreak={true}
+          showCashFund={true}
         />
 
         {/* 🔍 Search Bar (Floating Top Right) & Category Header (Top Left) - STICKY */}
