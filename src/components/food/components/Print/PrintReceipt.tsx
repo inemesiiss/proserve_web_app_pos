@@ -3,7 +3,6 @@ import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { invoke } from "@tauri-apps/api/core";
 import { message } from "@tauri-apps/plugin-dialog";
 import dayjs from "dayjs";
-import ConfirmModal from "../../modals/food/ConfirmModal";
 
 type PaymentMode = "cash" | "cashless";
 type CashlessType = "maya" | "qrph" | "card";
@@ -45,15 +44,25 @@ export default function ReceiptPrinter({
   ];
 
   const [isPrinting, setIsPrinting] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handlePrint = async () => {
+    console.log("🖨️ [PrintReceipt] Print handler triggered");
+    console.log("📋 [PrintReceipt] Mode:", mode);
+    console.log("🖨️ [PrintReceipt] Printer Name:", p_name);
+    console.log(
+      "💵 [PrintReceipt] Amount:",
+      mode === "cash" ? cashReceived : paymentValue
+    );
+
     try {
       setIsPrinting(true);
 
+      console.log("🔍 [PrintReceipt] Fetching available printers...");
       const printers: string[] = await invoke("list_printers");
+      console.log("✅ [PrintReceipt] Available printers:", printers);
+
       if (!printers || printers.length === 0) {
+        console.error("❌ [PrintReceipt] No printers detected");
         await message("No printer detected. Please connect a printer.", {
           title: "Printer Error",
         });
@@ -62,12 +71,20 @@ export default function ReceiptPrinter({
       }
 
       if (!printers.includes(p_name)) {
+        console.error(
+          `❌ [PrintReceipt] Printer "${p_name}" not found in list:`,
+          printers
+        );
         await message(`Printer "${p_name}" not found.`, {
           title: "Printer Error",
         });
         setIsPrinting(false);
         return;
       }
+
+      console.log(
+        "✅ [PrintReceipt] Printer verified, constructing receipt..."
+      );
 
       // Construct receipt text
       const receipt = `
@@ -106,52 +123,36 @@ ${centerText(`Date Issued: ${dayjs().format("MMM DD, YYYY")}`)}
 ${centerText("PTU No: ARFR09763864")}
 `;
 
+      console.log(
+        "📝 [PrintReceipt] Receipt content generated, sending to printer:",
+        p_name
+      );
       await invoke("print_receipt", { content: receipt });
 
+      console.log("✅ [PrintReceipt] Print command sent successfully");
       clearOrder();
       await message("Receipt printed successfully!", { title: "Success" });
+      console.log("✨ [PrintReceipt] Order cleared, calling onSuccess");
+      onSuccess && onSuccess();
     } catch (err) {
-      console.error("Print error:", err);
-      setError("Printing failed. Please try again." + err);
+      console.error("❌ [PrintReceipt] Print error:", err);
+      await message("Printing failed. Please try again. " + String(err), {
+        title: "Print Error",
+      });
     } finally {
       setIsPrinting(false);
-      setShowModal(false);
-      onSuccess && onSuccess();
     }
   };
 
   return (
-    <>
-      <div className="flex justify-end gap-2 mt-4">
-        <button
-          className="bg-gray-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg"
-          onClick={() => clearOrder()}
-          disabled={isPrinting}
-        >
-          Cancel
-        </button>
-        <button
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg"
-          onClick={() => setShowModal(true)}
-          disabled={isPrinting || grandTotal <= 0}
-        >
-          {isPrinting ? "Printing..." : "Proceed"}
-        </button>
-      </div>
-
-      {showModal && (
-        <ConfirmModal
-          text={
-            mode === "cash"
-              ? "Cash is enough to cover the bill. Would you like to confirm and print the receipt?"
-              : `Proceed with ${cashlessType?.toUpperCase()} payment and print receipt?`
-          }
-          handleSubmit={handlePrint}
-          isReadyToSubmit={showModal}
-          error={error}
-          onClose={() => setShowModal(false)}
-        />
-      )}
-    </>
+    <div className="mt-4">
+      <button
+        className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full px-10 py-2 text-base font-bold disabled:bg-green-200 disabled:cursor-not-allowed transition-colors"
+        onClick={handlePrint}
+        disabled={isPrinting || !p_name}
+      >
+        {isPrinting ? "Printing..." : "Print Receipt"}
+      </button>
+    </div>
   );
 }

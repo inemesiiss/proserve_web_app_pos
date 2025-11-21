@@ -95,7 +95,7 @@ export default function DirectorySelection() {
           </svg>
         </div>
         <h1 className="text-5xl font-bold text-blue-600 dark:text-blue-400">
-          ProServ Cafe
+          Proserv Cafe
         </h1>
         <p className="text-xl text-gray-700 dark:text-gray-300 font-semibold">
           Makati Branch
@@ -165,14 +165,14 @@ export default function DirectorySelection() {
       </div>
 
       {/* Footer hint */}
-      <motion.p
+      {/* <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
         className="text-sm text-gray-600 dark:text-gray-400 mt-8 font-medium"
       >
         ✨ Select a service to continue
-      </motion.p>
+      </motion.p> */}
 
       {selectedItem && (
         <SecurityPasscodeModal

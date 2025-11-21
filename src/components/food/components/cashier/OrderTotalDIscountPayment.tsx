@@ -19,6 +19,15 @@ export default function FoodTotalDiscountPaymentSection() {
 
   const { settings: deviceSettings } = useDeviceSettings();
 
+  console.log(
+    "📊 [OrderTotalDiscountPayment] Device Settings:",
+    deviceSettings
+  );
+  console.log(
+    "📊 [OrderTotalDiscountPayment] Receipt Printer:",
+    deviceSettings.receiptPrinter
+  );
+
   const [paymentMode, setPaymentMode] = useState<
     "cash" | "cashless" | "paymaya" | "card"
   >("cash");
@@ -45,16 +54,24 @@ export default function FoodTotalDiscountPaymentSection() {
 
   // 🧠 Auto-trigger print if cash received >= total
   useEffect(() => {
+    console.log("💳 [Payment Check]", {
+      paymentMode,
+      cashReceived,
+      grandTotal,
+      printerConfigured: !!deviceSettings.receiptPrinter,
+    });
+
     if (
       paymentMode === "cash" &&
       cashReceived >= grandTotal &&
       grandTotal > 0
     ) {
+      console.log("✅ [AUTO PRINT] Conditions met, triggering print...");
       setShouldPrint(true);
     } else {
       setShouldPrint(false);
     }
-  }, [cashReceived, paymentMode, grandTotal]);
+  }, [cashReceived, paymentMode, grandTotal, deviceSettings.receiptPrinter]);
 
   return (
     <div className="p-5 bg-white rounded-xl shadow-md w-full max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">
@@ -309,12 +326,6 @@ export default function FoodTotalDiscountPaymentSection() {
             >
               Cancel
             </button> */}
-            <button
-              className="bg-green-400 hover:bg-green-500 text-white rounded-full px-10 py-2 text-base font-bold disabled:bg-green-200 disabled:cursor-not-allowed"
-              disabled={cashReceived < grandTotal}
-            >
-              Proceed
-            </button>
           </div>
         </>
       )}
@@ -323,9 +334,20 @@ export default function FoodTotalDiscountPaymentSection() {
         <div className="flex gap-6 justify-center mt-6">
           <button
             className="bg-green-400 hover:bg-green-500 text-white rounded-full px-10 py-2 text-base font-bold disabled:bg-green-200 disabled:cursor-not-allowed"
-            onClick={() => setCashlessModalOpen(true)}
+            disabled={!deviceSettings.receiptPrinter}
+            onClick={() => {
+              console.log("🖱️ [CASHLESS PROCEED BUTTON] Clicked");
+              console.log("💾 Printer:", deviceSettings.receiptPrinter);
+              console.log("📋 Grand Total:", grandTotal);
+              if (deviceSettings.receiptPrinter) {
+                console.log("✅ Opening cashless payment modal...");
+                setCashlessModalOpen(true);
+              } else {
+                console.warn("⚠️ Cannot proceed - no printer configured");
+              }
+            }}
           >
-            Proceed
+            Proceed to Payment
           </button>
         </div>
       )}
@@ -353,11 +375,18 @@ export default function FoodTotalDiscountPaymentSection() {
       {shouldPrint &&
         paymentMode === "cash" &&
         deviceSettings.receiptPrinter && (
-          <ReceiptPrinter
-            cashReceived={cashReceived}
-            p_name={deviceSettings.receiptPrinter}
-            onSuccess={handlePayment}
-          />
+          <>
+            {console.log(
+              "🖨️ [ReceiptPrinter] Rendering with printer:",
+              deviceSettings.receiptPrinter
+            )}
+            <ReceiptPrinter
+              mode="cash"
+              cashReceived={cashReceived}
+              p_name={deviceSettings.receiptPrinter}
+              onSuccess={handlePayment}
+            />
+          </>
         )}
 
       {/* 🔹 ORDER TOTAL DISCOUNT MODAL */}

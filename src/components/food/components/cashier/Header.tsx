@@ -4,15 +4,18 @@ import BackButton from "./BackButton";
 import DeviceSettingsModal from "@/components/admin/modals/DeviceSettingsModal";
 import BreakModal from "./BreakModal";
 import type { BreakType } from "./BreakModal";
-import BreakCameraModal from "./BreakCameraModal";
+import CameraModal from "./CameraModal";
+import CashFundModal from "./CashFundModal";
+import type { CashFundData } from "./CashFundModal";
 import { Button } from "@/components/ui/button";
-import { Settings, Coffee } from "lucide-react";
+import { Settings, Coffee, Wallet } from "lucide-react";
 
 interface HeaderProps {
   headerText: string;
   to?: string; // optional, can skip if no back nav needed
   showSettings?: boolean; // controls visibility of settings button
   showBreak?: boolean; // controls visibility of break button
+  showCashFund?: boolean; // controls visibility of cash fund button
 }
 
 export default function Header({
@@ -20,10 +23,12 @@ export default function Header({
   to,
   showSettings = false,
   showBreak = false,
+  showCashFund = false,
 }: HeaderProps) {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
   const [showBreakModal, setShowBreakModal] = useState(false);
   const [showBreakCamera, setShowBreakCamera] = useState(false);
+  const [showCashFundModal, setShowCashFundModal] = useState(false);
   const [selectedBreak, setSelectedBreak] = useState<BreakType | null>(null);
   const [breakType, setBreakType] = useState<"break-in" | "break-out">(
     "break-in"
@@ -65,6 +70,12 @@ export default function Header({
     }
   };
 
+  const handleCashFundConfirm = (fundData: CashFundData) => {
+    console.log("Cash fund confirmed:", fundData);
+    // TODO: Save cash fund data to backend
+    // You can send fundData to your API here
+  };
+
   return (
     <>
       <motion.header
@@ -97,6 +108,16 @@ export default function Header({
               {isOnBreak ? "End Break" : "Take a Break"}
             </Button>
           )}
+          {showCashFund && (
+            <Button
+              onClick={() => setShowCashFundModal(true)}
+              className="px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-semibold bg-blue-600 hover:bg-blue-700 text-white"
+              title="Cash Fund Setup"
+            >
+              <Wallet size={18} />
+              Cash Fund
+            </Button>
+          )}
           {showSettings && (
             <Button
               onClick={() => setShowDeviceSettings(true)}
@@ -126,14 +147,35 @@ export default function Header({
             onConfirmBreak={handleBreakConfirm}
           />
 
-          <BreakCameraModal
+          <CameraModal
             isOpen={showBreakCamera}
             onClose={() => setShowBreakCamera(false)}
-            onCapture={handleCameraCapture}
-            breakType={breakType}
-            breakName={selectedBreak?.name || "Break"}
+            onCapture={(imageData) => handleCameraCapture(imageData, breakType)}
+            title={breakType === "break-in" ? "Break In" : "Break Out"}
+            description={`${selectedBreak?.name || "Break"} - Take a photo to ${
+              breakType === "break-in" ? "start" : "end"
+            } your break`}
+            badge={{
+              emoji: breakType === "break-in" ? "🟢" : "🔴",
+              text:
+                breakType === "break-in" ? "Starting Break" : "Ending Break",
+              color: breakType === "break-in" ? "green" : "red",
+            }}
+            confirmButtonText={
+              breakType === "break-in"
+                ? "Confirm & Start Break"
+                : "Confirm & End Break"
+            }
           />
         </>
+      )}
+
+      {showCashFund && (
+        <CashFundModal
+          isOpen={showCashFundModal}
+          onClose={() => setShowCashFundModal(false)}
+          onConfirmFund={handleCashFundConfirm}
+        />
       )}
     </>
   );

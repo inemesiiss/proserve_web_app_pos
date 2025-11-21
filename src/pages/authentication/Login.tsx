@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,22 +22,23 @@ export default function LoginPage({ onLogin }: LoginProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    setTimeout(() => {
-      if (email === "user" && password === "passpass") {
-        onLogin?.();
-        setLoading(false);
-        navigate("/food/main");
-      } else {
-        alert("❌ Invalid manager credentials");
-        setLoading(false);
-      }
-    }, 1200);
+    setError(null);
+    try {
+      await login({ email, password });
+      onLogin?.();
+      navigate("/food/main");
+    } catch (err: any) {
+      setError(err?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -119,12 +121,20 @@ export default function LoginPage({ onLogin }: LoginProps) {
               </motion.div>
             </AnimatePresence>
 
+            {/* Error Message */}
+            {error && (
+              <div className="text-red-600 text-xs text-center font-semibold">
+                {error}
+              </div>
+            )}
+
             {/* Submit Button */}
             <Button
               type="submit"
               className="w-full mt-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90"
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
 

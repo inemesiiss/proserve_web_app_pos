@@ -11,7 +11,8 @@ import { getFoodRoutes } from "./routes/FoodRoutes";
 import { getAdminRoutes } from "./routes/AdminRoutes";
 import { getDirectorRoutes } from "./routes/DirectorRoutes";
 import { getBMRoutes } from "./routes/BMRoutes";
-import LoginPage from "./pages/authentication/Login";
+// import LoginPage from "./pages/authentication/Login";
+import WebLoginPage from "./pages/authentication/WebLogin";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -25,7 +26,7 @@ export default function App() {
               <>
                 <Route
                   path="/*"
-                  element={<LoginPage onLogin={() => setLoggedIn(true)} />}
+                  element={<WebLoginPage onLogin={() => setLoggedIn(true)} />}
                 />
                 {/* {getKioskRoutes()} */}
               </>
