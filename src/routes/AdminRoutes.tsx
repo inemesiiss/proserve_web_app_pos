@@ -17,7 +17,7 @@ import AdminProductMixReport from "@/pages/admin/reports/ProductReport";
 import AdminAttendanceReport from "@/pages/admin/reports/AttendanceReport";
 
 interface AdminRoutesProps {
-  setLoggedIn: (v: boolean) => void;
+  setLoggedIn?: (v: boolean) => void;
 }
 
 export const getAdminRoutes = ({ setLoggedIn }: AdminRoutesProps) => (

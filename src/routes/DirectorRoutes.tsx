@@ -17,7 +17,7 @@ import DirectorProductMixReport from "@/pages/director/reports/ProductReport";
 import DirectorAttendanceReport from "@/pages/director/reports/AttendanceReport";
 
 interface DirectorRoutesProps {
-  setLoggedIn: (v: boolean) => void;
+  setLoggedIn?: (v: boolean) => void;
 }
 
 export const getDirectorRoutes = ({ setLoggedIn }: DirectorRoutesProps) => (
