@@ -1,8 +1,12 @@
+import { logout } from "@/store/auth/authSlice";
 import { motion } from "framer-motion";
 import { LogOut, User } from "lucide-react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 // import { QuickThemeToggle } from "@/components/reusables/QuickThemeToggle";
 // import Logo from "@/assets/PROSERVELOGO.png";
+import { logout as logoutAction } from "@/store/auth/authSlice";
+import { useLogoutMutation } from "@/store/api/authApi";
 
 interface UpperNavBarProps {
   setLoggedIn?: (v: boolean) => void;
@@ -14,13 +18,29 @@ export default function UpperNavBar({
   isBlank = false,
 }: UpperNavBarProps) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    if (setLoggedIn) {
-      setLoggedIn(true);
+  const [logout] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    // if (setLoggedIn) {
+    //   setLoggedIn(true);
+    // }
+    try {
+      await logout().unwrap();
+      localStorage.clear();
+      dispatch(logoutAction());
+      navigate("/login");
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed", error);
     }
-    localStorage.clear();
-    navigate("/food/main");
+    // }
+    // dispatch(logout());
+
+    // navigate("/login");
+    // localStorage.clear();
+    // navigate("/food/main");
   };
 
   if (isBlank) {

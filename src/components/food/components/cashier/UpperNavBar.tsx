@@ -2,6 +2,9 @@ import { motion } from "framer-motion";
 import { LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/assets/PROSERVELOGO.png";
+import { useDispatch } from "react-redux";
+import { logout as logoutAction } from "@/store/auth/authSlice";
+import { useLogoutMutation } from "@/store/api/authApi";
 
 interface UpperNavBarProps {
   setLoggedIn?: (v: boolean) => void;
@@ -13,11 +16,23 @@ export default function UpperNavBar({
   isBlank = false,
 }: UpperNavBarProps) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    localStorage.clear();
-    if (setLoggedIn) setLoggedIn(false);
-    navigate("/");
+  const [logout] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    // localStorage.clear();
+    // if (setLoggedIn) setLoggedIn(false);
+    // navigate("/");
+    try {
+      await logout().unwrap();
+      localStorage.clear();
+      dispatch(logoutAction());
+      navigate("/login");
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   // 🎨 Blank variant — solid black bar

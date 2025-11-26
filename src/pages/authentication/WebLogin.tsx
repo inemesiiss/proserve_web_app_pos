@@ -11,9 +11,11 @@ import { Eye, EyeOff } from "lucide-react";
 import Logo from "@/assets/PROSERVELOGO.png";
 import RightDesign from "@/assets/loginRight.png";
 import LeftDesign from "@/assets/loginLeft.png";
+import { useAuth } from "@/context/AuthProvider";
+import { useLoginMutation } from "@/store/api/authApi";
 
 type LoginProps = {
-  onLogin?: () => void;
+  onLogin?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function LoginPage({ onLogin }: LoginProps) {
@@ -21,22 +23,52 @@ export default function LoginPage({ onLogin }: LoginProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  // const handleLogin = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   setTimeout(() => {
+  //     if (email === "user" && password === "passpass") {
+  //       onLogin?.();
+  //       setLoading(false);
+  //       navigate("/food/main");
+  //     } else {
+  //       alert("❌ Invalid manager credentials");
+  //       setLoading(false);
+  //     }
+  //   }, 1200);
+  // };
+
+  // const [login] = useLoginMutation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    setTimeout(() => {
-      if (email === "user" && password === "passpass") {
-        onLogin?.();
-        setLoading(false);
-        navigate("/food/main");
-      } else {
-        alert("❌ Invalid manager credentials");
-        setLoading(false);
-      }
-    }, 1200);
+    setError(null);
+    // try {
+    //   const checkstat = await login({ email, password }).unwrap();
+    //   if (checkstat.success === true) {
+    //     // onLogin?.();
+    //     navigate("/food/main");
+    //   }
+    // } catch (err: any) {
+    //   console.log("ERROR: ", err);
+    // } finally {
+    //   setLoading(false);
+    // }
+    try {
+      await login({ email, password });
+      console.log("Logged In");
+      navigate("/food/main");
+    } catch (err: any) {
+      setError(err?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -118,6 +150,13 @@ export default function LoginPage({ onLogin }: LoginProps) {
                 </div>
               </motion.div>
             </AnimatePresence>
+
+            {/* Error Message */}
+            {error && (
+              <div className="text-red-600 text-xs text-center font-semibold">
+                {error}
+              </div>
+            )}
 
             {/* Submit Button */}
             <Button

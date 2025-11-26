@@ -18,7 +18,7 @@ import BMAttendanceReport from "@/pages/branch_manager/reports/AttendanceReport"
 import BMDiscountPromotion from "@/pages/branch_manager/reports/DiscountPromotion";
 
 interface BMRoutesProps {
-  setLoggedIn: (v: boolean) => void;
+  setLoggedIn?: (v: boolean) => void;
 }
 
 export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (

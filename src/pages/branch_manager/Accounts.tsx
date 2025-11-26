@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetClientsListQuery } from "@/store/api/Admin";
 
 // Mock data for accounts
 const accountData = [
@@ -118,6 +119,9 @@ function BMAccounts() {
   const handleDownloadCSV = () => {
     console.log("Download CSV clicked");
   };
+
+  const getClients = useGetClientsListQuery({});
+  console.log("Clients: ", getClients?.data?.data);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">

@@ -7,7 +7,7 @@ import FoodTransactionPage from "@/pages/food/cashier/TransactionCashierPage";
 import DirectorySelection from "@/pages/BranchDirectory";
 
 interface FoodRoutesProps {
-  setLoggedIn: (v: boolean) => void;
+  setLoggedIn?: (v: boolean) => void;
 }
 
 export const getFoodRoutes = ({ setLoggedIn }: FoodRoutesProps) => (
