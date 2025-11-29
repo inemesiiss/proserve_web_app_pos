@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
 import TerminalActionButtons from "@/components/admin/table/TerminalActionButtons";
 import DataTable from "@/components/admin/table/Tables";
@@ -12,6 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AddTerminalModal from "@/components/admin/modals/AddTerminalModal";
+import {
+  useGetAllBranchQuery,
+  useGetClientsQuery,
+  useGetTerminalQuery,
+} from "@/store/api/Admin";
+import { PencilLine } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { IdName } from "@/components/admin/modals/AddAccountModal";
 
 // Mock data for terminals
 const terminalData = [
@@ -58,26 +67,42 @@ const terminalData = [
 ];
 
 const terminalColumns = [
-  { key: "terminalId", label: "Terminal ID" },
+  { key: "terminal_id", label: "Terminal ID" },
   { key: "branchCode", label: "Branch Code" },
   { key: "branchName", label: "Branch Name" },
-  { key: "renewalDate", label: "Renewal Date" },
+  { key: "renewal", label: "Renewal Date" },
   { key: "accountName", label: "Account Name" },
-  { key: "active", label: "ACTIVE" },
+  { key: "status", label: "Status" },
   { key: "edit", label: "EDIT" },
 ];
+
+const handleSubmitBranch = (data: any) => {
+  // console.log("New branch data:", data);
+  // Add your API call here to save the branch
+};
 
 function BMTerminal() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [count, setCount] = useState(0);
   const [useShowMore] = useState(false);
   const [accountFilter, setAccountFilter] = useState("");
 
-  // Mock total items - replace with actual data length
-  const totalItems = 100;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const [client, setClient] = useState("0");
+  const [client1, setClient1] = useState("0");
+
+  const [branch, setBranch] = useState("0");
+  const [branch1, setBranch1] = useState("0");
+
+  const [terminalData, setTerminalData] = useState([]);
+
+  const [type, setType] = useState(1);
+  const [data, setData] = useState();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -97,7 +122,7 @@ function BMTerminal() {
   };
 
   const handleAddTerminal = () => {
-    console.log("Add Terminal clicked");
+    setIsAddModalOpen(true);
   };
 
   const handleImportCSV = () => {
@@ -105,12 +130,65 @@ function BMTerminal() {
   };
 
   const handleGo = () => {
-    console.log("Go clicked with filter:", accountFilter);
+    // console.log("Go clicked with filter:", accountFilter);
+    setClient1(client);
+    setBranch1(branch);
   };
 
   const handleDownloadCSV = () => {
     console.log("Download CSV clicked");
   };
+
+  const getClientDropdown = useGetClientsQuery({});
+  const getBranchDropdown = useGetAllBranchQuery({ cid: client });
+  const getTerminal = useGetTerminalQuery({
+    search: searchQuery,
+    id: client1,
+    bid: branch1,
+    page: currentPage,
+    pageSize: pageSize,
+  });
+
+  useEffect(() => {
+    if (getTerminal.isSuccess && getTerminal.data) {
+      let data = getTerminal?.data?.results;
+      const updated = data.map((item: any) => ({
+        ...item,
+        branchCode: getBranchDropdown?.data?.data.find(
+          (item1: any) => item1.id === item.branch
+        ).code,
+        branchName: getBranchDropdown?.data?.data.find(
+          (item1: any) => item1.id === item.branch
+        ).name,
+        accountName: getClientDropdown?.data?.data.find(
+          (item1: any) => String(item1.id) === String(item.client)
+        ).name,
+        status: (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="pointer-events-none"
+          >
+            <Checkbox checked={item.status === 1} />
+          </div>
+        ),
+        edit: (
+          <PencilLine
+            size={18}
+            className="cursor-pointer text-orange-500"
+            onClick={() => {
+              setType(2);
+              setData(item);
+              setIsAddModalOpen(true);
+            }}
+          />
+        ),
+      }));
+
+      setTerminalData(updated);
+      setTotalPages(Math.ceil(getTerminal?.data?.count / pageSize));
+      setCount(getTerminal.data.count);
+    }
+  }, [getTerminal.isSuccess, getTerminal.data]);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -135,16 +213,27 @@ function BMTerminal() {
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Select value={accountFilter} onValueChange={setAccountFilter}>
+              <Select value={client} onValueChange={setClient}>
                 <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
                   <SelectValue placeholder="Account Name" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Accounts</SelectItem>
-                  <SelectItem value="brent-gas">Brent Gas</SelectItem>
-                  <SelectItem value="onetech">Onetech</SelectItem>
-                  <SelectItem value="aristocrat">Aristocrat</SelectItem>
-                  <SelectItem value="globe">Globe</SelectItem>
+                  <SelectItem value="0">All Accounts</SelectItem>
+                  {getClientDropdown?.data?.data.map((item: IdName) => (
+                    <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={branch} onValueChange={setBranch}>
+                <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                  <SelectValue placeholder="Account Name" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">All Branches</SelectItem>
+                  {getBranchDropdown?.data?.data.map((item: IdName) => (
+                    <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -164,7 +253,7 @@ function BMTerminal() {
             </div>
 
             <Search
-              placeholder="Search Product"
+              placeholder="Search Terminal"
               value={searchQuery}
               onChange={handleSearch}
               onClear={handleClearSearch}
@@ -181,13 +270,23 @@ function BMTerminal() {
             pageSize={pageSize}
             onPageSizeChange={handlePageSizeChange}
             pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
+            totalItems={count}
             showMore={useShowMore}
             onShowMore={handleShowMore}
             className="mt-6"
           />
         </div>
       </div>
+
+      {/* Add Terminal Modal */}
+      <AddTerminalModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleSubmitBranch}
+        type={type}
+        setType={setType}
+        data={data}
+      />
     </div>
   );
 }

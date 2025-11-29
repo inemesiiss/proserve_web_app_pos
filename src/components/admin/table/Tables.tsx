@@ -37,7 +37,7 @@ export default function DataTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, idx) => (
+          {data?.map((row, idx) => (
             <TableRow
               key={idx}
               onClick={() => onRowClick?.(row)}

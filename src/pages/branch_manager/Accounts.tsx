@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
 import AccountActionButtons from "@/components/admin/table/AccountActionButtons";
 import DataTable from "@/components/admin/table/Tables";
@@ -12,65 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetClientsListQuery } from "@/store/api/Admin";
-
-// Mock data for accounts
-const accountData = [
-  {
-    account: "Pasta Machine",
-    contactPerson: "Alma Reyes",
-    startDate: "Dec 25, 2023",
-    endDate: "Dec 25, 2024",
-    renewalDate: "Dec 25, 2024",
-    plan: "Standard",
-    noOfLicenses: "10",
-  },
-  {
-    account: "Burger Machine",
-    contactPerson: "Tessa Acuna",
-    startDate: "Dec 25, 2023",
-    endDate: "Dec 25, 2024",
-    renewalDate: "Dec 25, 2024",
-    plan: "Standard",
-    noOfLicenses: "10",
-  },
-  {
-    account: "",
-    contactPerson: "",
-    startDate: "",
-    endDate: "",
-    renewalDate: "",
-    plan: "",
-    noOfLicenses: "",
-  },
-  {
-    account: "",
-    contactPerson: "",
-    startDate: "",
-    endDate: "",
-    renewalDate: "",
-    plan: "",
-    noOfLicenses: "",
-  },
-  {
-    account: "",
-    contactPerson: "",
-    startDate: "",
-    endDate: "",
-    renewalDate: "",
-    plan: "",
-    noOfLicenses: "",
-  },
-];
+import {
+  useGetClientsListQuery,
+  useGetClientsQuery,
+  useGetSubscriptionQuery,
+} from "@/store/api/Admin";
+import AddAccountModal, {
+  type IdName,
+} from "@/components/admin/modals/AddAccountModal";
+import { PencilLine } from "lucide-react";
 
 const accountColumns = [
-  { key: "account", label: "Account" },
-  { key: "contactPerson", label: "Contact Person" },
-  { key: "startDate", label: "Start Date" },
-  { key: "endDate", label: "End Date" },
-  { key: "renewalDate", label: "Renewal Date" },
-  { key: "plan", label: "Plan" },
-  { key: "noOfLicenses", label: "No of Licenses" },
+  { key: "name", label: "Account" },
+  { key: "c_person", label: "Contact Person" },
+  { key: "start_date", label: "Start Date" },
+  { key: "end_date", label: "End Date" },
+  { key: "renewal", label: "Renewal Date" },
+  { key: "subscription_n", label: "Plan" },
+  { key: "no_license", label: "No of Licenses" },
   { key: "edit", label: "EDIT" },
 ];
 
@@ -79,13 +38,19 @@ function BMAccounts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [count, setCount] = useState(0);
   const [useShowMore] = useState(false);
-  const [accountFilter, setAccountFilter] = useState("");
-  const [planFilter, setPlanFilter] = useState("");
+  const [accountFilter, setAccountFilter] = useState("0");
+  const [planFilter, setPlanFilter] = useState("0");
+  const [accountFilter1, setAccountFilter1] = useState("0");
+  const [planFilter1, setPlanFilter1] = useState("0");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Mock total items - replace with actual data length
-  const totalItems = 100;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const [accountData, setAccountData] = useState([]);
+
+  const [type, setType] = useState(1);
+  const [data, setData] = useState();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -105,7 +70,7 @@ function BMAccounts() {
   };
 
   const handleAddAccount = () => {
-    console.log("Add Account clicked");
+    setIsAddModalOpen(true);
   };
 
   const handleImportCSV = () => {
@@ -113,15 +78,55 @@ function BMAccounts() {
   };
 
   const handleGo = () => {
-    console.log("Go clicked with filters:", accountFilter, planFilter);
+    setAccountFilter1(accountFilter);
+    setPlanFilter1(planFilter);
   };
 
   const handleDownloadCSV = () => {
     console.log("Download CSV clicked");
   };
 
-  const getClients = useGetClientsListQuery({});
+  const handleSubmitAccount = (data: any) => {
+    console.log("New Account data:", data);
+    // Add your API call here to save the branch
+  };
+
+  const getSubscription = useGetSubscriptionQuery({});
+  const getClientDropdown = useGetClientsQuery({});
+  const getClients = useGetClientsListQuery({
+    search: searchQuery,
+    type: planFilter1,
+    id: accountFilter1,
+    page: currentPage,
+    pageSize: pageSize,
+  });
   console.log("Clients: ", getClients?.data?.data);
+
+  useEffect(() => {
+    if (getClients.isSuccess && getClients.data) {
+      let data = getClients?.data?.results;
+      const updated = data.map((item: any) => ({
+        ...item,
+        edit: (
+          <PencilLine
+            size={18}
+            className="cursor-pointer text-orange-500"
+            onClick={() => {
+              // setEvent(2);
+              // setAddOpen(true);
+              setType(2);
+              setData(item);
+              setIsAddModalOpen(true);
+            }}
+          />
+        ),
+      }));
+
+      setAccountData(updated);
+      setTotalPages(Math.ceil(getClients?.data?.count / pageSize));
+      setCount(getClients.data.count);
+    }
+  }, [getClients.isSuccess, getClients.data]);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -151,9 +156,10 @@ function BMAccounts() {
                   <SelectValue placeholder="Account" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Accounts</SelectItem>
-                  <SelectItem value="pasta">Pasta Machine</SelectItem>
-                  <SelectItem value="burger">Burger Machine</SelectItem>
+                  <SelectItem value="0">All Accounts</SelectItem>
+                  {getClientDropdown?.data?.data.map((item: IdName) => (
+                    <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -162,10 +168,10 @@ function BMAccounts() {
                   <SelectValue placeholder="Plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Plans</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="premium">Premium</SelectItem>
-                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                  <SelectItem value="0">All Plans</SelectItem>
+                  {getSubscription?.data?.data.map((item: IdName) => (
+                    <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -202,13 +208,23 @@ function BMAccounts() {
             pageSize={pageSize}
             onPageSizeChange={handlePageSizeChange}
             pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
+            totalItems={count}
             showMore={useShowMore}
             onShowMore={handleShowMore}
             className="mt-6"
           />
         </div>
       </div>
+
+      {/* Add Account Modal */}
+      <AddAccountModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleSubmitAccount}
+        type={type}
+        setType={setType}
+        data={data}
+      />
     </div>
   );
 }

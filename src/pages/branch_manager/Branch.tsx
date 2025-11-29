@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
 import BranchActionButtons from "@/components/admin/table/BranchActionButtons";
 import AddBranchModal from "@/components/admin/modals/AddBranchModal";
@@ -13,6 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetBranchListQuery, useGetClientsQuery } from "@/store/api/Admin";
+import type { IdName } from "@/components/admin/modals/AddAccountModal";
+import { PencilLine } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Mock data for branches
 const branchData = [
@@ -54,11 +58,11 @@ const branchData = [
 ];
 
 const branchColumns = [
-  { key: "clientName", label: "Client Name" },
-  { key: "branchCode", label: "Branch Code" },
-  { key: "branch", label: "Branch" },
+  { key: "client", label: "Account Name" },
+  { key: "code", label: "Branch Code" },
+  { key: "name", label: "Branch" },
   { key: "address", label: "ADDRESS" },
-  { key: "active", label: "ACTIVE" },
+  { key: "status", label: "ACTIVE" },
   { key: "edit", label: "EDIT" },
 ];
 
@@ -67,13 +71,17 @@ function BMBranch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [count, setCount] = useState(0);
   const [useShowMore] = useState(false);
-  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [accountFilter, setAccountFilter] = useState("0");
+  const [accountFilter1, setAccountFilter1] = useState("0");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Mock total items - replace with actual data length
-  const totalItems = 100;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const [branchData, setBranchData] = useState([]);
+
+  const [type, setType] = useState(1);
+  const [data, setData] = useState();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -101,7 +109,7 @@ function BMBranch() {
   };
 
   const handleGo = () => {
-    console.log("Go clicked with filter:", departmentFilter);
+    setAccountFilter1(accountFilter);
   };
 
   const handleDownloadCSV = () => {
@@ -112,6 +120,52 @@ function BMBranch() {
     console.log("New branch data:", data);
     // Add your API call here to save the branch
   };
+
+  const getClientDropdown = useGetClientsQuery({});
+
+  const getBranches = useGetBranchListQuery({
+    search: searchQuery,
+    id: accountFilter1,
+    page: currentPage,
+    pageSize: pageSize,
+  });
+  //   console.log("Clients: ", getClients?.data?.data);
+
+  useEffect(() => {
+    if (getBranches.isSuccess && getBranches.data) {
+      let data = getBranches?.data?.results;
+      const updated = data.map((item: any) => ({
+        ...item,
+        client: getClientDropdown?.data?.data.find(
+          (item1: any) => item1.id === item.client
+        ).name,
+        address: item.block_no + " " + item.subdivision + " " + item.street,
+        status: (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="pointer-events-none"
+          >
+            <Checkbox checked={item.status === 1} />
+          </div>
+        ),
+        edit: (
+          <PencilLine
+            size={18}
+            className="cursor-pointer text-orange-500"
+            onClick={() => {
+              setType(2);
+              setData(item);
+              setIsAddModalOpen(true);
+            }}
+          />
+        ),
+      }));
+
+      setBranchData(updated);
+      setTotalPages(Math.ceil(getBranches?.data?.count / pageSize));
+      setCount(getBranches.data.count);
+    }
+  }, [getBranches.isSuccess, getBranches.data]);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -136,19 +190,15 @@ function BMBranch() {
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Select
-                value={departmentFilter}
-                onValueChange={setDepartmentFilter}
-              >
+              <Select value={accountFilter} onValueChange={setAccountFilter}>
                 <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="food">Food</SelectItem>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="entertainment">Entertainment</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
+                  <SelectItem value="0">All Accounts</SelectItem>
+                  {getClientDropdown?.data?.data.map((item: IdName) => (
+                    <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -168,7 +218,7 @@ function BMBranch() {
             </div>
 
             <Search
-              placeholder="Search Product"
+              placeholder="Search Branch"
               value={searchQuery}
               onChange={handleSearch}
               onClear={handleClearSearch}
@@ -185,7 +235,7 @@ function BMBranch() {
             pageSize={pageSize}
             onPageSizeChange={handlePageSizeChange}
             pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
+            totalItems={count}
             showMore={useShowMore}
             onShowMore={handleShowMore}
             className="mt-6"
@@ -198,6 +248,9 @@ function BMBranch() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleSubmitBranch}
+        type={type}
+        setType={setType}
+        data={data}
       />
     </div>
   );
