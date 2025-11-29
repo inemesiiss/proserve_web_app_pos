@@ -197,7 +197,7 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(
         </div>
 
         {/* Right side: Empty for balance */}
-        <div className="w-[200px] hidden lg:block"></div>
+        {/* <div className="w-[200px] hidden lg:block"></div> */}
       </div>
     );
   }

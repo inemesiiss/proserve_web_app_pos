@@ -17,6 +17,7 @@ import { store } from "./store";
 import { Provider } from "react-redux";
 import { useAuth } from "@/context/AuthProvider";
 import LoadingOverlay from "./components/reusables/transition-loader";
+import { Toaster } from "./components/ui/sonner";
 
 export default function App() {
   // const [loggedIn, setLoggedIn] = useState(false);
@@ -53,6 +54,7 @@ export default function App() {
                 </>
               )}
             </Routes>
+            <Toaster richColors />
           </FoodOrderProvider>
         </ThemeProvider>
       </BrowserRouter>

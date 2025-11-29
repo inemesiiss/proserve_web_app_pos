@@ -13,85 +13,71 @@ import {
 } from "@/components/ui/select";
 import {
   useAddBranchMutation,
+  useAddTerminalMutation,
+  useAddUserMutation,
+  useGetAllBranchQuery,
   useGetClientsQuery,
+  useGetProfileQuery,
   useUpBranchMutation,
+  useUpTerminalMutation,
+  useUpUserMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
-import Barangay from "@/components/reusables/Barangay";
+import Barangay, { ComboBox } from "@/components/reusables/Barangay";
 import { toast } from "sonner";
 
-interface AddBranchModalProps {
+interface AddUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (data: BranchFormData) => void;
+  onSubmit?: (data: UserFormData) => void;
   type: number;
   setType: React.Dispatch<React.SetStateAction<number>>;
   data?: any;
 }
 
-type bpAddress = {
-  regionId: number;
-  provinceId: number;
-  cityId: number;
-  barangayId: number;
-  barangayName: string;
-  cityName: string;
-};
-
-interface BranchFormData {
+interface UserFormData {
   id: number;
   client: number;
-  code: string;
-  name: string;
-  block_no: string;
-  subdivision: string;
-  street: string;
-  barangay: number;
-  contact_person: string;
+  branch: number;
+  user_id: string;
+  password: string;
+  fullname: string;
   contact_no: string;
+  profile: number;
   email: string;
   status: number;
-  bp_address: bpAddress;
 }
 
-export default function AddBranchModal({
+export default function AddUserModal({
   isOpen,
   onClose,
   onSubmit,
   type,
   setType,
   data,
-}: AddBranchModalProps) {
+}: AddUserModalProps) {
   console.log("Data here: ", data);
   const initial = {
     id: 0,
     client: 0,
-    code: "",
-    name: "",
-    block_no: "",
-    subdivision: "",
-    street: "",
-    barangay: 0,
-    contact_person: "",
+    branch: 0,
+    user_id: "",
+    password: "",
+    fullname: "",
     contact_no: "",
+    profile: 0,
     email: "",
     status: 1,
-    bp_address: {
-      regionId: 0,
-      provinceId: 0,
-      cityId: 0,
-      barangayId: 0,
-      barangayName: "",
-      cityName: "",
-    },
   };
-  const [formData, setFormData] = useState<BranchFormData>(initial);
+  const [formData, setFormData] = useState<UserFormData>(initial);
   const [client, setClient] = useState<IdName[]>([]);
+  const [branch, setBranch] = useState<IdName[]>([]);
+  const [profile, setProfile] = useState<IdName[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit?.(formData);
-    submitBranch();
+    submitTerminal();
     // handleClose();
   };
 
@@ -101,10 +87,11 @@ export default function AddBranchModal({
     onClose();
   };
 
-  const handleChange = (field: keyof BranchFormData, value: string) => {
+  const handleChange = (field: keyof UserFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const getProfiles = useGetProfileQuery({});
   const getClientDropdown = useGetClientsQuery({});
   useEffect(() => {
     if (getClientDropdown.isSuccess && getClientDropdown.data) {
@@ -112,47 +99,60 @@ export default function AddBranchModal({
     }
   }, [getClientDropdown.isSuccess, getClientDropdown.data]);
 
+  const getBranchDropdown = useGetAllBranchQuery({ cid: formData.client });
+  useEffect(() => {
+    if (getBranchDropdown.isSuccess && getBranchDropdown.data) {
+      setBranch(getBranchDropdown.data.data);
+    }
+  }, [getBranchDropdown.isSuccess, getBranchDropdown.data]);
+
+  useEffect(() => {
+    if (getProfiles.isSuccess && getProfiles.data) {
+      setProfile(getProfiles.data.data);
+    }
+  }, [getProfiles.isSuccess, getProfiles.data]);
+
   useEffect(() => {
     if (data && isOpen) {
       setFormData({
         id: data.id,
         client: data.client,
-        code: data.code,
-        name: data.name,
-        block_no: data.block_no,
-        subdivision: data.subdivision,
-        street: data.street,
-        barangay: data.barangay,
-        contact_person: data.contact_person,
+        branch: data.branch,
+        user_id: data.user_id,
+        password: "",
+        fullname: data.fullname,
         contact_no: data.contact_no,
+        profile: Number(data.profile),
         email: data.email,
         status: 1,
-        bp_address: {
-          regionId: data.bp_address.regionId,
-          provinceId: data.bp_address.provinceId,
-          cityId: data.bp_address.cityId,
-          barangayId: data.bp_address.barangayId,
-          barangayName: data.bp_address.barangayName,
-          cityName: data.bp_address.cityName,
-        },
       });
+    } else if (isOpen) {
+      setFormData(initial);
     }
   }, [data, isOpen]);
 
-  const [addBranch] = useAddBranchMutation();
-  const [upBranch] = useUpBranchMutation();
-  const submitBranch = async () => {
+  const [addUser] = useAddUserMutation();
+  const [upUser] = useUpUserMutation();
+  const submitTerminal = async () => {
     if (type === 1) {
-      if (formData.name !== "") {
+      if (
+        formData.user_id !== "" &&
+        formData.password !== "" &&
+        formData.branch !== 0
+      ) {
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
 
-          const checkstat = await addBranch(formData1).unwrap();
+          const checkstat = await addUser(formData1).unwrap();
 
           if (checkstat.success) {
-            handleClose();
-            toast.success("Successfully Added.");
+            if (checkstat.error === 1) {
+              toast.error(checkstat.message);
+            } else {
+              handleClose();
+              toast.success("Successfully Added.");
+            }
           } else {
             toast.error(checkstat.message);
           }
@@ -163,13 +163,13 @@ export default function AddBranchModal({
         toast.error("Please complete required fields.");
       }
     } else {
-      if (formData.name !== "") {
+      if (formData.user_id !== "" && formData.branch !== 0) {
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
-          formData1.append("bid", String(formData.id));
+          formData1.append("tid", String(formData.id));
 
-          const checkstat = await upBranch(formData1).unwrap();
+          const checkstat = await upUser(formData1).unwrap();
           if (checkstat.success) {
             handleClose();
             toast.success("Successfully Updated.");
@@ -209,7 +209,7 @@ export default function AddBranchModal({
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {type === 1 ? `Add New` : `Update`} Branch
+                  {type === 1 ? `Add New` : `Update`} User
                 </h2>
                 <button
                   onClick={handleClose}
@@ -220,97 +220,106 @@ export default function AddBranchModal({
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form
+                onSubmit={handleSubmit}
+                className="p-6 space-y-4"
+                autoComplete="off"
+              >
                 {/* Client Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Client Name</Label>
-                    <Select
-                      value={
-                        type === 1
-                          ? String(formData.client)
-                          : formData.client !== 0
-                          ? String(formData.client)
-                          : String(data.client)
-                      }
-                      onValueChange={(value) => handleChange("client", value)}
-                    >
-                      <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
-                        <SelectValue placeholder="Select client" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {client?.map((item: IdName, index: number) => (
-                          <SelectItem key={index} value={String(item.id)}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Street</Label>
-                    <Input
-                      type="text"
-                      placeholder="Street"
-                      value={formData.street}
-                      onChange={(e) => handleChange("street", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
+                  {/* <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Branch Code</Label>
-                    <Input
-                      type="text"
-                      placeholder="Branch Code"
-                      value={formData.code}
-                      onChange={(e) => handleChange("code", e.target.value)}
-                    />
-                  </div>
+                    <Input type="text" placeholder="Branch Code" />
+                  </div> */}
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Barangay</Label>
-                    {/* <Input type="text" placeholder="Barangay" /> */}
-                    <Barangay
-                      value={formData.bp_address}
-                      onChange={(val) => {
-                        setFormData({
-                          ...formData,
-                          barangay: val.barangayId,
-                          bp_address: val,
-                        });
+                    <Label htmlFor="date">Client</Label>
+                    <ComboBox
+                      label=""
+                      openKey="client"
+                      valueId={formData.client}
+                      list={client || []}
+                      onSelect={(id: string) => {
+                        handleChange("client", id);
                       }}
                     />
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Branch Name</Label>
-                    <Input
-                      type="text"
-                      placeholder="Branch Name"
-                      value={formData.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
+                    <Label htmlFor="date">
+                      Branch <span className="text-red-500">*</span>
+                    </Label>
+                    <ComboBox
+                      label=""
+                      openKey="branch"
+                      valueId={formData.branch}
+                      list={branch || []}
+                      onSelect={(id: string) => {
+                        handleChange("branch", id);
+                      }}
                     />
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">City</Label>
+                    <Label htmlFor="date">Username</Label>
                     <Input
                       type="text"
-                      placeholder="City"
-                      value={formData.bp_address.cityName}
-                      readOnly
+                      placeholder="User ID"
+                      value={formData.user_id}
+                      onChange={(e) => handleChange("user_id", e.target.value)}
+                      autoComplete="new-user"
                     />
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Block No / Unit No</Label>
+                    <Label htmlFor="date">
+                      Password
+                      <span className="pl-1 text-blue-500 text-[9px]">
+                        (leave blank if not going to change)
+                      </span>
+                    </Label>
+                    <Input
+                      type="password"
+                      placeholder="User Password"
+                      value={formData.password}
+                      onChange={(e) => handleChange("password", e.target.value)}
+                      autoComplete="new-password"
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">User Fullname</Label>
                     <Input
                       type="text"
-                      placeholder="Block No / Unit No"
-                      value={formData.block_no}
-                      onChange={(e) => handleChange("block_no", e.target.value)}
+                      placeholder="User Fullname"
+                      value={formData.fullname}
+                      onChange={(e) => handleChange("fullname", e.target.value)}
                     />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">User Profile</Label>
+                    <Select
+                      value={
+                        type === 1
+                          ? String(formData.profile)
+                          : formData.profile !== 0
+                          ? String(formData.profile)
+                          : String(data.profile)
+                      }
+                      onValueChange={(value) => handleChange("profile", value)}
+                    >
+                      <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                        <SelectValue placeholder="Select client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profile.map((item1: IdName) => (
+                          <SelectItem key={item1.id} value={String(item1.id)}>
+                            {item1.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
@@ -321,30 +330,6 @@ export default function AddBranchModal({
                       value={formData.contact_no}
                       onChange={(e) =>
                         handleChange("contact_no", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Building Subdivision</Label>
-                    <Input
-                      type="text"
-                      placeholder="Building Subdivision"
-                      value={formData.subdivision}
-                      onChange={(e) =>
-                        handleChange("subdivision", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Contact Person</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contact Person"
-                      value={formData.contact_person}
-                      onChange={(e) =>
-                        handleChange("contact_person", e.target.value)
                       }
                     />
                   </div>
@@ -374,7 +359,7 @@ export default function AddBranchModal({
                     type="submit"
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                   >
-                    {type === 1 ? `Add` : `Update`} Branch
+                    {type === 1 ? `Add` : `Update`} User
                   </Button>
                 </div>
               </form>

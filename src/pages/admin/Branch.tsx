@@ -194,11 +194,11 @@ function AdminBranch() {
       </div>
 
       {/* Add Branch Modal */}
-      <AddBranchModal
+      {/* <AddBranchModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleSubmitBranch}
-      />
+      /> */}
     </div>
   );
 }
