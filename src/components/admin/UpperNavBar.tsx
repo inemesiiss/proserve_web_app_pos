@@ -1,4 +1,3 @@
-import { logout } from "@/store/auth/authSlice";
 import { motion } from "framer-motion";
 import { LogOut, User } from "lucide-react";
 import { useDispatch } from "react-redux";
@@ -17,6 +16,7 @@ export default function UpperNavBar({
   setLoggedIn,
   isBlank = false,
 }: UpperNavBarProps) {
+  console.log(setLoggedIn);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

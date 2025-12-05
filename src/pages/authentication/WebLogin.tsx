@@ -12,13 +12,8 @@ import Logo from "@/assets/PROSERVELOGO.png";
 import RightDesign from "@/assets/loginRight.png";
 import LeftDesign from "@/assets/loginLeft.png";
 import { useAuth } from "@/context/AuthProvider";
-import { useLoginMutation } from "@/store/api/authApi";
 
-type LoginProps = {
-  onLogin?: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-export default function LoginPage({ onLogin }: LoginProps) {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

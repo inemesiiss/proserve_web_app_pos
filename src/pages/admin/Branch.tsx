@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
 import BranchActionButtons from "@/components/admin/table/BranchActionButtons";
-import AddBranchModal from "@/components/admin/modals/AddBranchModal";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
@@ -69,7 +68,7 @@ function AdminBranch() {
   const [pageSize, setPageSize] = useState(10);
   const [useShowMore] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Mock total items - replace with actual data length
   const totalItems = 100;
@@ -93,7 +92,7 @@ function AdminBranch() {
   };
 
   const handleAddBranch = () => {
-    setIsAddModalOpen(true);
+    // setIsAddModalOpen(true);
   };
 
   const handleImportCSV = () => {
@@ -108,10 +107,10 @@ function AdminBranch() {
     console.log("Download CSV clicked");
   };
 
-  const handleSubmitBranch = (data: any) => {
-    console.log("New branch data:", data);
-    // Add your API call here to save the branch
-  };
+  // const handleSubmitBranch = (data: any) => {
+  //   console.log("New branch data:", data);
+  //   // Add your API call here to save the branch
+  // };
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">

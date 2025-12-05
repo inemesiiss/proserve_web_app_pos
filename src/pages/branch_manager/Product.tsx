@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
 import ProductActionButtons from "@/components/admin/table/ProductActionButtons";
 import DataTable from "@/components/admin/table/Tables";
@@ -12,78 +12,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AddProductModal from "@/components/admin/modals/AddProductModal";
+import { useGetClientsQuery, useGetProductsQuery } from "@/store/api/Admin";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PencilLine } from "lucide-react";
+import type { IdName } from "@/components/admin/modals/AddAccountModal";
 
 // Mock data for products
-const productData = [
-  {
-    clientName: "Client 1",
-    productCategory: "Category 1",
-    productName: "Product 1",
-    price: "",
-    sizeOption: "",
-    unitOfMeasure: "",
-    active: true,
-  },
-  {
-    clientName: "Client 2",
-    productCategory: "Category 2",
-    productName: "Product 2",
-    price: "",
-    sizeOption: "",
-    unitOfMeasure: "",
-    active: true,
-  },
-  {
-    clientName: "Client 3",
-    productCategory: "",
-    productName: "Product 3",
-    price: "",
-    sizeOption: "",
-    unitOfMeasure: "",
-    active: true,
-  },
-  {
-    clientName: "Client 4",
-    productCategory: "",
-    productName: "Product 4",
-    price: "",
-    sizeOption: "",
-    unitOfMeasure: "",
-    active: true,
-  },
-  {
-    clientName: "Client 5",
-    productCategory: "",
-    productName: "Product 5",
-    price: "",
-    sizeOption: "",
-    unitOfMeasure: "",
-    active: true,
-  },
-];
 
 const productColumns = [
-  { key: "clientName", label: "Client Name" },
-  { key: "productCategory", label: "Product Category" },
-  { key: "productName", label: "Product Name" },
+  { key: "client", label: "Client Name" },
+  { key: "categ", label: "Product Category" },
+  { key: "prod_name", label: "Product Name" },
   { key: "price", label: "Price" },
-  { key: "sizeOption", label: "Size / Option" },
-  { key: "unitOfMeasure", label: "Unit of Measure" },
-  { key: "active", label: "ACTIVE" },
+  { key: "prod_size", label: "Size / Option" },
+  { key: "uom", label: "Unit of Measure" },
+  { key: "image", label: "Image" },
+  { key: "is_active", label: "ACTIVE" },
   { key: "edit", label: "EDIT" },
 ];
 
 function BMProduct() {
+  const apiDomain = import.meta.env.VITE_API_DOMAIN;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [count, setCount] = useState(0);
   const [useShowMore] = useState(false);
-  const [clientFilter, setClientFilter] = useState("");
 
-  // Mock total items - replace with actual data length
-  const totalItems = 100;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const [type, setType] = useState(1);
+  const [data, setData] = useState();
+
+  const [productData, setProductData] = useState([]);
+
+  const [client, setClient] = useState("0");
+  const [client1, setClient1] = useState("0");
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -103,7 +70,7 @@ function BMProduct() {
   };
 
   const handleAddProduct = () => {
-    console.log("Add Product clicked");
+    setIsAddModalOpen(true);
   };
 
   const handleImportCSV = () => {
@@ -111,12 +78,67 @@ function BMProduct() {
   };
 
   const handleGo = () => {
-    console.log("Go clicked with filter:", clientFilter);
+    // console.log("Go clicked with filter:", accountFilter);
+    setClient1(client);
   };
 
   const handleDownloadCSV = () => {
     console.log("Download CSV clicked");
   };
+
+  const handleSubmitProduct = () => {
+    // console.log("New branch data:", data);
+    // Add your API call here to save the branch
+  };
+
+  const getClientDropdown = useGetClientsQuery({});
+
+  const getProduct = useGetProductsQuery({
+    search: searchQuery,
+    id: client1,
+    page: currentPage,
+    pageSize: pageSize,
+  });
+
+  useEffect(() => {
+    if (getProduct.isSuccess && getProduct.data) {
+      let data = getProduct?.data?.results;
+      const updated = data.map((item: any) => ({
+        ...item,
+        client: getClientDropdown?.data?.data.find(
+          (item1: any) => item1.id === item.client
+        ).name,
+        image: (
+          <div>
+            <img src={apiDomain + item.image} className="w-8 h-8" />
+          </div>
+        ),
+        is_active: (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="pointer-events-none"
+          >
+            <Checkbox checked={item.is_active === true} />
+          </div>
+        ),
+        edit: (
+          <PencilLine
+            size={18}
+            className="cursor-pointer text-orange-500"
+            onClick={() => {
+              setType(2);
+              setData(item);
+              setIsAddModalOpen(true);
+            }}
+          />
+        ),
+      }));
+
+      setProductData(updated);
+      setTotalPages(Math.ceil(getProduct?.data?.count / pageSize));
+      setCount(getProduct.data.count);
+    }
+  }, [getProduct.isSuccess, getProduct.data]);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -141,15 +163,15 @@ function BMProduct() {
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Select value={clientFilter} onValueChange={setClientFilter}>
+              <Select value={client} onValueChange={setClient}>
                 <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
-                  <SelectValue placeholder="Client Name" />
+                  <SelectValue placeholder="Account Name" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Clients</SelectItem>
-                  <SelectItem value="client1">Client 1</SelectItem>
-                  <SelectItem value="client2">Client 2</SelectItem>
-                  <SelectItem value="client3">Client 3</SelectItem>
+                  <SelectItem value="0">All Accounts</SelectItem>
+                  {getClientDropdown?.data?.data.map((item: IdName) => (
+                    <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -186,13 +208,26 @@ function BMProduct() {
             pageSize={pageSize}
             onPageSizeChange={handlePageSizeChange}
             pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
+            totalItems={count}
             showMore={useShowMore}
             onShowMore={handleShowMore}
             className="mt-6"
           />
         </div>
       </div>
+
+      {/* Add Product Modal */}
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setData(undefined);
+        }}
+        onSubmit={handleSubmitProduct}
+        type={type}
+        setType={setType}
+        data={data}
+      />
     </div>
   );
 }

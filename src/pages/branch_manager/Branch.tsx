@@ -18,45 +18,6 @@ import type { IdName } from "@/components/admin/modals/AddAccountModal";
 import { PencilLine } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// Mock data for branches
-const branchData = [
-  {
-    clientName: "Brent Gas",
-    branchCode: "001",
-    branch: "Branch 1",
-    address: "Lot 8 Block 8 Abraza",
-    active: true,
-  },
-  {
-    clientName: "Onetech",
-    branchCode: "002",
-    branch: "Branch 2",
-    address: "Description 2",
-    active: true,
-  },
-  {
-    clientName: "Brent Gas",
-    branchCode: "003",
-    branch: "Branch 3",
-    address: "Description 3",
-    active: true,
-  },
-  {
-    clientName: "Aristocrat",
-    branchCode: "004",
-    branch: "Branch 4",
-    address: "Description 4",
-    active: true,
-  },
-  {
-    clientName: "Globe",
-    branchCode: "005",
-    branch: "Branch 5",
-    address: "Description 5",
-    active: true,
-  },
-];
-
 const branchColumns = [
   { key: "client", label: "Account Name" },
   { key: "code", label: "Branch Code" },
@@ -246,10 +207,12 @@ function BMBranch() {
       {/* Add Branch Modal */}
       <AddBranchModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setData(undefined);
+        }}
         onSubmit={handleSubmitBranch}
         type={type}
-        setType={setType}
         data={data}
       />
     </div>

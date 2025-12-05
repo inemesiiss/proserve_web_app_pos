@@ -12,6 +12,7 @@ import {
   Package,
   Menu,
   ChevronLeft,
+  BookText,
 } from "lucide-react";
 import Logo from "@/assets/PROSERVELOGO.png";
 import { Link, useLocation } from "react-router-dom";
@@ -80,8 +81,25 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       },
       {
         label: "Product",
-        path: "/bm/product",
+        path: "/bm/product/category",
         icon: <Package className="w-6 h-6" />,
+        subPaths: [
+          {
+            label: "Category",
+            path: "/bm/product/category",
+            icon: <BookText className="w-6 h-6" />,
+          },
+          {
+            label: "Product",
+            path: "/bm/product/product",
+            icon: <BookText className="w-6 h-6" />,
+          },
+          {
+            label: "Composition",
+            path: "/bm/product/composition",
+            icon: <Package className="w-6 h-6" />,
+          },
+        ],
       },
     ];
 
