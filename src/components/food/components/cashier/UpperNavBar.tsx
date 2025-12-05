@@ -15,6 +15,7 @@ export default function UpperNavBar({
   setLoggedIn,
   isBlank = false,
 }: UpperNavBarProps) {
+  console.log(setLoggedIn);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

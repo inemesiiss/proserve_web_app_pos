@@ -198,6 +198,7 @@ function DirectorBranch() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleSubmitBranch}
+        type={1}
       />
     </div>
   );

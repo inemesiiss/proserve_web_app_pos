@@ -210,6 +210,90 @@ export const adminApi = createApi({
       },
       invalidatesTags: ["admin"],
     }),
+    ///api/adminpos/get_categories
+    getCategories: builder.query({
+      query: ({ search, id, page, pageSize }) => {
+        return {
+          url: `/adminpos/get_categories?search=${search}&id=${id}&page=${page}&pageSize=${pageSize}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    ///api/adminpos/add_category
+    addCategory: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_category/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/up_category
+    upCategory: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/up_category/`,
+          method: "PUT",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/get_all_categ
+    getAllCategories: builder.query({
+      query: ({ id }) => {
+        return {
+          url: `/adminpos/get_all_categ?id=${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    //add_client_product
+    addClientProduct: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_client_product/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/get_products
+    getProducts: builder.query({
+      query: ({ id }) => {
+        return {
+          url: `/adminpos/get_products?id=${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    ///api/adminpos/up_client_product
+    upClientProduct: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/up_client_product/`,
+          method: "PUT",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    //get_all_products
+    getAllProducts: builder.query({
+      query: ({ id }) => {
+        return {
+          url: `/adminpos/get_all_products?id=${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
   }),
 });
 
@@ -234,4 +318,12 @@ export const {
   useGetProfileQuery,
   useGetUsersQuery,
   useUpUserMutation,
+  useGetCategoriesQuery,
+  useAddCategoryMutation,
+  useUpCategoryMutation,
+  useGetAllCategoriesQuery,
+  useAddClientProductMutation,
+  useGetProductsQuery,
+  useUpClientProductMutation,
+  useGetAllProductsQuery,
 } = adminApi;

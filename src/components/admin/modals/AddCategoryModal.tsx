@@ -5,64 +5,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useAddTerminalMutation,
-  useGetAllBranchQuery,
+  useAddCategoryMutation,
   useGetClientsQuery,
-  useUpTerminalMutation,
+  useUpCategoryMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
 import { ComboBox } from "@/components/reusables/Barangay";
 import { toast } from "sonner";
 
-interface AddTerminalModalProps {
+interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (data: TerminalFormData) => void;
+  onSubmit?: (data: CategoryFormData) => void;
   type: number;
   setType: React.Dispatch<React.SetStateAction<number>>;
   data?: any;
 }
 
-interface TerminalFormData {
+interface CategoryFormData {
   id: number;
+  name: string;
   client: number;
-  branch: number;
-  terminal_id: string;
-  contract_term: string;
-  start_date: string;
-  end_date: string;
-  renewal: string;
-  status: number;
 }
 
-export default function AddTerminalModal({
+export default function AddCategoryModal({
   isOpen,
   onClose,
   onSubmit,
   type,
   setType,
   data,
-}: AddTerminalModalProps) {
+}: AddCategoryModalProps) {
   console.log("Data here: ", data);
   const initial = {
     id: 0,
+    name: "",
     client: 0,
-    branch: 0,
-    terminal_id: "",
-    contract_term: "",
-    start_date: "",
-    end_date: "",
-    renewal: "",
-    status: 1,
   };
-  const [formData, setFormData] = useState<TerminalFormData>(initial);
+  const [formData, setFormData] = useState<CategoryFormData>(initial);
   const [client, setClient] = useState<IdName[]>([]);
-  const [branch, setBranch] = useState<IdName[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit?.(formData);
-    submitTerminal();
+    submitCategory();
     // handleClose();
   };
 
@@ -72,7 +58,7 @@ export default function AddTerminalModal({
     onClose();
   };
 
-  const handleChange = (field: keyof TerminalFormData, value: string) => {
+  const handleChange = (field: keyof CategoryFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -83,42 +69,29 @@ export default function AddTerminalModal({
     }
   }, [getClientDropdown.isSuccess, getClientDropdown.data]);
 
-  const getBranchDropdown = useGetAllBranchQuery({ cid: formData.client });
-  useEffect(() => {
-    if (getBranchDropdown.isSuccess && getBranchDropdown.data) {
-      setBranch(getBranchDropdown.data.data);
-    }
-  }, [getBranchDropdown.isSuccess, getBranchDropdown.data]);
-
   useEffect(() => {
     if (data && isOpen) {
       setFormData({
         id: data.id,
         client: data.client,
-        branch: data.branch,
-        terminal_id: data.terminal_id,
-        contract_term: data.contract_term,
-        start_date: data.start_date,
-        end_date: data.end_date,
-        renewal: data.renewal,
-        status: 1,
+        name: data.name,
       });
     }
   }, [data, isOpen]);
 
-  const [addTerminal] = useAddTerminalMutation();
-  const [upTerminal] = useUpTerminalMutation();
-  const submitTerminal = async () => {
+  const [addCategory] = useAddCategoryMutation();
+  const [upCategory] = useUpCategoryMutation();
+  const submitCategory = async () => {
     if (type === 1) {
-      if (formData.terminal_id !== "" && formData.branch !== 0) {
+      if (formData.name !== "" && formData.client !== 0) {
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
 
-          const checkstat = await addTerminal(formData1).unwrap();
+          const checkstat = await addCategory(formData1).unwrap();
 
           if (checkstat.success) {
-            // handleClose();
+            handleClose();
             toast.success("Successfully Added.");
           } else {
             toast.error(checkstat.message);
@@ -130,13 +103,12 @@ export default function AddTerminalModal({
         toast.error("Please complete required fields.");
       }
     } else {
-      if (formData.terminal_id !== "" && formData.branch !== 0) {
+      if (formData.name !== "" && formData.client !== 0) {
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
-          formData1.append("tid", String(formData.id));
 
-          const checkstat = await upTerminal(formData1).unwrap();
+          const checkstat = await upCategory(formData1).unwrap();
           if (checkstat.success) {
             handleClose();
             toast.success("Successfully Updated.");
@@ -176,7 +148,7 @@ export default function AddTerminalModal({
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {type === 1 ? `Add New` : `Update`} Terminal
+                  {type === 1 ? `Add New` : `Update`} Category
                 </h2>
                 <button
                   onClick={handleClose}
@@ -189,14 +161,9 @@ export default function AddTerminalModal({
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 {/* Client Name */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Branch Code</Label>
-                    <Input type="text" placeholder="Branch Code" />
-                  </div> */}
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Client</Label>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                  <div className="grid  items-center gap-1 ">
+                    <Label htmlFor="client">Client</Label>
                     <ComboBox
                       label=""
                       openKey="client"
@@ -208,79 +175,13 @@ export default function AddTerminalModal({
                     />
                   </div>
 
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">
-                      Branch <span className="text-red-500">*</span>
-                    </Label>
-                    <ComboBox
-                      label=""
-                      openKey="branch"
-                      valueId={formData.branch}
-                      list={branch || []}
-                      onSelect={(id: string) => {
-                        handleChange("branch", id);
-                      }}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">
-                      Contract Term{" "}
-                      <span className="pl-1 text-xs">(months)</span>
-                    </Label>
+                  <div className="grid items-center gap-1 ">
+                    <Label htmlFor="date">Category Name</Label>
                     <Input
                       type="text"
-                      placeholder="12"
-                      value={formData.contract_term}
-                      onChange={(e) =>
-                        handleChange("contract_term", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">
-                      Terminal Id <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      placeholder="Terminal Id"
-                      value={formData.terminal_id}
-                      onChange={(e) =>
-                        handleChange("terminal_id", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Start Date</Label>
-                    <Input
-                      type="date"
-                      placeholder="Start Date"
-                      value={formData.start_date}
-                      onChange={(e) =>
-                        handleChange("start_date", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">End Date</Label>
-                    <Input
-                      type="date"
-                      placeholder="End Date"
-                      value={formData.end_date}
-                      onChange={(e) => handleChange("end_date", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Date of Renewal</Label>
-                    <Input
-                      type="date"
-                      placeholder="Date of Renewal"
-                      value={formData.renewal}
-                      onChange={(e) => handleChange("renewal", e.target.value)}
+                      placeholder="Name"
+                      value={formData.name}
+                      onChange={(e) => handleChange("name", e.target.value)}
                     />
                   </div>
                 </div>
@@ -299,7 +200,7 @@ export default function AddTerminalModal({
                     type="submit"
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                   >
-                    {type === 1 ? `Add` : `Update`} Terminal
+                    {type === 1 ? `Add` : `Update`} Category
                   </Button>
                 </div>
               </form>

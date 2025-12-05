@@ -12,18 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  useAddBranchMutation,
-  useAddTerminalMutation,
   useAddUserMutation,
   useGetAllBranchQuery,
   useGetClientsQuery,
   useGetProfileQuery,
-  useUpBranchMutation,
-  useUpTerminalMutation,
   useUpUserMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
-import Barangay, { ComboBox } from "@/components/reusables/Barangay";
+import { ComboBox } from "@/components/reusables/Barangay";
 import { toast } from "sonner";
 
 interface AddUserModalProps {

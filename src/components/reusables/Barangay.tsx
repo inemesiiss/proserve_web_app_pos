@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CustomDialog from "./CustomDialog";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -13,7 +12,6 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import { cn } from "@/lib/utils";
 import {
   useGetBarangayQuery,
   useGetCityQuery,
@@ -37,17 +35,6 @@ interface Props {
 
 function Barangay({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
-
-  const [openR, setOpenR] = useState(false);
-  const [openP, setOpenP] = useState(false);
-  const [openC, setOpenC] = useState(false);
-  const [openB, setOpenB] = useState(false);
-
-  const [regionId, setRegionId] = useState<number>(0);
-  const [provinceId, setProvinceId] = useState<number>(0);
-  const [cityId, setCityId] = useState<number>(0);
-  const [barangayId, setBarangayId] = useState<number>(0);
-  const [barangayName, setBarangayName] = useState("");
 
   const [region, setRegion] = useState<Address[]>([]);
   const [province, setProvince] = useState<Address[]>([]);
@@ -149,7 +136,7 @@ function Barangay({ value, onChange }: Props) {
               openKey="region"
               valueId={value.regionId}
               list={region || []}
-              onSelect={(id: number, name: string) =>
+              onSelect={(id: number) =>
                 setValue({
                   regionId: id,
                   provinceId: 0,

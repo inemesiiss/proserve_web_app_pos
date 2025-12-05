@@ -25,7 +25,6 @@ interface AddBranchModalProps {
   onClose: () => void;
   onSubmit?: (data: BranchFormData) => void;
   type: number;
-  setType: React.Dispatch<React.SetStateAction<number>>;
   data?: any;
 }
 
@@ -59,10 +58,7 @@ export default function AddBranchModal({
   onClose,
   onSubmit,
   type,
-  setType,
-  data,
 }: AddBranchModalProps) {
-  console.log("Data here: ", data);
   const initial = {
     id: 0,
     client: 0,
@@ -97,7 +93,6 @@ export default function AddBranchModal({
 
   const handleClose = () => {
     setFormData(initial);
-    setType(1);
     onClose();
   };
 
@@ -111,33 +106,6 @@ export default function AddBranchModal({
       setClient(getClientDropdown.data.data);
     }
   }, [getClientDropdown.isSuccess, getClientDropdown.data]);
-
-  useEffect(() => {
-    if (data && isOpen) {
-      setFormData({
-        id: data.id,
-        client: data.client,
-        code: data.code,
-        name: data.name,
-        block_no: data.block_no,
-        subdivision: data.subdivision,
-        street: data.street,
-        barangay: data.barangay,
-        contact_person: data.contact_person,
-        contact_no: data.contact_no,
-        email: data.email,
-        status: 1,
-        bp_address: {
-          regionId: data.bp_address.regionId,
-          provinceId: data.bp_address.provinceId,
-          cityId: data.bp_address.cityId,
-          barangayId: data.bp_address.barangayId,
-          barangayName: data.bp_address.barangayName,
-          cityName: data.bp_address.cityName,
-        },
-      });
-    }
-  }, [data, isOpen]);
 
   const [addBranch] = useAddBranchMutation();
   const [upBranch] = useUpBranchMutation();
@@ -226,13 +194,7 @@ export default function AddBranchModal({
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Client Name</Label>
                     <Select
-                      value={
-                        type === 1
-                          ? String(formData.client)
-                          : formData.client !== 0
-                          ? String(formData.client)
-                          : String(data.client)
-                      }
+                      value={String(formData.client)}
                       onValueChange={(value) => handleChange("client", value)}
                     >
                       <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
