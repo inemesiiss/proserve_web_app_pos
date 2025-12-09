@@ -184,6 +184,26 @@ export default function AddAccountModal({
     }
   };
 
+  useEffect(() => {
+    if (formData.start_date !== "" && formData.term !== "") {
+      const start = new Date(formData.start_date);
+      const termMonths = Number(formData.term);
+
+      // Add months
+      const end = new Date(start);
+      end.setMonth(start.getMonth() + termMonths);
+
+      // Format date as YYYY-MM-DD
+      const formattedEnd = end.toISOString().split("T")[0];
+
+      setFormData((prev) => ({
+        ...prev,
+        end_date: formattedEnd,
+        renewal: formattedEnd,
+      }));
+    }
+  }, [formData.start_date, formData.term]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -234,32 +254,12 @@ export default function AddAccountModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Start Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.start_date}
-                      onChange={(e) =>
-                        handleChange("start_date", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Contact Person</Label>
                     <Input
                       type="text"
                       placeholder="Contact Person"
                       value={formData.c_person}
                       onChange={(e) => handleChange("c_person", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">End Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.end_date}
-                      onChange={(e) => handleChange("end_date", e.target.value)}
                     />
                   </div>
 
@@ -274,18 +274,7 @@ export default function AddAccountModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Date of Renewal</Label>
-                    <Input
-                      type="date"
-                      value={formData.renewal}
-                      onChange={(e) => handleChange("renewal", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">
-                      Plan Subscription {formData.subscription}
-                    </Label>
+                    <Label htmlFor="date">Plan Subscription</Label>
                     <Select
                       value={
                         type === 1
@@ -312,6 +301,18 @@ export default function AddAccountModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">No. of Licenses</Label>
+                    <Input
+                      type="text"
+                      placeholder="10"
+                      value={formData.no_license}
+                      onChange={(e) =>
+                        handleChange("no_license", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">
                       Contract Term
                       <span className="pl-1 text-xs">(months)</span>
@@ -325,20 +326,39 @@ export default function AddAccountModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Theme</Label>
-                    <Input type="text" placeholder="" />
+                    <Label htmlFor="date">Start Date</Label>
+                    <Input
+                      type="date"
+                      value={formData.start_date}
+                      onChange={(e) =>
+                        handleChange("start_date", e.target.value)
+                      }
+                    />
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">No. of Licenses</Label>
+                    <Label htmlFor="date">End Date</Label>
                     <Input
-                      type="text"
-                      placeholder="10"
-                      value={formData.no_license}
-                      onChange={(e) =>
-                        handleChange("no_license", e.target.value)
-                      }
+                      type="date"
+                      value={formData.end_date}
+                      onChange={(e) => handleChange("end_date", e.target.value)}
+                      readOnly
                     />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Date of Renewal</Label>
+                    <Input
+                      type="date"
+                      value={formData.renewal}
+                      onChange={(e) => handleChange("renewal", e.target.value)}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Theme</Label>
+                    <Input type="text" placeholder="" />
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
