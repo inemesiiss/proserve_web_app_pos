@@ -214,6 +214,7 @@ function BMBranch() {
         onSubmit={handleSubmitBranch}
         type={type}
         data={data}
+        count={count}
       />
     </div>
   );

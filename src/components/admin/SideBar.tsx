@@ -47,6 +47,18 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       }
     });
     const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({});
+    React.useEffect(() => {
+      navs.forEach((item) => {
+        if (item.subPaths) {
+          const shouldBeOpen = item.subPaths.some((s) =>
+            location.pathname.startsWith(s.path)
+          );
+          if (shouldBeOpen) {
+            setOpenMap((prev) => ({ ...prev, [item.label]: true }));
+          }
+        }
+      });
+    }, [location.pathname]);
 
     const defaultNavs: NavItem[] = [
       {
@@ -78,6 +90,18 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         label: "User",
         path: "/bm/users",
         icon: <User className="w-6 h-6" />,
+        subPaths: [
+          {
+            label: "Managers Access",
+            path: "/bm/users/manager",
+            icon: <BookText className="w-6 h-6" />,
+          },
+          {
+            label: "Users Access",
+            path: "/bm/users/user",
+            icon: <BookText className="w-6 h-6" />,
+          },
+        ],
       },
       {
         label: "Product",
@@ -133,7 +157,10 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         className={asideClass}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div
+          className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+          onClick={(e) => e.stopPropagation()}
+        >
           {!collapsed && (
             <motion.h3
               initial={{ opacity: 0 }}
@@ -310,6 +337,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                           >
                             <Link
                               to={sub.path || "#"}
+                              onClick={(e) => e.stopPropagation()}
                               className={cn(
                                 "flex items-center gap-2 w-full p-2 rounded text-sm transition-all duration-200",
                                 subActive

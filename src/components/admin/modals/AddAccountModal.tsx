@@ -36,9 +36,12 @@ interface AccountFormData {
   logo: string | File;
   start_date: string;
   end_date: string;
+  start_time: string;
+  end_time: string;
   renewal: string;
   term: string;
-  no_license: number;
+  color: string;
+  no_license: string;
   status: number;
 }
 
@@ -64,9 +67,12 @@ export default function AddAccountModal({
     logo: "",
     start_date: "",
     end_date: "",
+    start_time: "",
+    end_time: "",
     renewal: "",
     term: "",
-    no_license: 0,
+    color: "",
+    no_license: "0",
     status: 0,
   };
   const [formData, setFormData] = useState<AccountFormData>(initial);
@@ -86,10 +92,22 @@ export default function AddAccountModal({
   };
 
   const handlelogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, logo: file });
+    const input = e.target;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Validate size
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("File must be 1MB or less.");
+      input.value = ""; // reset so selecting same file triggers change
+      return;
     }
+
+    setFormData({ ...formData, logo: file });
+
+    // Reset after successful upload too (optional)
+    input.value = "";
   };
 
   const handleChange = (field: keyof AccountFormData, value: string) => {
@@ -118,12 +136,15 @@ export default function AddAccountModal({
         name: data.name,
         c_person: data.c_person,
         email: data.email,
-        subscription: Number(data.subscription ?? 0),
+        subscription: Number(data.subscription),
         logo: "",
         start_date: data.start_date,
         end_date: data.end_date,
+        start_time: data.start_time,
+        end_time: data.end_time,
         renewal: data.renewal,
         term: data.term,
+        color: data.color,
         no_license: data.no_license,
         status: data.status,
       });
@@ -304,8 +325,7 @@ export default function AddAccountModal({
                     <Label htmlFor="date">No. of Licenses</Label>
                     <Input
                       type="text"
-                      placeholder="10"
-                      value={formData.no_license}
+                      value={String(formData.no_license)}
                       onChange={(e) =>
                         handleChange("no_license", e.target.value)
                       }
@@ -347,6 +367,26 @@ export default function AddAccountModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Start Time</Label>
+                    <Input
+                      type="time"
+                      value={formData.start_time}
+                      onChange={(e) =>
+                        handleChange("start_time", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">End Time</Label>
+                    <Input
+                      type="time"
+                      value={formData.end_time}
+                      onChange={(e) => handleChange("end_time", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Date of Renewal</Label>
                     <Input
                       type="date"
@@ -358,12 +398,25 @@ export default function AddAccountModal({
 
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Theme</Label>
-                    <Input type="text" placeholder="" />
+                    <Input
+                      type="color"
+                      value={formData.color}
+                      onChange={(e) => handleChange("color", e.target.value)}
+                    />
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Company Logo</Label>
-                    <Input type="file" onChange={handlelogoChange} />
+                    <Label htmlFor="date">
+                      Company Logo{" "}
+                      <span className="text-xs text-blue-600">
+                        (must be less than 1 mb)
+                      </span>
+                    </Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlelogoChange}
+                    />
                   </div>
                 </div>
 

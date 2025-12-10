@@ -82,7 +82,15 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
       }
     />
     <Route
-      path="/bm/users"
+      path="/bm/users/manager"
+      element={
+        <AdminLayout setLoggedIn={setLoggedIn}>
+          <BMUser />
+        </AdminLayout>
+      }
+    />
+    <Route
+      path="/bm/users/user"
       element={
         <AdminLayout setLoggedIn={setLoggedIn}>
           <BMUser />
