@@ -257,6 +257,38 @@ export default function AddUserModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">User Fullname</Label>
+                    <Input
+                      type="text"
+                      placeholder="User Fullname"
+                      value={formData.fullname}
+                      onChange={(e) => handleChange("fullname", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Email</Label>
+                    <Input
+                      type="text"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Contact Number</Label>
+                    <Input
+                      type="text"
+                      placeholder="Contact Number"
+                      value={formData.contact_no}
+                      onChange={(e) =>
+                        handleChange("contact_no", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Username</Label>
                     <Input
                       type="text"
@@ -284,16 +316,6 @@ export default function AddUserModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">User Fullname</Label>
-                    <Input
-                      type="text"
-                      placeholder="User Fullname"
-                      value={formData.fullname}
-                      onChange={(e) => handleChange("fullname", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">User Profile</Label>
                     <Select
                       value={
@@ -316,28 +338,6 @@ export default function AddUserModal({
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Contact Number</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contact Number"
-                      value={formData.contact_no}
-                      onChange={(e) =>
-                        handleChange("contact_no", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Email</Label>
-                    <Input
-                      type="text"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                    />
                   </div>
                 </div>
 

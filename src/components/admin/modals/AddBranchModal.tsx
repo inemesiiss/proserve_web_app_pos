@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import {
   useAddBranchMutation,
+  useGetAllBranchQuery,
   useGetClientsQuery,
   useUpBranchMutation,
 } from "@/store/api/Admin";
@@ -26,6 +27,7 @@ interface AddBranchModalProps {
   onSubmit?: (data: BranchFormData) => void;
   type: number;
   data?: any;
+  count: number;
 }
 
 type bpAddress = {
@@ -58,6 +60,7 @@ export default function AddBranchModal({
   onClose,
   onSubmit,
   type,
+  count,
 }: AddBranchModalProps) {
   const initial = {
     id: 0,
@@ -95,6 +98,29 @@ export default function AddBranchModal({
     setFormData(initial);
     onClose();
   };
+
+  const getBranchDropdown = useGetAllBranchQuery(
+    { cid: formData.client },
+    { skip: formData.client === 0 }
+  );
+  useEffect(() => {
+    if (getBranchDropdown.isSuccess && getBranchDropdown.data) {
+      const selected = client.find(
+        (c) => String(c.id) === String(formData.client)
+      );
+      const prefix = selected
+        ? selected.name.substring(0, 3).toUpperCase()
+        : "";
+      const newCode = `${prefix}-${String(
+        getBranchDropdown.data.data.length + 1
+      ).padStart(3, "0")}`;
+
+      setFormData((prev) => ({
+        ...prev,
+        code: newCode,
+      }));
+    }
+  }, [getBranchDropdown.isSuccess, getBranchDropdown.data]);
 
   const handleChange = (field: keyof BranchFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -195,7 +221,9 @@ export default function AddBranchModal({
                     <Label htmlFor="date">Client Name</Label>
                     <Select
                       value={String(formData.client)}
-                      onValueChange={(value) => handleChange("client", value)}
+                      onValueChange={(value) => {
+                        handleChange("client", value);
+                      }}
                     >
                       <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                         <SelectValue placeholder="Select client" />
@@ -209,7 +237,77 @@ export default function AddBranchModal({
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Branch Code</Label>
+                    <Input
+                      type="text"
+                      placeholder="Branch Code"
+                      value={formData.code}
+                      onChange={(e) => handleChange("code", e.target.value)}
+                      readOnly
+                    />
+                  </div>
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Branch Name</Label>
+                    <Input
+                      type="text"
+                      placeholder="Branch Name"
+                      value={formData.name}
+                      onChange={(e) => handleChange("name", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Contact Person</Label>
+                    <Input
+                      type="text"
+                      placeholder="Contact Person"
+                      value={formData.contact_person}
+                      onChange={(e) =>
+                        handleChange("contact_person", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Contact Number</Label>
+                    <Input
+                      type="text"
+                      placeholder="Contact Number"
+                      value={formData.contact_no}
+                      onChange={(e) =>
+                        handleChange("contact_no", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Email</Label>
+                    <Input
+                      type="text"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                    />
+                  </div>
 
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Block No / Unit No</Label>
+                    <Input
+                      type="text"
+                      placeholder="Block No / Unit No"
+                      value={formData.block_no}
+                      onChange={(e) => handleChange("block_no", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">Building Subdivision</Label>
+                    <Input
+                      type="text"
+                      placeholder="Building Subdivision"
+                      value={formData.subdivision}
+                      onChange={(e) =>
+                        handleChange("subdivision", e.target.value)
+                      }
+                    />
+                  </div>
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Street</Label>
                     <Input
@@ -219,17 +317,6 @@ export default function AddBranchModal({
                       onChange={(e) => handleChange("street", e.target.value)}
                     />
                   </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Branch Code</Label>
-                    <Input
-                      type="text"
-                      placeholder="Branch Code"
-                      value={formData.code}
-                      onChange={(e) => handleChange("code", e.target.value)}
-                    />
-                  </div>
-
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Barangay</Label>
                     {/* <Input type="text" placeholder="Barangay" /> */}
@@ -244,17 +331,6 @@ export default function AddBranchModal({
                       }}
                     />
                   </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Branch Name</Label>
-                    <Input
-                      type="text"
-                      placeholder="Branch Name"
-                      value={formData.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                    />
-                  </div>
-
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">City</Label>
                     <Input
@@ -262,62 +338,6 @@ export default function AddBranchModal({
                       placeholder="City"
                       value={formData.bp_address.cityName}
                       readOnly
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Block No / Unit No</Label>
-                    <Input
-                      type="text"
-                      placeholder="Block No / Unit No"
-                      value={formData.block_no}
-                      onChange={(e) => handleChange("block_no", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Contact Number</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contact Number"
-                      value={formData.contact_no}
-                      onChange={(e) =>
-                        handleChange("contact_no", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Building Subdivision</Label>
-                    <Input
-                      type="text"
-                      placeholder="Building Subdivision"
-                      value={formData.subdivision}
-                      onChange={(e) =>
-                        handleChange("subdivision", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Contact Person</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contact Person"
-                      value={formData.contact_person}
-                      onChange={(e) =>
-                        handleChange("contact_person", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Email</Label>
-                    <Input
-                      type="text"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
                     />
                   </div>
                 </div>
