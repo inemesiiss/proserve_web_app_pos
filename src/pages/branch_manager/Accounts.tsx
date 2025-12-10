@@ -219,7 +219,10 @@ function BMAccounts() {
       {/* Add Account Modal */}
       <AddAccountModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setData(undefined);
+        }}
         onSubmit={handleSubmitAccount}
         type={type}
         setType={setType}

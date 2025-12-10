@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { SideBar } from "@/components/admin/SideBar";
-import FiltersBar from "@/components/admin/table/Filters";
 import UserActionButtons from "@/components/admin/table/UserActionButtons";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
@@ -23,45 +22,6 @@ import {
 } from "@/components/ui/select";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
 
-// Mock data for users
-const userData = [
-  {
-    branchCode: "001",
-    branch: "Branch 1",
-    userId: "Lot 8 Block 8 Abraza",
-    userProfile: "Admin",
-    active: true,
-  },
-  {
-    branchCode: "002",
-    branch: "Product 2",
-    userId: "Description 2",
-    userProfile: "Cashier",
-    active: true,
-  },
-  {
-    branchCode: "003",
-    branch: "Product 3",
-    userId: "Description 3",
-    userProfile: "Manager",
-    active: false,
-  },
-  {
-    branchCode: "004",
-    branch: "Product 4",
-    userId: "Description 4",
-    userProfile: "Manager",
-    active: true,
-  },
-  {
-    branchCode: "005",
-    branch: "Product 5",
-    userId: "Description 5",
-    userProfile: "Cashier",
-    active: true,
-  },
-];
-
 const userColumns = [
   { key: "account", label: "Account" },
   { key: "branch", label: "Branch" },
@@ -83,10 +43,10 @@ function BMUser() {
   const [users, setUsers] = useState([]);
 
   const [client, setClient] = useState("0");
-  const [client1, setClient1] = useState("0");
+  // const [client1, setClient1] = useState("0");
 
   const [branch, setBranch] = useState("0");
-  const [branch1, setBranch1] = useState("0");
+  // const [branch1, setBranch1] = useState("0");
 
   const [type, setType] = useState(1);
   const [data, setData] = useState();
@@ -119,7 +79,7 @@ function BMUser() {
     console.log("Import CSV clicked");
   };
 
-  const handleSubmitUser = (data: any) => {};
+  const handleSubmitUser = () => {};
 
   const getClientDropdown = useGetClientsQuery({});
   const getBranchDropdown = useGetAllBranchQuery({ cid: client });

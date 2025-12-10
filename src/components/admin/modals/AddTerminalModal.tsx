@@ -5,22 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  useAddBranchMutation,
   useAddTerminalMutation,
   useGetAllBranchQuery,
   useGetClientsQuery,
-  useUpBranchMutation,
   useUpTerminalMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
-import Barangay, { ComboBox } from "@/components/reusables/Barangay";
+import { ComboBox } from "@/components/reusables/Barangay";
 import { toast } from "sonner";
 
 interface AddTerminalModalProps {
@@ -160,6 +151,26 @@ export default function AddTerminalModal({
     }
   };
 
+  useEffect(() => {
+    if (formData.start_date !== "" && formData.contract_term !== "") {
+      const start = new Date(formData.start_date);
+      const termMonths = Number(formData.contract_term);
+
+      // Add months
+      const end = new Date(start);
+      end.setMonth(start.getMonth() + termMonths);
+
+      // Format date as YYYY-MM-DD
+      const formattedEnd = end.toISOString().split("T")[0];
+
+      setFormData((prev) => ({
+        ...prev,
+        end_date: formattedEnd,
+        renewal: formattedEnd,
+      }));
+    }
+  }, [formData.start_date, formData.contract_term]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -234,6 +245,20 @@ export default function AddTerminalModal({
 
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">
+                      Terminal Id <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      type="text"
+                      placeholder="Terminal Id"
+                      value={formData.terminal_id}
+                      onChange={(e) =>
+                        handleChange("terminal_id", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">
                       Contract Term{" "}
                       <span className="pl-1 text-xs">(months)</span>
                     </Label>
@@ -243,20 +268,6 @@ export default function AddTerminalModal({
                       value={formData.contract_term}
                       onChange={(e) =>
                         handleChange("contract_term", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">
-                      Terminal Id <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      placeholder="Terminal Id"
-                      value={formData.terminal_id}
-                      onChange={(e) =>
-                        handleChange("terminal_id", e.target.value)
                       }
                     />
                   </div>

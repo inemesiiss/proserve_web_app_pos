@@ -16,6 +16,8 @@ import BMInventoryReport from "@/pages/branch_manager/reports/Inventory";
 import BMProductMixReport from "@/pages/branch_manager/reports/ProductReport";
 import BMAttendanceReport from "@/pages/branch_manager/reports/AttendanceReport";
 import BMDiscountPromotion from "@/pages/branch_manager/reports/DiscountPromotion";
+import BMCategory from "@/pages/branch_manager/Category";
+import BMComposition from "@/pages/branch_manager/Composition";
 
 interface BMRoutesProps {
   setLoggedIn?: (v: boolean) => void;
@@ -48,10 +50,26 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
       }
     />
     <Route
-      path="/bm/product"
+      path="/bm/product/product"
       element={
         <AdminLayout setLoggedIn={setLoggedIn}>
           <BMProduct />
+        </AdminLayout>
+      }
+    />
+    <Route
+      path="/bm/product/composition"
+      element={
+        <AdminLayout setLoggedIn={setLoggedIn}>
+          <BMComposition />
+        </AdminLayout>
+      }
+    />
+    <Route
+      path="/bm/product/category"
+      element={
+        <AdminLayout setLoggedIn={setLoggedIn}>
+          <BMCategory />
         </AdminLayout>
       }
     />
@@ -64,7 +82,15 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
       }
     />
     <Route
-      path="/bm/users"
+      path="/bm/users/manager"
+      element={
+        <AdminLayout setLoggedIn={setLoggedIn}>
+          <BMUser />
+        </AdminLayout>
+      }
+    />
+    <Route
+      path="/bm/users/user"
       element={
         <AdminLayout setLoggedIn={setLoggedIn}>
           <BMUser />
