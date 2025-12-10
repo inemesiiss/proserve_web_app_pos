@@ -13,6 +13,7 @@ export interface OrderItem {
   category?: string;
   type: "meal" | "product";
   variation?: string;
+  instanceKey?: string; // Unique key for each cart instance
 
   // --- New fields ---
   isVoid?: boolean;
@@ -30,7 +31,8 @@ export interface OrderItem {
       | {
           id: string;
           name: string;
-          price: number;
+          calculated_price: number; // Price modifier for this variant
+          price?: number; // Backward compatibility
           isDefault?: boolean;
         }
       | undefined;
@@ -92,14 +94,25 @@ interface FoodOrderContextType {
   } | null;
 
   // --- Update helpers ---
-  toggleVoid: (id: number, type: "meal" | "product", index?: number) => void;
-  updateQty: (id: number, type: "meal" | "product", qty: number) => void;
+  toggleVoid: (
+    id: number,
+    type: "meal" | "product",
+    index?: number,
+    instanceKey?: string
+  ) => void;
+  updateQty: (
+    id: number,
+    type: "meal" | "product",
+    qty: number,
+    instanceKey?: string
+  ) => void;
   applyDiscount: (
     id: number,
     type: "meal" | "product",
     discountType: "pwd" | "sc" | "manual" | "percentage",
     value?: number,
-    note?: string
+    note?: string,
+    instanceKey?: string
   ) => void;
 
   // --- Upgrade helpers ---
@@ -154,7 +167,12 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
 
     // Always create a new instance - no automatic stacking
     // User can adjust qty manually with +/- buttons
-    setGroup([...group, { ...item, isVoid: false, isDiscount: false }]);
+    // Generate unique instanceKey for tracking separate items
+    const instanceKey = `${item.id}-${Date.now()}-${Math.random()}`;
+    setGroup([
+      ...group,
+      { ...item, instanceKey, isVoid: false, isDiscount: false },
+    ]);
   };
 
   // --- Remove by ID (hard delete) ---
@@ -181,11 +199,23 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   const getProduct = (id: number) => menuData.products.find((p) => p.id === id);
 
   // --- Toggle void flag ---
-  const toggleVoid = (id: number, type: "meal" | "product", index?: number) => {
+  const toggleVoid = (
+    id: number,
+    type: "meal" | "product",
+    index?: number,
+    instanceKey?: string
+  ) => {
     const setGroup = type === "meal" ? setMeals : setProducts;
     const group = type === "meal" ? meals : products;
 
-    if (index !== undefined) {
+    if (instanceKey) {
+      // Use instanceKey for precise targeting
+      setGroup(
+        group.map((i) =>
+          i.instanceKey === instanceKey ? { ...i, isVoid: !i.isVoid } : i
+        )
+      );
+    } else if (index !== undefined) {
       // Use index to target specific instance
       setGroup(
         group.map((i, idx) => (idx === index ? { ...i, isVoid: !i.isVoid } : i))
@@ -199,11 +229,24 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // --- Update qty (min 1) ---
-  const updateQty = (id: number, type: "meal" | "product", qty: number) => {
+  const updateQty = (
+    id: number,
+    type: "meal" | "product",
+    qty: number,
+    instanceKey?: string
+  ) => {
     const setGroup = type === "meal" ? setMeals : setProducts;
     const group = type === "meal" ? meals : products;
     setGroup(
-      group.map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i))
+      group.map((i) => {
+        // If instanceKey provided, use it for precise tracking; otherwise use id (backward compatibility)
+        if (instanceKey && i.instanceKey === instanceKey) {
+          return { ...i, qty: Math.max(1, qty) };
+        } else if (!instanceKey && i.id === id) {
+          return { ...i, qty: Math.max(1, qty) };
+        }
+        return i;
+      })
     );
   };
 
@@ -213,14 +256,19 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
     type: "meal" | "product",
     discountType: "pwd" | "sc" | "manual" | "percentage",
     value?: number,
-    note?: string
+    note?: string,
+    instanceKey?: string
   ) => {
     const setGroup = type === "meal" ? setMeals : setProducts;
     const group = type === "meal" ? meals : products;
 
     setGroup(
       group.map((i) => {
-        if (i.id !== id) return i;
+        // Match by instanceKey first, then fall back to id for backward compatibility
+        const isMatch = instanceKey
+          ? i.instanceKey === instanceKey
+          : i.id === id;
+        if (!isMatch) return i;
 
         const basePrice = i.price * i.qty;
         let discountAmount = 0;

@@ -25,6 +25,7 @@ export default function FoodOrderSummary() {
     type: "meal" | "product";
     name: string;
     index: number;
+    instanceKey?: string;
   } | null>(null);
   const [showManualDiscountModal, setShowManualDiscountModal] = useState(false);
   const [manualDiscountTarget, setManualDiscountTarget] = useState<{
@@ -33,11 +34,13 @@ export default function FoodOrderSummary() {
     name: string;
     price: number;
     qty: number;
+    instanceKey?: string;
   } | null>(null);
   const [showPwdScModal, setShowPwdScModal] = useState(false);
   const [pwdScTarget, setPwdScTarget] = useState<{
     id: number;
     type: "meal" | "product";
+    instanceKey?: string;
   } | null>(null);
 
   const allItems = [
@@ -49,24 +52,22 @@ export default function FoodOrderSummary() {
     id: number,
     type: "meal" | "product",
     name: string,
-    index: number
+    index: number,
+    instanceKey?: string
   ) => {
-    setRemoveTarget({ id, type, name, index });
+    setRemoveTarget({ id, type, name, index, instanceKey });
     setShowRemoveConfirm(true);
   };
 
   const confirmRemove = () => {
     if (removeTarget) {
-      // Count how many of this type come before our index in allItems
-      let typeIndex = 0;
-      for (let i = 0; i < removeTarget.index; i++) {
-        if (allItems[i].type === removeTarget.type) {
-          typeIndex++;
-        }
-      }
-
-      // Toggle void on the specific instance
-      toggleVoid(removeTarget.id, removeTarget.type, typeIndex);
+      // Toggle void on the specific instance using instanceKey
+      toggleVoid(
+        removeTarget.id,
+        removeTarget.type,
+        undefined,
+        removeTarget.instanceKey
+      );
     }
     setShowRemoveConfirm(false);
     setRemoveTarget(null);
@@ -77,9 +78,10 @@ export default function FoodOrderSummary() {
     type: "meal" | "product",
     name: string,
     price: number,
-    qty: number
+    qty: number,
+    instanceKey?: string
   ) => {
-    setManualDiscountTarget({ id, type, name, price, qty });
+    setManualDiscountTarget({ id, type, name, price, qty, instanceKey });
     setShowManualDiscountModal(true);
   };
 
@@ -89,21 +91,26 @@ export default function FoodOrderSummary() {
     note: string;
   }) => {
     if (manualDiscountTarget) {
-      // Apply manual discount to the item
+      // Apply manual discount to the specific item using instanceKey
       applyDiscount(
         manualDiscountTarget.id,
         manualDiscountTarget.type,
         discountData.type === "percentage" ? "percentage" : "manual",
         discountData.value,
-        discountData.note
+        discountData.note,
+        manualDiscountTarget.instanceKey
       );
       setShowManualDiscountModal(false);
       setManualDiscountTarget(null);
     }
   };
 
-  const handlePwdScClick = (id: number, type: "meal" | "product") => {
-    setPwdScTarget({ id, type });
+  const handlePwdScClick = (
+    id: number,
+    type: "meal" | "product",
+    instanceKey?: string
+  ) => {
+    setPwdScTarget({ id, type, instanceKey });
     setShowPwdScModal(true);
   };
 
@@ -113,9 +120,16 @@ export default function FoodOrderSummary() {
     expiryDate: string;
   }) => {
     if (pwdScTarget) {
-      // Apply SC/PWD discount with card details as note
+      // Apply SC/PWD discount to specific item using instanceKey
       const note = `Card: ${data.cardNumber} | Name: ${data.name} | Exp: ${data.expiryDate}`;
-      applyDiscount(pwdScTarget.id, pwdScTarget.type, "sc", 20, note);
+      applyDiscount(
+        pwdScTarget.id,
+        pwdScTarget.type,
+        "sc",
+        20,
+        note,
+        pwdScTarget.instanceKey
+      );
       setShowPwdScModal(false);
       setPwdScTarget(null);
     }
@@ -152,13 +166,21 @@ export default function FoodOrderSummary() {
               {item.customization && item.customization.length > 0 && (
                 <div className="text-xs text-gray-600 space-y-0.5 bg-gray-50 rounded px-2 py-1.5">
                   {item.customization.map((custom, idx) => {
-                    const price = custom.selected?.price || 0;
+                    // Use calculated_price (the price modifier) instead of price
+                    const priceModifier =
+                      custom.selected?.calculated_price ??
+                      custom.selected?.price ??
+                      0;
+                    const priceNum =
+                      typeof priceModifier === "string"
+                        ? parseFloat(priceModifier)
+                        : priceModifier;
                     return (
                       <div key={idx} className="flex items-center gap-1">
                         <span>1x {custom.selected?.name}</span>
-                        {price > 0 && (
+                        {priceNum > 0 && (
                           <span className="text-green-600 font-medium">
-                            (+₱{price})
+                            (+₱{priceNum.toFixed(2)})
                           </span>
                         )}
                       </div>
@@ -174,7 +196,14 @@ export default function FoodOrderSummary() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => updateQty(item.id, item.type, item.qty - 1)}
+                    onClick={() =>
+                      updateQty(
+                        item.id,
+                        item.type,
+                        item.qty - 1,
+                        item.instanceKey
+                      )
+                    }
                     disabled={isVoided}
                     className="h-7 w-7 p-0"
                   >
@@ -186,7 +215,14 @@ export default function FoodOrderSummary() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => updateQty(item.id, item.type, item.qty + 1)}
+                    onClick={() =>
+                      updateQty(
+                        item.id,
+                        item.type,
+                        item.qty + 1,
+                        item.instanceKey
+                      )
+                    }
                     disabled={isVoided}
                     className="h-7 w-7 p-0"
                   >
@@ -233,7 +269,9 @@ export default function FoodOrderSummary() {
                     ? "bg-green-600 text-white hover:bg-green-700 h-7 text-xs px-2"
                     : "h-7 text-xs px-2"
                 }
-                onClick={() => handlePwdScClick(item.id, item.type)}
+                onClick={() =>
+                  handlePwdScClick(item.id, item.type, item.instanceKey)
+                }
                 disabled={isVoided}
               >
                 <Percent size={12} className="mr-1" />
@@ -261,7 +299,8 @@ export default function FoodOrderSummary() {
                     item.type,
                     item.name,
                     item.price,
-                    item.qty
+                    item.qty,
+                    item.instanceKey
                   )
                 }
                 disabled={isVoided}
@@ -274,7 +313,13 @@ export default function FoodOrderSummary() {
                 variant="destructive"
                 className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white h-7 text-xs px-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() =>
-                  handleRemoveClick(item.id, item.type, item.name, index)
+                  handleRemoveClick(
+                    item.id,
+                    item.type,
+                    item.name,
+                    index,
+                    item.instanceKey
+                  )
                 }
                 disabled={isVoided}
               >
