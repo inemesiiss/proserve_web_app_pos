@@ -14,6 +14,7 @@ export interface OrderItem {
   type: "meal" | "product";
   variation?: string;
   instanceKey?: string; // Unique key for each cart instance
+  branchProdId: number;
 
   // --- New fields ---
   isVoid?: boolean;
@@ -25,7 +26,6 @@ export interface OrderItem {
 
   // --- Customization details for meals with variances ---
   customization?: {
-    type: string;
     label: string;
     selected:
       | {

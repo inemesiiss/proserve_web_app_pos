@@ -5,8 +5,7 @@ import { formatCurrency } from "@/function/reusables/reuseables";
 
 interface MealVariance {
   compositionId: number; // Add composition ID for independent tracking
-  type: "drink" | "fries" | "side";
-  label: string;
+  label: string; // Generic label from the composition name
   options: {
     id: string;
     name: string;
@@ -103,7 +102,6 @@ export default function MealCustomizationModal({
         );
         return {
           compositionId: variance.compositionId,
-          type: variance.type,
           label: variance.label,
           selected: selectedOption,
         };
@@ -142,7 +140,10 @@ export default function MealCustomizationModal({
           {meal.variances && meal.variances.length > 0 ? (
             <div className="space-y-4">
               {meal.variances.map((variance) => (
-                <div key={variance.type} className="space-y-2">
+                <div
+                  key={`composition-${variance.compositionId}`}
+                  className="space-y-2"
+                >
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                     {variance.label}
                   </h4>

@@ -9,10 +9,10 @@ import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import MealCustomizationModal from "@/components/food/modals/MealCustomizationModal";
 import { Search, Loader2 } from "lucide-react";
 import { useGetBranchProductsQuery } from "@/store/api/Transaction";
-import type { CategorizedProduct, Product } from "@/types/transaction";
+import type { CategorizedProduct } from "@/types/transaction";
 import { formatCurrency } from "@/function/reusables/reuseables";
 
-const API_DOMAIN = import.meta.env.VITE_API_DOMAIN || "http://localhost:8006";
+const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
 // Helper function to build complete image URL
 const getImageUrl = (imagePath: string | null): string => {
@@ -46,7 +46,7 @@ export default function FoodTransactionPage() {
     // Filter by category if not "All"
     if (filteredCategory !== "All") {
       products = products.filter(
-        (cp) => cp.wrapper.product.prod_categ.toString() === filteredCategory
+        (cp) => cp.prod_categ.toString() === filteredCategory
       );
     }
 
@@ -55,14 +55,14 @@ export default function FoodTransactionPage() {
       const query = searchQuery.toLowerCase();
       products = products.filter(
         (cp) =>
-          cp.wrapper.product.prod_name.toLowerCase().includes(query) ||
-          cp.wrapper.product.prod_code.toLowerCase().includes(query)
+          cp.prod_name.toLowerCase().includes(query) ||
+          cp.prod_code.toLowerCase().includes(query)
       );
     }
 
     return products;
   }, [apiProducts, filteredCategory, searchQuery]);
-
+  // console.log("data", apiProducts);
   // ✅ Separate products by type for organized rendering
   const { individuals, individualsWithVariance, bundles, bundlesWithVariance } =
     useMemo(() => {
@@ -78,47 +78,62 @@ export default function FoodTransactionPage() {
       };
     }, [filteredProducts]);
 
-  // ✅ Handle add to cart - check if product has variance
+  // ✅ Handle add to cart - check if product needs customization
   const handleAdd = (product: CategorizedProduct) => {
-    // If product has variance/compositions, show customization modal
-    if (
-      product.hasVariance &&
-      product.wrapper.product.compositions.length > 0
-    ) {
+    // Check if product has any compositions with variants to customize
+    const hasVariantsToCustomize = product.compositions?.some(
+      (comp) => comp.variants && comp.variants.length > 0
+    );
+
+    if (hasVariantsToCustomize) {
+      // Open modal if there are actual variants to choose from
       setSelectedProduct(product);
       setShowCustomizationModal(true);
     } else {
-      // Add directly to cart if no customization needed
-      addDirectToCart(product.wrapper.product);
+      // Add directly to cart with default components if no variants
+      addDirectToCart(product);
     }
   };
 
   // ✅ Add item directly to cart without customization
-  const addDirectToCart = (product: Product) => {
-    const price =
-      product.base_price !== null && product.base_price !== undefined
-        ? product.base_price
-        : 0;
+  const addDirectToCart = (product: CategorizedProduct) => {
+    const price = product.basePrice;
+
+    // For products with compositions (bundles/meals), automatically include default components
+    // This applies to both p_type=1 and p_type=2 when they have compositions
+    let customizationDetails = undefined;
+    if (product.compositions && product.compositions.length > 0) {
+      customizationDetails = product.compositions.map((comp) => ({
+        compositionId: comp.id,
+        label: comp.name || "Customization",
+        selected: {
+          id: comp.default_prod.id.toString(),
+          name: comp.default_prod.prod_name,
+          calculated_price: 0,
+          isDefault: true,
+        },
+      }));
+    }
+
     addItem({
       id: product.id,
+      branchProdId: product.branch_prod_id,
       name: product.prod_name,
       qty: 1,
       price,
       image: product.image || "/static/placeholder.png",
       type: product.p_type === 2 ? "meal" : "product",
       category: product.prod_categ.toString(),
+      customization: customizationDetails,
     });
   };
 
   // ✅ Handle customization confirmation from modal
   const handleCustomizationConfirm = (customization: any) => {
     if (selectedProduct) {
-      const product = selectedProduct.wrapper.product;
+      const product = selectedProduct;
       // Calculate total price with selected variants
-      const basePriceValue =
-        product.base_price !== null && product.base_price !== undefined
-          ? product.base_price
-          : 0;
+      const basePriceValue = product.basePrice;
 
       // Ensure totalPrice is a number
       let totalPrice = basePriceValue;
@@ -135,6 +150,7 @@ export default function FoodTransactionPage() {
       addItem({
         id: product.id,
         name: product.prod_name,
+        branchProdId: product.branch_prod_id,
         qty: 1,
         price: Number(totalPrice),
         image: product.image || "/static/placeholder.png",
@@ -230,9 +246,8 @@ export default function FoodTransactionPage() {
           <section>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {/* Render all products (individuals, bundles, and variants) */}
-              {filteredProducts.map((categorized, index) => {
-                const product = categorized.wrapper.product;
-                const price = Number(categorized.basePrice) || 0;
+              {filteredProducts.map((product, index) => {
+                const price = Number(product.basePrice) || 0;
                 const displayName = product.prod_code;
                 const buttonLabel =
                   product.p_type === 2 ? "Add Meal" : "Add Item";
@@ -265,14 +280,14 @@ export default function FoodTransactionPage() {
                       <div className="text-sm text-gray-700 font-semibold">
                         {formatCurrency(price)}
                       </div>
-                      {categorized.hasVariance && (
+                      {product.has_variance && (
                         <div className="text-xs text-blue-600 font-medium">
                           Customizable
                         </div>
                       )}
                     </div>
                     <Button
-                      onClick={() => handleAdd(categorized)}
+                      onClick={() => handleAdd(product)}
                       className="w-full bg-green-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
                     >
                       {buttonLabel}
@@ -292,9 +307,8 @@ export default function FoodTransactionPage() {
                   Items (Simple)
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {individuals.map((categorized, index) => {
-                    const product = categorized.wrapper.product;
-                    const price = Number(categorized.basePrice) || 0;
+                  {individuals.map((product, index) => {
+                    const price = Number(product.basePrice) || 0;
                     const imageUrl = getImageUrl(product.image);
 
                     return (
@@ -326,7 +340,7 @@ export default function FoodTransactionPage() {
                           </div>
                         </div>
                         <Button
-                          onClick={() => handleAdd(categorized)}
+                          onClick={() => handleAdd(product)}
                           className="w-full bg-green-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
                         >
                           Add Item
@@ -345,9 +359,8 @@ export default function FoodTransactionPage() {
                   Items (Customizable)
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {individualsWithVariance.map((categorized, index) => {
-                    const product = categorized.wrapper.product;
-                    const price = Number(categorized.basePrice) || 0;
+                  {individualsWithVariance.map((product, index) => {
+                    const price = Number(product.basePrice) || 0;
                     const imageUrl = getImageUrl(product.image);
 
                     return (
@@ -382,7 +395,7 @@ export default function FoodTransactionPage() {
                           </div>
                         </div>
                         <Button
-                          onClick={() => handleAdd(categorized)}
+                          onClick={() => handleAdd(product)}
                           className="w-full bg-blue-600 text-white hover:bg-blue-700 h-8 text-xs mt-auto"
                         >
                           Customize
@@ -401,9 +414,8 @@ export default function FoodTransactionPage() {
                   Meals
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {bundles.map((categorized, index) => {
-                    const product = categorized.wrapper.product;
-                    const price = Number(categorized.basePrice) || 0;
+                  {bundles.map((product, index) => {
+                    const price = Number(product.basePrice) || 0;
                     const imageUrl = getImageUrl(product.image);
 
                     return (
@@ -435,7 +447,7 @@ export default function FoodTransactionPage() {
                           </div>
                         </div>
                         <Button
-                          onClick={() => handleAdd(categorized)}
+                          onClick={() => handleAdd(product)}
                           className="w-full bg-green-600 text-white hover:bg-green-700 h-8 text-xs mt-auto"
                         >
                           Add Meal
@@ -454,9 +466,8 @@ export default function FoodTransactionPage() {
                   Meals (Customizable)
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {bundlesWithVariance.map((categorized, index) => {
-                    const product = categorized.wrapper.product;
-                    const price = Number(categorized.basePrice) || 0;
+                  {bundlesWithVariance.map((product, index) => {
+                    const price = Number(product.basePrice) || 0;
                     const imageUrl = getImageUrl(product.image);
 
                     return (
@@ -491,7 +502,7 @@ export default function FoodTransactionPage() {
                           </div>
                         </div>
                         <Button
-                          onClick={() => handleAdd(categorized)}
+                          onClick={() => handleAdd(product)}
                           className="w-full bg-purple-600 text-white hover:bg-purple-700 h-8 text-xs mt-auto"
                         >
                           Customize Meal
@@ -522,46 +533,29 @@ export default function FoodTransactionPage() {
             setSelectedProduct(null);
           }}
           meal={{
-            id: selectedProduct.wrapper.product.id,
-            name: selectedProduct.wrapper.product.prod_name,
-            base_price:
-              selectedProduct.wrapper.product.base_price !== null &&
-              selectedProduct.wrapper.product.base_price !== undefined
-                ? selectedProduct.wrapper.product.base_price
-                : 0,
-            image:
-              selectedProduct.wrapper.product.image ||
-              "/static/placeholder.png",
-            category: selectedProduct.wrapper.product.prod_categ.toString(),
-            variances: selectedProduct.wrapper.product.compositions.map(
-              (comp) => {
-                const typeMap: Record<string, "drink" | "fries" | "side"> = {
-                  drink: "drink",
-                  fries: "fries",
-                  side: "side",
-                };
-                return {
-                  compositionId: comp.id, // Add composition ID for independent tracking
-                  type: (typeMap[comp.name?.toLowerCase() || "drink"] ||
-                    "drink") as "drink" | "fries" | "side",
-                  label: comp.name || "Customization",
-                  options: [
-                    {
-                      id: comp.default_prod.id.toString(),
-                      name: comp.default_prod.prod_name,
-                      calculated_price: 0, // Default has no additional price
-                      isDefault: true,
-                    },
-                    ...comp.variants.map((variant) => ({
-                      id: variant.product.id.toString(),
-                      name: variant.product.prod_name,
-                      calculated_price: parseFloat(variant.calculated_price),
-                      isDefault: false,
-                    })),
-                  ],
-                };
-              }
-            ),
+            id: selectedProduct.id,
+            name: selectedProduct.prod_name,
+            base_price: selectedProduct.basePrice,
+            image: selectedProduct.image || "/static/placeholder.png",
+            category: selectedProduct.prod_categ.toString(),
+            variances: selectedProduct.compositions.map((comp) => ({
+              compositionId: comp.id, // Add composition ID for independent tracking
+              label: comp.name || "Customization", // Generic label from composition name
+              options: [
+                {
+                  id: comp.default_prod.id.toString(),
+                  name: comp.default_prod.prod_name,
+                  calculated_price: 0, // Default has no additional price
+                  isDefault: true,
+                },
+                ...comp.variants.map((variant) => ({
+                  id: variant.product.id.toString(),
+                  name: variant.product.prod_name,
+                  calculated_price: parseFloat(variant.calculated_price),
+                  isDefault: false,
+                })),
+              ],
+            })),
           }}
           onConfirm={handleCustomizationConfirm}
         />

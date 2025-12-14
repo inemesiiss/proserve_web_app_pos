@@ -55,6 +55,7 @@ export interface Product {
  * Wrapper for product with active status
  */
 export interface ProductWrapper {
+  id: number;
   is_active: boolean;
   product: Product;
 }
@@ -89,12 +90,15 @@ export interface CategoryApiResponse {
 /**
  * Categorized product with computed properties
  * Result of the categorizeProduct utility function
+ * FLATTENED - No redundant wrapper or duplicate fields
  */
-export interface CategorizedProduct {
-  wrapper: ProductWrapper;
+export interface CategorizedProduct
+  extends Omit<Product, "has_variance" | "base_price" | "is_active"> {
   type: "individual" | "individual-variance" | "bundle" | "bundle-variance";
+  branch_prod_id: number; // ID from BranchProd ID
   basePrice: number; // Always guaranteed to be a number (null converted to 0)
-  hasVariance: boolean;
+  has_variance: boolean; // Derived from compositions length
+  isActive: boolean; // Combined flag from ProductWrapper.is_active && Product.is_active
 }
 
 /**
@@ -136,6 +140,17 @@ export interface CartItem {
   subtotal: number;
   image: string;
   productType: 1 | 2;
+
+  // --- Void tracking ---
+  is_voided?: boolean;
+  voided_at?: string; // ISO timestamp when item was voided
+  voided_reason?: string;
+
+  // --- Discount tracking ---
+  discount?: number; // Discount amount applied to this item
+  discounted_at?: string; // ISO timestamp when discount was applied
+  discount_type?: "pwd" | "sc" | "manual" | "percentage"; // Type of discount
+  discount_note?: string; // Reason or note for discount
 }
 
 /**
@@ -163,6 +178,13 @@ export interface AddItemRequest {
   productId: number;
   quantity: number;
   customization?: ProductCustomization;
+  is_voided?: boolean;
+  voided_at?: string;
+  voided_reason?: string;
+  discount?: number;
+  discounted_at?: string;
+  discount_type?: "pwd" | "sc" | "manual" | "percentage";
+  discount_note?: string;
 }
 
 /**

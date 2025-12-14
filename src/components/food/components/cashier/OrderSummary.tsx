@@ -162,7 +162,7 @@ export default function FoodOrderSummary() {
                 {item.name}
               </div>
 
-              {/* Variance Details */}
+              {/* Variance/Composition Details - Always show for meals (type=meal), show when customized for products */}
               {item.customization && item.customization.length > 0 && (
                 <div className="text-xs text-gray-600 space-y-0.5 bg-gray-50 rounded px-2 py-1.5">
                   {item.customization.map((custom, idx) => {
@@ -177,6 +177,9 @@ export default function FoodOrderSummary() {
                         : priceModifier;
                     return (
                       <div key={idx} className="flex items-center gap-1">
+                        {/* <span className="font-medium text-gray-700">
+                          {custom.label}:
+                        </span> */}
                         <span>1x {custom.selected?.name}</span>
                         {priceNum > 0 && (
                           <span className="text-green-600 font-medium">
