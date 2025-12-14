@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ShoppingCart } from "lucide-react";
+import { formatCurrency } from "@/function/reusables/reuseables";
 
 interface MealVariance {
-  type: "drink" | "fries" | "side";
-  label: string;
+  compositionId: number; // Add composition ID for independent tracking
+  label: string; // Generic label from the composition name
   options: {
     id: string;
     name: string;
-    price: number;
+    calculated_price: number; // Price modifier for this variant
     isDefault?: boolean;
   }[];
 }
@@ -43,11 +43,12 @@ export default function MealCustomizationModal({
     if (isOpen && meal?.variances) {
       const defaults: Record<string, string> = {};
       meal.variances.forEach((variance) => {
+        // Use compositionId as the key instead of type
         const defaultOption = variance.options.find((opt) => opt.isDefault);
         if (defaultOption) {
-          defaults[variance.type] = defaultOption.id;
+          defaults[variance.compositionId.toString()] = defaultOption.id;
         } else if (variance.options.length > 0) {
-          defaults[variance.type] = variance.options[0].id;
+          defaults[variance.compositionId.toString()] = variance.options[0].id;
         }
       });
       setSelectedOptions(defaults);
@@ -56,22 +57,33 @@ export default function MealCustomizationModal({
 
   if (!meal) return null;
 
-  const handleOptionSelect = (type: string, optionId: string) => {
+  const handleOptionSelect = (compositionId: number, optionId: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
-      [type]: optionId,
+      [compositionId.toString()]: optionId,
     }));
   };
 
   const calculateTotalPrice = () => {
-    let total = meal.base_price;
+    // Ensure base_price is a number
+    let total =
+      typeof meal.base_price === "string"
+        ? parseFloat(meal.base_price)
+        : meal.base_price;
+
     meal.variances?.forEach((variance) => {
-      const selectedId = selectedOptions[variance.type];
+      // Use compositionId instead of type
+      const selectedId = selectedOptions[variance.compositionId.toString()];
       const selectedOption = variance.options.find(
         (opt) => opt.id === selectedId
       );
       if (selectedOption) {
-        total += selectedOption.price;
+        // Ensure calculated_price is a number
+        const priceModifier =
+          typeof selectedOption.calculated_price === "string"
+            ? parseFloat(selectedOption.calculated_price)
+            : selectedOption.calculated_price;
+        total += priceModifier;
       }
     });
     return total;
@@ -83,12 +95,13 @@ export default function MealCustomizationModal({
       selectedOptions,
       totalPrice: calculateTotalPrice(),
       customizationDetails: meal.variances?.map((variance) => {
-        const selectedId = selectedOptions[variance.type];
+        // Use compositionId instead of type
+        const selectedId = selectedOptions[variance.compositionId.toString()];
         const selectedOption = variance.options.find(
           (opt) => opt.id === selectedId
         );
         return {
-          type: variance.type,
+          compositionId: variance.compositionId,
           label: variance.label,
           selected: selectedOption,
         };
@@ -101,152 +114,124 @@ export default function MealCustomizationModal({
   const totalPrice = calculateTotalPrice();
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-3xl shadow-2xl p-8 w-[680px] max-h-[85vh] flex flex-col relative"
-          >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"
-            >
-              <X size={24} />
-            </button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[85vh] p-0 flex flex-col">
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50 dark:bg-gray-800">
+          <div className="flex items-center gap-3 flex-1">
+            <img
+              src={meal.image}
+              alt={meal.name}
+              className="w-12 h-12 object-cover rounded"
+            />
+            <div className="flex-1">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                {meal.name}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Base: {formatCurrency(meal.base_price)}
+              </p>
+            </div>
+          </div>
+        </div>
 
-            {/* Scrollable Content */}
-            <div
-              className="overflow-y-auto pr-2 -mr-2"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              <style>{`
-                .overflow-y-auto::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-
-              {/* Header */}
-              <div className="mb-6">
-                <div className="flex items-center gap-4 mb-3">
-                  <img
-                    src={meal.image}
-                    alt={meal.name}
-                    className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
-                  />
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      {meal.name}
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Base Price: ₱{meal.base_price.toFixed(2)}
-                    </p>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 scrollbar-hide">
+          {meal.variances && meal.variances.length > 0 ? (
+            <div className="space-y-4">
+              {meal.variances.map((variance) => (
+                <div
+                  key={`composition-${variance.compositionId}`}
+                  className="space-y-2"
+                >
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {variance.label}
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {variance.options.map((option) => {
+                      const isSelected =
+                        selectedOptions[variance.compositionId.toString()] ===
+                        option.id;
+                      return (
+                        <div
+                          key={option.id}
+                          onClick={() =>
+                            handleOptionSelect(
+                              variance.compositionId,
+                              option.id
+                            )
+                          }
+                          className={`
+                            p-2 border-2 rounded cursor-pointer transition-all text-sm
+                            ${
+                              isSelected
+                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                            }
+                          `}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                checked={isSelected}
+                                onChange={() =>
+                                  handleOptionSelect(
+                                    variance.compositionId,
+                                    option.id
+                                  )
+                                }
+                                className="w-3 h-3 cursor-pointer"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-xs font-medium text-gray-900 dark:text-white">
+                                {option.name}
+                              </span>
+                            </div>
+                            {option.calculated_price > 0 && (
+                              <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                                +{formatCurrency(option.calculated_price)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
-
-              {/* Customization Options */}
-              {meal.variances && meal.variances.length > 0 ? (
-                <div className="space-y-6">
-                  {meal.variances.map((variance) => (
-                    <div key={variance.type}>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        {variance.label}
-                      </h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        {variance.options.map((option) => {
-                          const isSelected =
-                            selectedOptions[variance.type] === option.id;
-                          return (
-                            <div
-                              key={option.id}
-                              onClick={() =>
-                                handleOptionSelect(variance.type, option.id)
-                              }
-                              className={`
-                                p-3 border-2 rounded-lg cursor-pointer transition-all
-                                ${
-                                  isSelected
-                                    ? "border-blue-500 bg-blue-50"
-                                    : "border-gray-200 hover:border-gray-300"
-                                }
-                              `}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="radio"
-                                    checked={isSelected}
-                                    onChange={() =>
-                                      handleOptionSelect(variance.type, option.id)
-                                    }
-                                    className="w-4 h-4 cursor-pointer"
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {option.name}
-                                  </span>
-                                </div>
-                                {option.price > 0 && (
-                                  <span className="text-sm font-semibold text-green-600">
-                                    +₱{option.price}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-8 text-sm">
-                  No customization options available.
-                </div>
-              )}
-
-              {/* Total Preview */}
-              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-gray-700">
-                    Total Price:
-                  </span>
-                  <span className="text-2xl font-bold text-blue-700">
-                    ₱{totalPrice.toFixed(2)}
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
+          ) : (
+            <div className="text-center text-gray-500 py-4 text-sm">
+              No options available.
+            </div>
+          )}
+        </div>
 
-            {/* Actions - Fixed at bottom */}
-            <div className="flex gap-3 pt-4 border-t mt-auto">
+        {/* Footer - Fixed */}
+        <div className="border-t px-4 py-3 bg-gray-50 dark:bg-gray-800">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-base font-bold text-gray-900 dark:text-white">
+              Total: {formatCurrency(totalPrice)}
+            </div>
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 h-12"
+                className="h-9 px-4 text-sm"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleConfirm}
-                className="flex-1 h-12 bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2"
+                className="bg-green-600 hover:bg-green-700 h-9 px-4 text-sm"
               >
-                <ShoppingCart size={18} />
                 Add to Cart
               </Button>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

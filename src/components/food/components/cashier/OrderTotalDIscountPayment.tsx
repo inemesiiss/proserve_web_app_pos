@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { useDeviceSettings } from "@/hooks/useDeviceSettings";
+import { useCreateCashierTransactionMutation } from "@/store/api/Transaction";
 import ReceiptPrinter from "@/components/food/components/Print/PrintReceipt";
 import PaymentModal from "../../modals/food/PaymentCashLessModal";
 import OrderTotalDiscountModal from "../../modals/security/OrderTotalDiscountModal";
@@ -8,6 +9,8 @@ import { X } from "lucide-react";
 
 export default function FoodTotalDiscountPaymentSection() {
   const {
+    meals,
+    products,
     subTotal,
     totalDiscount,
     orderTotalDiscount,
@@ -15,9 +18,12 @@ export default function FoodTotalDiscountPaymentSection() {
     applyOrderTotalDiscount,
     removeOrderTotalDiscount,
     orderTotalDiscountInfo,
+    clearOrder,
   } = useFoodOrder();
 
   const { settings: deviceSettings } = useDeviceSettings();
+  const [createTransaction, { isLoading: isCreatingTransaction }] =
+    useCreateCashierTransactionMutation();
 
   console.log(
     "📊 [OrderTotalDiscountPayment] Device Settings:",
@@ -33,6 +39,7 @@ export default function FoodTotalDiscountPaymentSection() {
   >("cash");
   const [cashReceived, setCashReceived] = useState(0);
   const [shouldPrint, setShouldPrint] = useState(false);
+  const [invoiceNum, setInvoiceNum] = useState<string | null>(null);
   const [cashlessModalisOpen, setCashlessModalOpen] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
 
@@ -40,8 +47,114 @@ export default function FoodTotalDiscountPaymentSection() {
   const vat = subTotal * 0.12;
   const change = cashReceived - grandTotal;
 
+  // 🔄 Handle transaction creation (before printing)
+  const handleCreateTransaction = async () => {
+    console.log(
+      "💳 [handleCreateTransaction] Starting transaction creation..."
+    );
+    console.log("🍽️ [handleCreateTransaction] Meals count:", meals.length);
+    console.log("🍽️ [handleCreateTransaction] Meals data:", meals);
+    console.log(
+      "📦 [handleCreateTransaction] Products count:",
+      products.length
+    );
+    console.log("📦 [handleCreateTransaction] Products data:", products);
+
+    try {
+      const transactionPayload = {
+        purchase: {
+          clientId: 1, // TODO: Get from context/user
+          branchId: 1, // TODO: Get from context/user
+          outletId: 1, // TODO: Get from context/user
+          grandTotal,
+          subTotal,
+          cashReceived,
+          totalDiscount: totalDiscount + orderTotalDiscount,
+          status: "completed",
+        },
+        items: [
+          ...meals.map((meal) => ({
+            productId: meal.id,
+            branchProdId: meal.branchProdId || 0,
+            quantity: meal.qty,
+            unitPrice: meal.price,
+            totalPrice: meal.price * meal.qty,
+            productName: meal.name,
+            customization: meal.customization,
+            // Void tracking
+            is_voided: meal.isVoid || false,
+            voided_at: meal.isVoid ? new Date().toISOString() : undefined,
+            voided_reason: meal.isVoid
+              ? "Item voided at transaction"
+              : undefined,
+            // Discount tracking
+            discount: meal.itemTotalDiscount || 0,
+            discounted_at:
+              meal.itemTotalDiscount && meal.itemTotalDiscount > 0
+                ? new Date().toISOString()
+                : undefined,
+            discount_type: meal.discount_type,
+            discount_note: meal.discount_note,
+          })),
+          ...products.map((product) => ({
+            productId: product.id,
+            branchProdId: product.branchProdId || 0,
+            quantity: product.qty,
+            unitPrice: product.price,
+            totalPrice: product.price * product.qty,
+            productName: product.name,
+            customization: product.customization,
+            // Void tracking
+            is_voided: product.isVoid || false,
+            voided_at: product.isVoid ? new Date().toISOString() : undefined,
+            voided_reason: product.isVoid
+              ? "Item voided at transaction"
+              : undefined,
+            // Discount tracking
+            discount: product.itemTotalDiscount || 0,
+            discounted_at:
+              product.itemTotalDiscount && product.itemTotalDiscount > 0
+                ? new Date().toISOString()
+                : undefined,
+            discount_type: product.discount_type,
+            discount_note: product.discount_note,
+          })),
+        ],
+      };
+
+      console.log(
+        "📦 [handleCreateTransaction] Full Payload:",
+        transactionPayload
+      );
+      console.log(
+        "📊 [handleCreateTransaction] Items count:",
+        transactionPayload.items.length
+      );
+      if (transactionPayload.items.length === 0) {
+        console.warn("⚠️ [handleCreateTransaction] NO ITEMS FOUND!");
+        alert("No items in cart. Please add items first.");
+        return;
+      }
+
+      const response = await createTransaction(transactionPayload).unwrap();
+
+      console.log("✅ [handleCreateTransaction] Success:", response);
+
+      if (response.success && response.invoiceNum) {
+        setInvoiceNum(response.invoiceNum);
+        setShouldPrint(true);
+      }
+    } catch (error) {
+      console.error("❌ [handleCreateTransaction] Error:", error);
+      alert("Failed to create transaction. Please try again.");
+    }
+  };
+
   const handlePayment = () => {
     setCashReceived(0);
+    setInvoiceNum(null);
+    setShouldPrint(false);
+    clearOrder();
   };
 
   const handleAddCash = (value: number) =>
@@ -320,12 +433,17 @@ export default function FoodTotalDiscountPaymentSection() {
           </div>
           {/* Footer Buttons */}
           <div className="flex gap-6 justify-center mt-6">
-            {/* <button
-              onClick={handleResetCash}
-              className="bg-red-500 hover:bg-red-600 text-white rounded-full px-10 py-2 text-base font-bold"
+            <button
+              onClick={handleCreateTransaction}
+              disabled={
+                cashReceived < grandTotal ||
+                isCreatingTransaction ||
+                !deviceSettings.receiptPrinter
+              }
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-10 py-2 text-base font-bold disabled:bg-green-200 disabled:cursor-not-allowed transition-colors"
             >
-              Cancel
-            </button> */}
+              {isCreatingTransaction ? "Processing..." : "Proceed to Payment"}
+            </button>
           </div>
         </>
       )}
@@ -374,16 +492,20 @@ export default function FoodTotalDiscountPaymentSection() {
       {/* 🔹 AUTO PRINT RECEIPT WHEN CASH ≥ TOTAL */}
       {shouldPrint &&
         paymentMode === "cash" &&
-        deviceSettings.receiptPrinter && (
+        deviceSettings.receiptPrinter &&
+        invoiceNum && (
           <>
             {console.log(
               "🖨️ [ReceiptPrinter] Rendering with printer:",
-              deviceSettings.receiptPrinter
+              deviceSettings.receiptPrinter,
+              "Invoice:",
+              invoiceNum
             )}
             <ReceiptPrinter
               mode="cash"
               cashReceived={cashReceived}
               p_name={deviceSettings.receiptPrinter}
+              invoiceNum={invoiceNum}
               onSuccess={handlePayment}
             />
           </>
