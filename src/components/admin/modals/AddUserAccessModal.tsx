@@ -5,18 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  useAddUserMutation,
+  useAddBranchUserMutation,
   useGetAllBranchQuery,
   useGetClientsQuery,
-  useGetProfileQuery,
-  useUpUserMutation,
+  useUpBranchUserMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
 import { ComboBox } from "@/components/reusables/Barangay";
@@ -35,16 +27,12 @@ interface UserFormData {
   id: number;
   client: number;
   branch: number;
-  user_id: string;
-  password: string;
   fullname: string;
-  contact_no: string;
-  profile: number;
-  email: string;
+  password: string;
   status: number;
 }
 
-export default function AddUserModal({
+export default function AddUserAccessModal({
   isOpen,
   onClose,
   onSubmit,
@@ -68,7 +56,7 @@ export default function AddUserModal({
   const [formData, setFormData] = useState<UserFormData>(initial);
   const [client, setClient] = useState<IdName[]>([]);
   const [branch, setBranch] = useState<IdName[]>([]);
-  const [profile, setProfile] = useState<IdName[]>([]);
+  //   const [profile, setProfile] = useState<IdName[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +75,6 @@ export default function AddUserModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const getProfiles = useGetProfileQuery({});
   const getClientDropdown = useGetClientsQuery({});
   useEffect(() => {
     if (getClientDropdown.isSuccess && getClientDropdown.data) {
@@ -102,11 +89,11 @@ export default function AddUserModal({
     }
   }, [getBranchDropdown.isSuccess, getBranchDropdown.data]);
 
-  useEffect(() => {
-    if (getProfiles.isSuccess && getProfiles.data) {
-      setProfile(getProfiles.data.data);
-    }
-  }, [getProfiles.isSuccess, getProfiles.data]);
+  //   useEffect(() => {
+  //     if (getProfiles.isSuccess && getProfiles.data) {
+  //       setProfile(getProfiles.data.data);
+  //     }
+  //   }, [getProfiles.isSuccess, getProfiles.data]);
 
   useEffect(() => {
     if (data && isOpen) {
@@ -114,12 +101,8 @@ export default function AddUserModal({
         id: data.id,
         client: data.client,
         branch: data.branch,
-        user_id: data.user_id,
-        password: "",
         fullname: data.fullname,
-        contact_no: data.contact_no,
-        profile: Number(data.profile),
-        email: data.email,
+        password: "",
         status: 1,
       });
     } else if (isOpen) {
@@ -127,12 +110,12 @@ export default function AddUserModal({
     }
   }, [data, isOpen]);
 
-  const [addUser] = useAddUserMutation();
-  const [upUser] = useUpUserMutation();
+  const [addUser] = useAddBranchUserMutation();
+  const [upUser] = useUpBranchUserMutation();
   const submitTerminal = async () => {
     if (type === 1) {
       if (
-        formData.user_id !== "" &&
+        formData.fullname !== "" &&
         formData.password !== "" &&
         formData.branch !== 0
       ) {
@@ -159,11 +142,11 @@ export default function AddUserModal({
         toast.error("Please complete required fields.");
       }
     } else {
-      if (formData.user_id !== "" && formData.branch !== 0) {
+      if (formData.fullname !== "" && formData.branch !== 0) {
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
-          formData1.append("tid", String(formData.id));
+          formData1.append("id", String(formData.id));
 
           const checkstat = await upUser(formData1).unwrap();
           if (checkstat.success) {
@@ -205,7 +188,7 @@ export default function AddUserModal({
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {type === 1 ? `Add New` : `Update`} Manager Access
+                  {type === 1 ? `Add New` : `Update`} User Access
                 </h2>
                 <button
                   onClick={handleClose}
@@ -267,77 +250,18 @@ export default function AddUserModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Email</Label>
+                    <Label htmlFor="date">Password</Label>
                     <Input
                       type="text"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Contact Number</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contact Number"
-                      value={formData.contact_no}
-                      onChange={(e) =>
-                        handleChange("contact_no", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Username</Label>
-                    <Input
-                      type="text"
-                      placeholder="User ID"
-                      value={formData.user_id}
-                      onChange={(e) => handleChange("user_id", e.target.value)}
-                      autoComplete="new-user"
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">
-                      Password
-                      <span className="pl-1 text-blue-500 text-[9px]">
-                        (leave blank if not going to change)
-                      </span>
-                    </Label>
-                    <Input
-                      type="password"
-                      placeholder="User Password"
+                      placeholder="Password"
                       value={formData.password}
-                      onChange={(e) => handleChange("password", e.target.value)}
-                      autoComplete="new-password"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value) && value.length <= 6) {
+                          handleChange("password", value);
+                        }
+                      }}
                     />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">User Profile</Label>
-                    <Select
-                      value={
-                        type === 1
-                          ? String(formData.profile)
-                          : formData.profile !== 0
-                          ? String(formData.profile)
-                          : String(data.profile)
-                      }
-                      onValueChange={(value) => handleChange("profile", value)}
-                    >
-                      <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
-                        <SelectValue placeholder="Select client" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {profile.map((item1: IdName) => (
-                          <SelectItem key={item1.id} value={String(item1.id)}>
-                            {item1.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
 
