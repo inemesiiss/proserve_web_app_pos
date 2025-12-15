@@ -13,6 +13,7 @@ interface ReceiptPrinterProps {
   paymentValue?: number; // only for cashless
   cashlessType?: CashlessType; // only for cashless
   p_name: string;
+  invoiceNum?: string; // invoice number from transaction
   onSuccess?: () => void;
 }
 
@@ -22,11 +23,31 @@ export default function ReceiptPrinter({
   paymentValue = 0,
   cashlessType,
   p_name,
+  invoiceNum,
   onSuccess,
 }: ReceiptPrinterProps) {
   const { meals, products, subTotal, totalDiscount, grandTotal, clearOrder } =
     useFoodOrder();
   const vatTotal = subTotal * 0.12;
+
+  // 📋 Console all data needed for printing
+  console.log("========== 🖨️ RECEIPT PRINTER DATA ==========");
+  console.log("📊 Payment Mode:", mode);
+  console.log("💰 Cash Received:", cashReceived);
+  console.log("💳 Payment Value (Cashless):", paymentValue);
+  console.log("🏦 Cashless Type:", cashlessType);
+  console.log("🖨️ Printer Name:", p_name);
+  console.log("---");
+  console.log("🍽️ MEALS:", meals);
+  console.log("📦 PRODUCTS:", products);
+  console.log("---");
+  console.log("💵 Subtotal:", subTotal);
+  console.log("🎁 Total Discount:", totalDiscount);
+  console.log("📈 VAT (12%):", vatTotal);
+  console.log("📊 Grand Total:", grandTotal);
+  console.log("---");
+  console.log("💸 Change:", mode === "cash" ? cashReceived - grandTotal : 0);
+  console.log("==========================================");
 
   const effectivePayment = mode === "cashless" ? paymentValue : cashReceived;
   const change = mode === "cash" ? effectivePayment - grandTotal : 0;
@@ -94,6 +115,7 @@ ${centerText("Perea Makati City, Philippines")}
 ${centerText("VAT Reg TIN: 000-000-000-000")}
 ${centerText("Machine Serial: 1212345")}
 ${centerText("MIN: 12345678890")}
+${invoiceNum ? centerText(`Invoice: ${invoiceNum}`) : ""}
 ${"-".repeat(LINE_WIDTH)}
 Item           QTY   Amount
 ${allItems

@@ -1,18 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Menu, ChevronLeft } from "lucide-react";
+import { useGetCategoriesQuery } from "@/store/api/Transaction";
 
-const items = [
-  { label: "All", image: "/food/food/meal.png" }, // ✅ Default category
-  // { label: "Meals", image: "/food/food/meal.png" },
-  { label: "Chickens", image: "/food/food/chicken.png" },
-  { label: "Pasta", image: "/food/food/spag.png" },
-  { label: "Burgers", image: "/food/food/burger.png" },
-  { label: "Fries", image: "/food/food/fries.png" },
-  { label: "Beverages", image: "/food/food/drinks.png" },
-  { label: "Desserts", image: "/food/food/dessert.png" },
-];
+// Fallback items if no categories are returned from API
+const DEFAULT_ITEMS = [{ id: 0, label: "All", image: "/food/food/meal.png" }];
 
 interface FoodSidebarNavProps {
   onFilter: (category: string) => void;
@@ -21,6 +14,29 @@ interface FoodSidebarNavProps {
 export default function FoodSidebarNav({ onFilter }: FoodSidebarNavProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Get branch/client ID - adjust based on your setup
+  const clientId = 1; // TODO: Get from route params or user context
+
+  // Fetch categories from API
+  const { data: categoriesData = [] } = useGetCategoriesQuery(clientId);
+
+  // Prepare items list: Use API data if available, otherwise use default
+  const items = useMemo(() => {
+    if (categoriesData && categoriesData.length > 0) {
+      // Map API categories to sidebar items format
+      return [
+        DEFAULT_ITEMS[0], // Always include "All" at the top
+        ...categoriesData.map((cat) => ({
+          id: cat.id,
+          label: cat.name,
+          image: `/food/food/${cat.name.toLowerCase()}.png`, // Try to match image by category name
+        })),
+      ];
+    }
+    // Default to "All" if no categories found
+    return DEFAULT_ITEMS;
+  }, [categoriesData]);
 
   const handleFilter = (category: string) => {
     setSelectedCategory(category);
@@ -63,7 +79,7 @@ export default function FoodSidebarNav({ onFilter }: FoodSidebarNavProps) {
           const isActive = selectedCategory === item.label;
           return (
             <motion.button
-              key={item.label}
+              key={item.id}
               onClick={() => handleFilter(item.label)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
@@ -84,6 +100,10 @@ export default function FoodSidebarNav({ onFilter }: FoodSidebarNavProps) {
                   src={item.image}
                   alt={item.label}
                   className="w-12 h-12 object-contain mix-blend-multiply drop-shadow-md"
+                  onError={(e) => {
+                    // Fallback image if category image not found
+                    (e.target as HTMLImageElement).src = "/food/food/meal.png";
+                  }}
                 />
               </div>
 
