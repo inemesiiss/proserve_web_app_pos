@@ -27,7 +27,7 @@ interface AddBranchModalProps {
   onSubmit?: (data: BranchFormData) => void;
   type: number;
   data?: any;
-  count: number;
+  count?: number;
 }
 
 type bpAddress = {
@@ -60,7 +60,6 @@ export default function AddBranchModal({
   onClose,
   onSubmit,
   type,
-  count,
 }: AddBranchModalProps) {
   const initial = {
     id: 0,

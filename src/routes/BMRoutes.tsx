@@ -18,6 +18,7 @@ import BMAttendanceReport from "@/pages/branch_manager/reports/AttendanceReport"
 import BMDiscountPromotion from "@/pages/branch_manager/reports/DiscountPromotion";
 import BMCategory from "@/pages/branch_manager/Category";
 import BMComposition from "@/pages/branch_manager/Composition";
+import BMUserAccess from "@/pages/branch_manager/UserAccess";
 
 interface BMRoutesProps {
   setLoggedIn?: (v: boolean) => void;
@@ -93,7 +94,7 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
       path="/bm/users/user"
       element={
         <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMUser />
+          <BMUserAccess />
         </AdminLayout>
       }
     />

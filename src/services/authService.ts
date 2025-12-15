@@ -19,6 +19,8 @@ export interface LoginResponse {
 export interface UserResponse {
   success: boolean;
   id: number;
+  client: number;
+  role: number;
 }
 
 class AuthService {
@@ -46,6 +48,7 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       await api.post("/api/user/logout/");
+      localStorage.clear();
     } catch (error) {
       console.error("Logout error:", error);
       // Even if logout fails, we should clear local state
@@ -58,6 +61,11 @@ class AuthService {
   async getCurrentUser(): Promise<User> {
     try {
       const response = await api.get<UserResponse>("/api/user/me/");
+      console.log("Response: ", response);
+      if (response) {
+        localStorage.setItem("client", String(response.data.client));
+        localStorage.setItem("role", String(response.data.role));
+      }
       return {
         id: response.data.id,
       };

@@ -291,6 +291,7 @@ export default function AddTerminalModal({
                       placeholder="End Date"
                       value={formData.end_date}
                       onChange={(e) => handleChange("end_date", e.target.value)}
+                      readOnly
                     />
                   </div>
 
@@ -301,6 +302,7 @@ export default function AddTerminalModal({
                       placeholder="Date of Renewal"
                       value={formData.renewal}
                       onChange={(e) => handleChange("renewal", e.target.value)}
+                      readOnly
                     />
                   </div>
                 </div>

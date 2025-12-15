@@ -4,12 +4,10 @@ import UserActionButtons from "@/components/admin/table/UserActionButtons";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
-import AddUserModal from "@/components/admin/modals/AddUserModal";
 import {
   useGetAllBranchQuery,
+  useGetBranchUsersQuery,
   useGetClientsQuery,
-  useGetProfileQuery,
-  useGetUsersQuery,
 } from "@/store/api/Admin";
 import { PencilLine } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,17 +19,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
+import AddUserAccessModal from "@/components/admin/modals/AddUserAccessModal";
 
 const userColumns = [
   { key: "account", label: "Account" },
   { key: "branch", label: "Branch" },
-  { key: "user_id", label: "User ID" },
-  { key: "profile", label: "User Profile" },
-  { key: "status", label: "ACTIVE" },
-  { key: "edit", label: "EDIT" },
+  { key: "fullname", label: "Fullname" },
+  //   { key: "password", label: "Password" },
+  { key: "status", label: "Status" },
+  { key: "edit", label: "Edit" },
 ];
 
-function BMUser() {
+function BMUserAccess() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,9 +82,8 @@ function BMUser() {
 
   const getClientDropdown = useGetClientsQuery({});
   const getBranchDropdown = useGetAllBranchQuery({ cid: client });
-  const getProfiles = useGetProfileQuery({});
 
-  const getUsers = useGetUsersQuery({
+  const getUsers = useGetBranchUsersQuery({
     search: searchQuery,
     id: client,
     bid: branch,
@@ -103,9 +101,6 @@ function BMUser() {
         ).name,
         branch: getBranchDropdown?.data?.data.find(
           (item1: any) => item1.id === item.branch
-        ).name,
-        profile: getProfiles?.data?.data.find(
-          (item1: any) => item1.id === item.profile
         ).name,
         status: (
           <div
@@ -144,7 +139,7 @@ function BMUser() {
       >
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            Manager Access Management
+            User Access Management
           </h1>
 
           <div className="flex items-center justify-between mb-4">
@@ -211,7 +206,7 @@ function BMUser() {
       </div>
 
       {/* Add User Modal */}
-      <AddUserModal
+      <AddUserAccessModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleSubmitUser}
@@ -223,4 +218,4 @@ function BMUser() {
   );
 }
 
-export default BMUser;
+export default BMUserAccess;

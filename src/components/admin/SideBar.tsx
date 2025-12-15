@@ -60,6 +60,8 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       });
     }, [location.pathname]);
 
+    const role = Number(localStorage.getItem("role"));
+
     const defaultNavs: NavItem[] = [
       {
         label: "Dashboard",
@@ -91,11 +93,15 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         path: "/bm/users",
         icon: <User className="w-6 h-6" />,
         subPaths: [
-          {
-            label: "Managers Access",
-            path: "/bm/users/manager",
-            icon: <BookText className="w-6 h-6" />,
-          },
+          ...(role !== 2
+            ? [
+                {
+                  label: "Managers Access",
+                  path: "/bm/users/manager",
+                  icon: <BookText className="w-6 h-6" />,
+                },
+              ]
+            : []),
           {
             label: "Users Access",
             path: "/bm/users/user",
@@ -214,7 +220,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                 {hasChildren ? (
                   <div
                     className={cn(
-                      "flex items-center justify-between w-full p-3 rounded-lg transition-all",
+                      "flex items-center justify-between w-full p-3 rounded-lg transition-all ",
                       parentActive
                         ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
                         : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent"
@@ -227,9 +233,9 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                     >
                       <div
                         className={cn(
-                          "flex items-center justify-center rounded-md p-2",
+                          "flex items-center justify-center rounded-md p-2 ",
                           parentActive
-                            ? "bg-indigo-50 dark:bg-indigo-800"
+                            ? "bg-indigo-50 dark:bg-indigo-800 "
                             : "bg-gray-50 dark:bg-gray-700"
                         )}
                       >
@@ -255,7 +261,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                       <button
                         onClick={() => toggleOpen(item.label)}
                         className={cn(
-                          "p-1 rounded",
+                          "p-1 rounded ",
                           isOpen
                             ? "text-indigo-600 dark:text-indigo-400"
                             : "text-gray-400 dark:text-gray-500"
@@ -275,7 +281,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                   <Link
                     to={item.path || "#"}
                     className={cn(
-                      "flex items-center gap-3 w-full p-3 rounded-lg transition-all",
+                      "flex items-center gap-3 w-full p-3 rounded-lg transition-all ",
                       active
                         ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
                         : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent"
@@ -312,7 +318,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                 <AnimatePresence>
                   {hasChildren && isOpen && !collapsed && (
                     <motion.div
-                      className="pl-10 mt-1 space-y-1 overflow-hidden"
+                      className="pl-5 mt-1 space-y-1 overflow-hidden"
                       initial={{ opacity: 0, height: 0, y: -10 }}
                       animate={{ opacity: 1, height: "auto", y: 0 }}
                       exit={{ opacity: 0, height: 0, y: -10 }}
@@ -339,7 +345,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                               to={sub.path || "#"}
                               onClick={(e) => e.stopPropagation()}
                               className={cn(
-                                "flex items-center gap-2 w-full p-2 rounded text-sm transition-all duration-200",
+                                "flex items-center gap-2 w-full p-2 rounded text-sm transition-all duration-200 ",
                                 subActive
                                   ? "bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300"
                                   : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
@@ -350,7 +356,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                                   {sub.icon}
                                 </span>
                               )}
-                              <span>{sub.label}</span>
+                              <span className="pl-2">{sub.label}</span>
                             </Link>
                           </motion.div>
                         );
