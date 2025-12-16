@@ -21,6 +21,7 @@ export interface UserResponse {
   id: number;
   client: number;
   role: number;
+  branch: number;
 }
 
 class AuthService {
@@ -65,6 +66,7 @@ class AuthService {
       if (response) {
         localStorage.setItem("client", String(response.data.client));
         localStorage.setItem("role", String(response.data.role));
+        localStorage.setItem("branch", String(response.data.branch));
       }
       return {
         id: response.data.id,
