@@ -48,7 +48,7 @@ export default function DirectorySelection() {
     },
     {
       id: "user",
-      name: "User Access",
+      name: "Cashier Access",
       animation: animations.user,
       path: "/food/transaction",
       passcode: "123456",

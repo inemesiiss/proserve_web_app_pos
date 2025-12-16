@@ -55,6 +55,15 @@ const filterActiveProducts = (response: TransactionApiResponse) => {
 };
 
 /**
+ * Query params for get_branch_products
+ */
+interface GetBranchProductsParams {
+  branchId: number;
+  category?: number | null; // category ID, null or undefined for "All"
+  search?: string; // search keyword
+}
+
+/**
  * Transaction API - Handles all product queries and transaction mutations
  */
 export const transactionApi = createApi({
@@ -64,14 +73,28 @@ export const transactionApi = createApi({
   endpoints: (builder) => ({
     /**
      * Query: Get all branch products
-     * GET /api/transactions/cashier/get_branch_products?bid=1
+     * GET /api/transactions/cashier/get_branch_products?bid=1&category=2&search=burger
      * Returns all products categorized by p_type and compositions
      */
-    getBranchProducts: builder.query<CategorizedProduct[], number>({
-      query: (branchId) => ({
-        url: `/transactions/cashier/get_branch_products?bid=${branchId}`,
-        method: "GET",
-      }),
+    getBranchProducts: builder.query<
+      CategorizedProduct[],
+      GetBranchProductsParams
+    >({
+      query: ({ branchId, category, search }) => {
+        // Build query string
+        const params = new URLSearchParams();
+        params.append("bid", branchId.toString());
+        if (category) {
+          params.append("category", category.toString());
+        }
+        if (search && search.trim()) {
+          params.append("search", search.trim());
+        }
+        return {
+          url: `/transactions/cashier/get_branch_products?${params.toString()}`,
+          method: "GET",
+        };
+      },
       transformResponse: (response: TransactionApiResponse) => {
         const activeProducts = filterActiveProducts(response);
         return activeProducts.map(categorizeProduct);
@@ -107,6 +130,7 @@ export const transactionApi = createApi({
       {
         success: boolean;
         invoiceNum: string;
+        orderNum?: string;
         transactionId?: number;
         message?: string;
       },

@@ -11,6 +11,7 @@ import { Search, Loader2 } from "lucide-react";
 import { useGetBranchProductsQuery } from "@/store/api/Transaction";
 import type { CategorizedProduct } from "@/types/transaction";
 import { formatCurrency } from "@/function/reusables/reuseables";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
@@ -23,60 +24,57 @@ const getImageUrl = (imagePath: string | null): string => {
 
 export default function FoodTransactionPage() {
   const { addItem } = useFoodOrder();
-  const [filteredCategory, setFilteredCategory] = useState("All");
+  // Category filter state - stores both ID (for API) and label (for display)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null
+  );
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState("All");
   const [selectedProduct, setSelectedProduct] =
     useState<CategorizedProduct | null>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Debounce search to avoid too many API calls
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
+
   // Get branch ID from route params or context - adjust based on your setup
   const branchId = 1; // TODO: Get from route params or user context
 
-  // ✅ Fetch products from API
+  // ✅ Fetch products from API with category and search filters
   const {
     data: apiProducts = [],
     isLoading,
+    isFetching,
     error,
-  } = useGetBranchProductsQuery(branchId);
+  } = useGetBranchProductsQuery({
+    branchId,
+    category: selectedCategoryId,
+    search: debouncedSearch,
+  });
 
-  // ✅ Filter logic with search
-  const filteredProducts = useMemo(() => {
-    let products = apiProducts;
+  // Handle category filter from sidebar
+  const handleCategoryFilter = (
+    categoryId: number | null,
+    categoryLabel: string
+  ) => {
+    setSelectedCategoryId(categoryId);
+    setSelectedCategoryLabel(categoryLabel);
+  };
 
-    // Filter by category if not "All"
-    if (filteredCategory !== "All") {
-      products = products.filter(
-        (cp) => cp.prod_categ.toString() === filteredCategory
-      );
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      products = products.filter(
-        (cp) =>
-          cp.prod_name.toLowerCase().includes(query) ||
-          cp.prod_code.toLowerCase().includes(query)
-      );
-    }
-
-    return products;
-  }, [apiProducts, filteredCategory, searchQuery]);
-  // console.log("data", apiProducts);
   // ✅ Separate products by type for organized rendering
   const { individuals, individualsWithVariance, bundles, bundlesWithVariance } =
     useMemo(() => {
       return {
-        individuals: filteredProducts.filter((p) => p.type === "individual"),
-        individualsWithVariance: filteredProducts.filter(
+        individuals: apiProducts.filter((p) => p.type === "individual"),
+        individualsWithVariance: apiProducts.filter(
           (p) => p.type === "individual-variance"
         ),
-        bundles: filteredProducts.filter((p) => p.type === "bundle"),
-        bundlesWithVariance: filteredProducts.filter(
+        bundles: apiProducts.filter((p) => p.type === "bundle"),
+        bundlesWithVariance: apiProducts.filter(
           (p) => p.type === "bundle-variance"
         ),
       };
-    }, [filteredProducts]);
+    }, [apiProducts]);
 
   // ✅ Handle add to cart - check if product needs customization
   const handleAdd = (product: CategorizedProduct) => {
@@ -166,8 +164,8 @@ export default function FoodTransactionPage() {
 
   // Get category header text
   const getCategoryHeader = () => {
-    if (filteredCategory === "All") return "Choose your Items";
-    return `Choose your Category ${filteredCategory}`;
+    if (selectedCategoryLabel === "All") return "Choose your Items";
+    return `Category: ${selectedCategoryLabel}`;
   };
 
   // ✅ Loading state
@@ -197,7 +195,7 @@ export default function FoodTransactionPage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* 🧭 Sidebar Navigation */}
-      <FoodSidebarNav onFilter={setFilteredCategory} />
+      <FoodSidebarNav onFilter={handleCategoryFilter} />
 
       {/* 🍔 Main Content */}
       <motion.div
@@ -242,11 +240,11 @@ export default function FoodTransactionPage() {
         </div>
 
         {/* ==== 🥡 COMBINED SECTION (when All is selected) ==== */}
-        {filteredCategory === "All" ? (
+        {selectedCategoryLabel === "All" ? (
           <section>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {/* Render all products (individuals, bundles, and variants) */}
-              {filteredProducts.map((product, index) => {
+              {apiProducts.map((product, index) => {
                 const price = Number(product.basePrice) || 0;
                 const displayName = product.prod_code;
                 const buttonLabel =
@@ -517,9 +515,27 @@ export default function FoodTransactionPage() {
         )}
 
         {/* 🧃 No results */}
-        {filteredProducts.length === 0 && (
+        {apiProducts.length === 0 && !isLoading && !isFetching && (
           <div className="text-center text-gray-500 py-10">
-            No items found in <strong>{filteredCategory}</strong>
+            No items found{" "}
+            {selectedCategoryLabel !== "All" && (
+              <>
+                in <strong>{selectedCategoryLabel}</strong>
+              </>
+            )}
+            {debouncedSearch && (
+              <>
+                {" "}
+                matching "<strong>{debouncedSearch}</strong>"
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Loading indicator for filtering */}
+        {isFetching && !isLoading && (
+          <div className="text-center text-gray-500 py-4">
+            <Loader2 className="animate-spin text-blue-600 mx-auto" size={24} />
           </div>
         )}
       </motion.div>
