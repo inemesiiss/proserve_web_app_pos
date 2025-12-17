@@ -11,7 +11,10 @@ import {
   useGetClientsQuery,
   useGetAllProductsQuery,
   useAddCompositionMutation,
+  useGetAllProductsCompQuery,
+  useUpCompositionMutation,
 } from "@/store/api/Admin";
+import { formatMoney } from "@/lib/utils";
 
 type Other1 = {
   id: number;
@@ -55,8 +58,8 @@ export default function AddCompositionModal({
   // onSubmit,
   type,
   setType,
-}: // data,
-AddCompositionModalProps) {
+  data,
+}: AddCompositionModalProps) {
   const [formData, setFormData] = useState<CompositionFormData>({
     id: 0,
     client: 0,
@@ -76,6 +79,7 @@ AddCompositionModalProps) {
   // const [branch, setBranch] = useState([]);
   // const [categ, setCateg] = useState([]);
   const [prods, setProds] = useState<Prods[]>([]);
+  const [prodsComp, setProdsComp] = useState<Prods[]>([]);
 
   const getClientDropdown = useGetClientsQuery({});
   useEffect(() => {
@@ -83,6 +87,17 @@ AddCompositionModalProps) {
       setClient(getClientDropdown.data.data);
     }
   }, [getClientDropdown.isSuccess, getClientDropdown.data]);
+
+  const getAllProductsComp = useGetAllProductsCompQuery(
+    { id: formData.client },
+    { skip: formData.client === 0 }
+  );
+  useEffect(() => {
+    if (getAllProductsComp.isSuccess && getAllProductsComp.data) {
+      setProdsComp(getAllProductsComp.data.data);
+      // console.log("Products here: ", getAllProductsComp.data.data);
+    }
+  }, [getAllProductsComp.isSuccess, getAllProductsComp.data]);
 
   const getAllProducts = useGetAllProductsQuery(
     { id: formData.client },
@@ -97,13 +112,16 @@ AddCompositionModalProps) {
 
   const handleAddOther = () => {
     setFormData((prev) => {
-      const maxId = prev.other.reduce((max, item) => Math.max(max, item.id), 0);
+      const maxId = prev.other.reduce(
+        (max, item) => Math.max(max, item.id1),
+        0
+      );
 
       return {
         ...prev,
         other: [
           ...prev.other,
-          { id: maxId + 1, id1: maxId + 1, name: "", product: 0, other: [] },
+          { id: 0, id1: maxId + 1, name: "", product: 0, other: [] },
         ],
       };
     });
@@ -112,7 +130,7 @@ AddCompositionModalProps) {
   const handleRemoveOther = (id: number) => {
     setFormData((prev) => ({
       ...prev,
-      other: prev.other.filter((item) => item.id !== id),
+      other: prev.other.filter((_, index) => index !== id),
     }));
   };
 
@@ -123,8 +141,8 @@ AddCompositionModalProps) {
   const handleOtherChange = (id: number, field: keyof Other, value: any) => {
     setFormData((prev) => ({
       ...prev,
-      other: prev.other.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
+      other: prev.other.map((item, index) =>
+        index === id ? { ...item, [field]: value } : item
       ),
     }));
   };
@@ -154,8 +172,23 @@ AddCompositionModalProps) {
     onClose();
   };
 
+  useEffect(() => {
+    if (data && isOpen) {
+      // console.log("Data variance: ", typeof data.has_variance);
+      setTimeout(() => {
+        setFormData((prev) => ({
+          ...prev,
+          id: data.id,
+          client: data.client,
+          main_prod: data.id,
+          other: data.other,
+        }));
+      }, 100);
+    }
+  }, [data, isOpen]);
+
   const [addComposition] = useAddCompositionMutation();
-  // const [upProduct] = useUpClientProductMutation();
+  const [upComposition] = useUpCompositionMutation();
   const submitProduct = async () => {
     if (type === 1) {
       if (
@@ -183,24 +216,27 @@ AddCompositionModalProps) {
         toast.error("Please complete required fields.");
       }
     } else {
-      // if (formData.client !== 0 && formData.main_prod !== 0 &&
-      // formData.other[0].name !== "" &&
-      // formData.other[0].product !== 0) {
-      //   try {
-      //     const formData1 = new FormData();
-      //     formData1.append("datas", JSON.stringify(formData));
-      //     const checkstat = await upProduct(formData1).unwrap();
-      //     if (checkstat.success) {
-      //       handleClose();
-      //       toast.success("Successfully Updated.");
-      //     } else {
-      //       toast.error(checkstat.message);
-      //     }
-      //     console.log(checkstat);
-      //   } catch (error) {}
-      // } else {
-      //   toast.error("Please complete required fields.");
-      // }
+      if (
+        formData.client !== 0 &&
+        formData.main_prod !== 0 &&
+        formData.other[0].name !== "" &&
+        formData.other[0].product !== 0
+      ) {
+        try {
+          const formData1 = new FormData();
+          formData1.append("datas", JSON.stringify(formData));
+          const checkstat = await upComposition(formData1).unwrap();
+          if (checkstat.success) {
+            handleClose();
+            toast.success("Successfully Updated.");
+          } else {
+            toast.error(checkstat.message);
+          }
+          console.log(checkstat);
+        } catch (error) {}
+      } else {
+        toast.error("Please complete required fields.");
+      }
     }
   };
 
@@ -255,7 +291,7 @@ AddCompositionModalProps) {
                     label=""
                     openKey="prod"
                     valueId={formData.main_prod}
-                    list={prods}
+                    list={prodsComp}
                     onSelect={(id: string) => handleChange("main_prod", id)}
                   />
                 </div>
@@ -267,16 +303,16 @@ AddCompositionModalProps) {
               {/* Other Fields */}
               <div className="flex-col max-h-[350px] overflow-y-auto">
                 {formData.other.map((other, index) => (
-                  <div key={other.id} className="flex-col border-t pt-4 w-full">
+                  <div key={index} className="flex-col border-t pt-4 w-full">
                     <div className="flex gap-2 ">
                       <div className="w-1/6">
-                        <Label htmlFor="client">ID</Label>
+                        <Label htmlFor="client">ID - {index}</Label>
                         <Input
-                          placeholder="id"
+                          placeholder="id1"
                           className="mt-1"
-                          value={other.id}
+                          value={other.id1}
                           onChange={(e) =>
-                            handleOtherChange(other.id, "id", e.target.value)
+                            handleOtherChange(index, "id1", e.target.value)
                           }
                         />
                       </div>
@@ -287,7 +323,7 @@ AddCompositionModalProps) {
                           className="mt-1"
                           value={other.name}
                           onChange={(e) =>
-                            handleOtherChange(other.id, "name", e.target.value)
+                            handleOtherChange(index, "name", e.target.value)
                           }
                         />
                       </div>
@@ -298,15 +334,15 @@ AddCompositionModalProps) {
                           valueId={other.product}
                           list={prods}
                           onSelect={(id: string) =>
-                            handleOtherChange(other.id, "product", id)
+                            handleOtherChange(index, "product", id)
                           }
                         />
                       </div>
                       <div
                         className={`${
-                          other.id === 1 ? `hidden` : `flex`
+                          index === 0 ? `hidden` : `flex`
                         } items-end pb-2 text-red-600 cursor-pointer`}
-                        onClick={() => handleRemoveOther(other.id)}
+                        onClick={() => handleRemoveOther(index)}
                       >
                         <Trash2 />
                       </div>
@@ -322,9 +358,15 @@ AddCompositionModalProps) {
                         cid={formData.client}
                         selected={other.other}
                         onChange={(newProducts: Other1[]) => {
-                          const updated = [...formData.other];
-                          updated[index].other = newProducts;
-                          setFormData({ ...formData, other: updated });
+                          // const updated = [...formData.other];
+                          // updated[index].other = newProducts;
+                          // setFormData({ ...formData, other: updated });
+                          const updated = [...formData.other]; // Copy the whole array
+                          updated[index] = {
+                            ...updated[index],
+                            other: newProducts,
+                          }; // Update the item immutably
+                          setFormData({ ...formData, other: updated }); // Set the updated state
                         }}
                       />
                       <div className="pl-10 py-2">
@@ -346,8 +388,8 @@ AddCompositionModalProps) {
                                 `}
                               >
                                 {parseFloat(ot1.price) > 0
-                                  ? `+${ot1.price}`
-                                  : ot1.price}
+                                  ? `+${formatMoney(parseFloat(ot1.price))}`
+                                  : formatMoney(parseFloat(ot1.price))}
                               </td>
                             </tr>
                             // </div>

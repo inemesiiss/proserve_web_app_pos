@@ -294,6 +294,16 @@ export const adminApi = createApi({
       },
       providesTags: ["admin"],
     }),
+    //get_all_products_comp
+    getAllProductsComp: builder.query({
+      query: ({ id }) => {
+        return {
+          url: `/adminpos/get_all_products_comp?id=${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
     ///api/adminpos/add_branch_user
     addBranchUser: builder.mutation({
       query: (formBody) => {
@@ -332,6 +342,17 @@ export const adminApi = createApi({
         return {
           url: `/adminpos/add_composition/`,
           method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/up_composition
+    upComposition: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/up_composition/`,
+          method: "PUT",
           body: formBody,
         };
       },
@@ -379,9 +400,11 @@ export const {
   useGetProductsQuery,
   useUpClientProductMutation,
   useGetAllProductsQuery,
+  useGetAllProductsCompQuery,
   useAddBranchUserMutation,
   useUpBranchUserMutation,
   useGetBranchUsersQuery,
   useAddCompositionMutation,
+  useUpCompositionMutation,
   useGetProductsCompQuery,
 } = adminApi;

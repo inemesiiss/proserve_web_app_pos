@@ -14,3 +14,10 @@ export const formatDateM = (date: Date) => {
 
   return date.toLocaleDateString("en-US", options);
 };
+
+export const formatMoney = (money: number) => {
+  return money.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
