@@ -140,27 +140,29 @@ export default function AddProductModal({
 
   useEffect(() => {
     if (data && isOpen) {
-      console.log("Data variance: ", typeof data.has_variance);
-      setFormData({
-        id: data.id,
-        client: data.client,
-        branch: Array.isArray(data.branch)
-          ? data.branch
-          : typeof data.branch === "string"
-          ? data.branch.split(",").map(Number)
-          : [],
-        prod_categ: data.prod_categ,
-        prod_name: data.prod_name,
-        prod_size: data.prod_size,
-        uom: data.uom,
-        price: data.price,
-        tax: data.tax,
-        cost: data.cost,
-        p_type: data.p_type,
-        has_variance: data.has_variance === false ? String(1) : String(2),
-        image: data.image,
-        prod_code: data.prod_code,
-      });
+      // console.log("Data variance: ", typeof data.has_variance);
+      setTimeout(() => {
+        setFormData({
+          id: data.id,
+          client: data.client,
+          branch: Array.isArray(data.branch)
+            ? data.branch
+            : typeof data.branch === "string"
+            ? data.branch.split(",").map(Number)
+            : [],
+          prod_categ: data.prod_categ,
+          prod_name: data.prod_name,
+          prod_size: data.prod_size,
+          uom: data.uom,
+          price: data.price,
+          tax: data.tax,
+          cost: data.cost,
+          p_type: data.p_type,
+          has_variance: data.has_variance === false ? String(1) : String(2),
+          image: data.image,
+          prod_code: data.prod_code,
+        });
+      }, 100);
     }
   }, [data, isOpen]);
 
@@ -383,11 +385,12 @@ export default function AddProductModal({
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Purchase Type</Label>
                     <Select
-                      value={
-                        type === 1
-                          ? String(formData.p_type)
-                          : String(data.p_type)
-                      }
+                      // value={
+                      //   type === 1
+                      //     ? String(formData.p_type)
+                      //     : String(data.p_type)
+                      // }
+                      value={String(formData.p_type)}
                       onValueChange={(value) => handleChange("p_type", value)}
                     >
                       <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
@@ -403,13 +406,14 @@ export default function AddProductModal({
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Has Variants</Label>
                     <Select
-                      value={
-                        type === 1
-                          ? String(formData.has_variance)
-                          : data.has_variance === true
-                          ? "2"
-                          : "1"
-                      }
+                      // value={
+                      //   type === 1
+                      //     ? String(formData.has_variance)
+                      //     : data.has_variance === true
+                      //     ? "2"
+                      //     : "1"
+                      // }
+                      value={String(formData.has_variance)}
                       onValueChange={(value) =>
                         handleChange("has_variance", value)
                       }

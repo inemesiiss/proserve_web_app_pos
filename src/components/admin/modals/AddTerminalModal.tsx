@@ -118,7 +118,7 @@ export default function AddTerminalModal({
           const checkstat = await addTerminal(formData1).unwrap();
 
           if (checkstat.success) {
-            // handleClose();
+            handleClose();
             toast.success("Successfully Added.");
           } else {
             toast.error(checkstat.message);
