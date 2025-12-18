@@ -294,6 +294,16 @@ export const adminApi = createApi({
       },
       providesTags: ["admin"],
     }),
+    //get_all_products_comp
+    getAllProductsComp: builder.query({
+      query: ({ id }) => {
+        return {
+          url: `/adminpos/get_all_products_comp?id=${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
     ///api/adminpos/add_branch_user
     addBranchUser: builder.mutation({
       query: (formBody) => {
@@ -321,6 +331,38 @@ export const adminApi = createApi({
       query: ({ search, id, bid, page, pageSize }) => {
         return {
           url: `/adminpos/get_branch_users?search=${search}&id=${id}&page=${page}&pageSize=${pageSize}&bid=${bid}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    //add_composition
+    addComposition: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_composition/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/up_composition
+    upComposition: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/up_composition/`,
+          method: "PUT",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/get_products_comp
+    getProductsComp: builder.query({
+      query: ({ id }) => {
+        return {
+          url: `/adminpos/get_products_comp?id=${id}`,
           method: "GET",
         };
       },
@@ -358,7 +400,11 @@ export const {
   useGetProductsQuery,
   useUpClientProductMutation,
   useGetAllProductsQuery,
+  useGetAllProductsCompQuery,
   useAddBranchUserMutation,
   useUpBranchUserMutation,
   useGetBranchUsersQuery,
+  useAddCompositionMutation,
+  useUpCompositionMutation,
+  useGetProductsCompQuery,
 } = adminApi;

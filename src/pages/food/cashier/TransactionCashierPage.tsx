@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import Header from "@/components/food/components/cashier/Header";
 import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
@@ -12,6 +12,7 @@ import { useGetBranchProductsQuery } from "@/store/api/Transaction";
 import type { CategorizedProduct } from "@/types/transaction";
 import { formatCurrency } from "@/function/reusables/reuseables";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useNavigate } from "react-router-dom";
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
@@ -22,8 +23,44 @@ const getImageUrl = (imagePath: string | null): string => {
   return `${API_DOMAIN}${imagePath}`;
 };
 
+// Helper function to safely get branch ID from localStorage
+const getBranchIdFromStorage = (): number | null => {
+  try {
+    const branchValue = localStorage.getItem("branch");
+    if (branchValue) {
+      const branchId = parseInt(branchValue, 10);
+      return isNaN(branchId) ? null : branchId;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error reading branch from localStorage:", error);
+    return null;
+  }
+};
+
 export default function FoodTransactionPage() {
+  const navigate = useNavigate();
   const { addItem } = useFoodOrder();
+
+  // Get branch ID from localStorage
+  const [branchId, setBranchId] = useState<number | null>(null);
+  const [isCheckingBranch, setIsCheckingBranch] = useState(true);
+
+  // Check for branch ID on mount
+  useEffect(() => {
+    const storedBranchId = getBranchIdFromStorage();
+    if (!storedBranchId) {
+      // Redirect to main if no branch ID found
+      console.warn(
+        "No branch ID found in localStorage, redirecting to /food/main"
+      );
+      navigate("/food/main", { replace: true });
+      return;
+    }
+    setBranchId(storedBranchId);
+    setIsCheckingBranch(false);
+  }, [navigate]);
+
   // Category filter state - stores both ID (for API) and label (for display)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null
@@ -37,20 +74,23 @@ export default function FoodTransactionPage() {
   // Debounce search to avoid too many API calls
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
-  // Get branch ID from route params or context - adjust based on your setup
-  const branchId = 1; // TODO: Get from route params or user context
-
   // ✅ Fetch products from API with category and search filters
+  // Skip the query if branchId is not yet available
   const {
     data: apiProducts = [],
     isLoading,
     isFetching,
     error,
-  } = useGetBranchProductsQuery({
-    branchId,
-    category: selectedCategoryId,
-    search: debouncedSearch,
-  });
+  } = useGetBranchProductsQuery(
+    {
+      branchId: branchId || 0,
+      category: selectedCategoryId,
+      search: debouncedSearch,
+    },
+    {
+      skip: !branchId, // Skip query until branchId is available
+    }
+  );
 
   // Handle category filter from sidebar
   const handleCategoryFilter = (
@@ -167,6 +207,18 @@ export default function FoodTransactionPage() {
     if (selectedCategoryLabel === "All") return "Choose your Items";
     return `Category: ${selectedCategoryLabel}`;
   };
+
+  // ✅ Checking branch ID state
+  if (isCheckingBranch) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-blue-600" size={40} />
+          <p className="text-gray-600">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
 
   // ✅ Loading state
   if (isLoading) {

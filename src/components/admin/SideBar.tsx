@@ -73,11 +73,15 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       //   path: "/admin/reports",
       //   icon: <BookText className="w-6 h-6" />,
       // },
-      {
-        label: "Account",
-        path: "/bm/accounts",
-        icon: <Building2 className="w-6 h-6" />,
-      },
+      ...(role !== 3
+        ? [
+            {
+              label: "Account",
+              path: "/bm/accounts",
+              icon: <Building2 className="w-6 h-6" />,
+            },
+          ]
+        : []),
       {
         label: "Branch",
         path: "/bm/branch",

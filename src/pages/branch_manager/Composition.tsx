@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetClientsQuery, useGetProductsQuery } from "@/store/api/Admin";
+import { useGetClientsQuery, useGetProductsCompQuery } from "@/store/api/Admin";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PencilLine } from "lucide-react";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
@@ -25,8 +25,8 @@ const productColumns = [
   { key: "categ", label: "Product Category" },
   { key: "prod_name", label: "Product Name" },
   { key: "price", label: "Price" },
-  { key: "prod_size", label: "Size / Option" },
-  { key: "uom", label: "Unit of Measure" },
+  // { key: "prod_size", label: "Size / Option" },
+  // { key: "uom", label: "Unit of Measure" },
   { key: "image", label: "Image" },
   { key: "is_active", label: "ACTIVE" },
   { key: "edit", label: "EDIT" },
@@ -92,7 +92,7 @@ function BMComposition() {
 
   const getClientDropdown = useGetClientsQuery({});
 
-  const getProduct = useGetProductsQuery({
+  const getProduct = useGetProductsCompQuery({
     search: searchQuery,
     id: client1,
     page: currentPage,

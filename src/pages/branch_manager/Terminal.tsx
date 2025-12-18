@@ -127,7 +127,7 @@ function BMTerminal() {
             <Checkbox checked={item.status === 1} />
           </div>
         ),
-        edit: (
+        edit: role === 4 && (
           <PencilLine
             size={18}
             className="cursor-pointer text-orange-500"
@@ -146,6 +146,8 @@ function BMTerminal() {
     }
   }, [getTerminal.isSuccess, getTerminal.data]);
 
+  const role = Number(localStorage.getItem("role"));
+
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <SideBar onCollapsedChange={setSidebarCollapsed} />
@@ -159,13 +161,15 @@ function BMTerminal() {
             Terminal Management
           </h1>
 
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex-1"></div>
-            <TerminalActionButtons
-              onAddTerminal={handleAddTerminal}
-              onImportCSV={handleImportCSV}
-            />
-          </div>
+          {role === 4 && (
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1"></div>
+              <TerminalActionButtons
+                onAddTerminal={handleAddTerminal}
+                onImportCSV={handleImportCSV}
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">

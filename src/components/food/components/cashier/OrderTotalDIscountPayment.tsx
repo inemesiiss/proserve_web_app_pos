@@ -5,7 +5,8 @@ import { useCreateCashierTransactionMutation } from "@/store/api/Transaction";
 import ReceiptPrinter from "@/components/food/components/Print/PrintReceipt";
 import PaymentModal from "../../modals/food/PaymentCashLessModal";
 import OrderTotalDiscountModal from "../../modals/security/OrderTotalDiscountModal";
-import { X } from "lucide-react";
+import { X, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function FoodTotalDiscountPaymentSection() {
   const {
@@ -145,6 +146,18 @@ export default function FoodTotalDiscountPaymentSection() {
         setInvoiceNum(response.invoiceNum);
         setOrderNum(response.orderNum || "");
         setShouldPrint(true);
+
+        // 🎉 Show success toast
+        toast.success("Transaction Successful!", {
+          description: `Invoice #${response.invoiceNum} has been created`,
+          duration: 2000,
+          icon: <CheckCircle className="text-green-500" size={20} />,
+          style: {
+            background: "#10B981",
+            color: "white",
+            border: "none",
+          },
+        });
       }
     } catch (error) {
       console.error("❌ [handleCreateTransaction] Error:", error);

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SideBar } from "@/components/admin/SideBar";
 import TabsHeader from "@/components/admin/table/Tabs";
 import FiltersBar from "@/components/admin/table/Filters";
@@ -13,6 +14,22 @@ import {
   useGetPurchaseItemsDetailQuery,
 } from "@/store/api/Reports";
 import type { PurchaseTransaction, PurchaseItem } from "@/types/reports";
+import { Loader2 } from "lucide-react";
+
+// Helper function to get branchId from localStorage
+const getBranchIdFromStorage = (): number | null => {
+  try {
+    const branchValue = localStorage.getItem("branch");
+    if (branchValue) {
+      const branchId = parseInt(branchValue, 10);
+      return isNaN(branchId) ? null : branchId;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error reading branch from localStorage:", error);
+    return null;
+  }
+};
 
 const columns = [
   { key: "created_at", label: "Date of Purchase" },
@@ -25,6 +42,7 @@ const columns = [
 ];
 
 function BMReportTransaction() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("completed");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,8 +61,20 @@ function BMReportTransaction() {
   );
   const [showTransactionModal, setShowTransactionModal] = useState(false);
 
-  // TODO: Get branchId from user context/auth state
-  const branchId = 1;
+  // Dynamic branchId from localStorage
+  const [branchId, setBranchId] = useState<number | null>(null);
+  const [isCheckingBranch, setIsCheckingBranch] = useState(true);
+
+  // Check for branchId on mount
+  useEffect(() => {
+    const storedBranchId = getBranchIdFromStorage();
+    if (!storedBranchId) {
+      navigate("/food/main", { replace: true });
+      return;
+    }
+    setBranchId(storedBranchId);
+    setIsCheckingBranch(false);
+  }, [navigate]);
 
   // Fetch transactions from API
   const {
@@ -52,12 +82,15 @@ function BMReportTransaction() {
     isLoading,
     isError,
     error,
-  } = useGetTransactionsPerBranchQuery({
-    bid: branchId,
-    search: searchQuery,
-    page: currentPage,
-    page_size: pageSize,
-  });
+  } = useGetTransactionsPerBranchQuery(
+    {
+      bid: branchId || 0,
+      search: searchQuery,
+      page: currentPage,
+      page_size: pageSize,
+    },
+    { skip: !branchId }
+  );
 
   // Lazy load purchase items when a transaction is clicked
   const { data: purchaseItemsData, isLoading: isLoadingItems } =
@@ -151,6 +184,18 @@ function BMReportTransaction() {
     setSelectedPurchaseId(row.id); // Trigger lazy loading of purchase items
     setShowTransactionModal(true);
   };
+
+  // ✅ Checking branch ID state
+  if (isCheckingBranch) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-blue-600" size={40} />
+          <p className="text-gray-600 dark:text-gray-400">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
