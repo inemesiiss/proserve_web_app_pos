@@ -13,7 +13,7 @@ interface ReceiptPrinterProps {
   paymentValue?: number; // only for cashless
   cashlessType?: CashlessType; // only for cashless
   p_name: string;
-  invoiceNum: string; // invoice number from transaction (required for auto-print)
+  invoiceNum?: string; // invoice number from transaction (optional - if not provided, shows print button)
   orderNum?: string; // order number
   cashierName?: string; // cashier name
   onSuccess?: () => void;
@@ -25,7 +25,7 @@ export default function ReceiptPrinter({
   paymentValue = 0,
   cashlessType,
   p_name,
-  invoiceNum,
+  invoiceNum = "",
   orderNum = "",
   cashierName = "Cashier",
   onSuccess,
@@ -250,6 +250,10 @@ ${centerText("PTU No: AFRF09763864")}
     }
   };
 
+  // If invoiceNum is provided, auto-print will trigger via useEffect
+  // If not, show a manual print button
+  const showManualPrintButton = !invoiceNum && p_name;
+
   return (
     <div className="mt-4">
       {isPrinting && (
@@ -257,6 +261,15 @@ ${centerText("PTU No: AFRF09763864")}
           <span className="animate-spin">🖨️</span>
           <span>Printing receipt...</span>
         </div>
+      )}
+      {showManualPrintButton && !isPrinting && (
+        <button
+          onClick={handlePrint}
+          disabled={isPrinting || !p_name}
+          className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-2 text-sm font-bold disabled:bg-green-300 disabled:cursor-not-allowed transition-colors"
+        >
+          Print Receipt
+        </button>
       )}
     </div>
   );

@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { LogOut, User } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { User } from "lucide-react";
+// import { useDispatch } from "react-redux";
+// import { useNavigate } from "react-router-dom";
+import BackButton from "../food/components/cashier/BackButton";
 // import { QuickThemeToggle } from "@/components/reusables/QuickThemeToggle";
 // import Logo from "@/assets/PROSERVELOGO.png";
-import { logout as logoutAction } from "@/store/auth/authSlice";
-import { useLogoutMutation } from "@/store/api/authApi";
+// import { logout as logoutAction } from "@/store/auth/authSlice";
+// import { useLogoutMutation } from "@/store/api/authApi";
 
 interface UpperNavBarProps {
   setLoggedIn?: (v: boolean) => void;
@@ -17,31 +18,31 @@ export default function UpperNavBar({
   isBlank = false,
 }: UpperNavBarProps) {
   console.log(setLoggedIn);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // const navigate = useNavigate();
+  // const dispatch = useDispatch();
 
-  const [logout] = useLogoutMutation();
+  // const [logout] = useLogoutMutation();
 
-  const handleLogout = async () => {
-    // if (setLoggedIn) {
-    //   setLoggedIn(true);
-    // }
-    try {
-      await logout().unwrap();
-      localStorage.clear();
-      dispatch(logoutAction());
-      navigate("/login");
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-    // }
-    // dispatch(logout());
+  // const handleLogout = async () => {
+  //   // if (setLoggedIn) {
+  //   //   setLoggedIn(true);
+  //   // }
+  //   try {
+  //     await logout().unwrap();
+  //     localStorage.clear();
+  //     dispatch(logoutAction());
+  //     navigate("/login");
+  //     window.location.reload();
+  //   } catch (error) {
+  //     console.error("Logout failed", error);
+  //   }
+  //   // }
+  //   // dispatch(logout());
 
-    // navigate("/login");
-    // localStorage.clear();
-    // navigate("/food/main");
-  };
+  //   // navigate("/login");
+  //   // localStorage.clear();
+  //   // navigate("/food/main");
+  // };
 
   if (isBlank) {
     return (
@@ -70,14 +71,10 @@ export default function UpperNavBar({
             User
           </span>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition shadow-sm"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="text-sm font-medium">Logout</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold text-blue-700">{""}</h2>
+          {<BackButton to={"/food/main"} label="Home" />}
+        </div>
       </motion.div>
     </header>
   );

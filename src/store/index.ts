@@ -9,7 +9,6 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
-    [authApi.reducerPath]: authApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
     [transactionApi.reducerPath]: transactionApi.reducer,
     [reportsApi.reducerPath]: reportsApi.reducer,
