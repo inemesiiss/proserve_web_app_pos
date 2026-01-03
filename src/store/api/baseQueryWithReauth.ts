@@ -1,6 +1,10 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
 import { logout } from "../auth/authSlice";
+import {
+  sessionExpiryManager,
+  parseTokenExpiryError,
+} from "@/utils/sessionExpiry";
 
 const baseUrl = `${import.meta.env.VITE_API_DOMAIN}/api`;
 
@@ -45,6 +49,10 @@ export const baseQueryWithReauth: BaseQueryFn<any, unknown, unknown> = async (
     const refreshResult = await refreshPromise;
 
     if (refreshResult?.error) {
+      // Notify user about session expiration before logging out
+      const errorMessage = parseTokenExpiryError(refreshResult.error);
+      sessionExpiryManager.notifyExpiry(errorMessage);
+
       api.dispatch(logout());
       return refreshResult;
     }

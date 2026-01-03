@@ -8,7 +8,7 @@ import CameraModal from "./CameraModal";
 import CashFundModal from "./CashFundModal";
 import type { CashFundData } from "./CashFundModal";
 import { Button } from "@/components/ui/button";
-import { Settings, Coffee, Wallet } from "lucide-react";
+import { Settings, Coffee, Wallet, UserCircle, LogOut } from "lucide-react";
 
 interface HeaderProps {
   headerText: string;
@@ -16,6 +16,8 @@ interface HeaderProps {
   showSettings?: boolean; // controls visibility of settings button
   showBreak?: boolean; // controls visibility of break button
   showCashFund?: boolean; // controls visibility of cash fund button
+  cashierName?: string; // cashier name to display
+  onCashierLogout?: () => void; // callback when cashier clicks logout
 }
 
 export default function Header({
@@ -24,6 +26,8 @@ export default function Header({
   showSettings = false,
   showBreak = false,
   showCashFund = false,
+  cashierName,
+  onCashierLogout,
 }: HeaderProps) {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
   const [showBreakModal, setShowBreakModal] = useState(false);
@@ -34,6 +38,7 @@ export default function Header({
     "break-in"
   );
   const [isOnBreak, setIsOnBreak] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleBreakClick = () => {
     if (isOnBreak) {
@@ -91,6 +96,50 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Cashier name display - clickable for logout */}
+          {cashierName && (
+            <div className="relative">
+              <button
+                onClick={() => setShowLogoutConfirm(!showLogoutConfirm)}
+                className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+              >
+                <UserCircle size={20} className="text-blue-600" />
+                <span className="text-sm font-semibold text-blue-700">
+                  {cashierName}
+                </span>
+              </button>
+
+              {/* Logout dropdown */}
+              {showLogoutConfirm && (
+                <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-3 min-w-[200px] z-50">
+                  <p className="text-sm text-gray-600 mb-3">
+                    End your cashier session?
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowLogoutConfirm(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setShowLogoutConfirm(false);
+                        onCashierLogout?.();
+                      }}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <LogOut size={14} className="mr-1" />
+                      Logout
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {showBreak && (
             <Button
               onClick={handleBreakClick}

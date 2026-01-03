@@ -172,6 +172,36 @@ export const transactionApi = createApi({
       }),
       invalidatesTags: ["products"],
     }),
+
+    /**
+     * Mutation: Create cash fund
+     * POST /api/transactions/cashier/create_cash_fund
+     * Creates initial cash fund breakdown for cashier time record
+     */
+    createCashFund: builder.mutation<
+      { success: boolean; message?: string },
+      {
+        userId: number;
+        img: string;
+        thousand: number;
+        fiveHundred: number;
+        twoHundred: number;
+        oneHundred: number;
+        fifty: number;
+        twenty: number;
+        twentyCoins: number;
+        tenCoins: number;
+        fiveCoins: number;
+        oneCoins: number;
+        centavos: number;
+      }
+    >({
+      query: (payload) => ({
+        url: `/transactions/cashier/create_cash_fund/`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -182,4 +212,5 @@ export const {
   useGetBranchProductsQuery,
   useGetCategoriesQuery,
   useCreateCashierTransactionMutation,
+  useCreateCashFundMutation,
 } = transactionApi;

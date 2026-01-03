@@ -8,8 +8,10 @@ interface CashFundModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirmFund: (fundData: CashFundData) => void;
+  allowClose?: boolean;
 }
 
+// Cash fund data structure matching API requirements
 export interface CashFundData {
   denominations: DenominationCount;
   totalAmount: number;
@@ -17,58 +19,68 @@ export interface CashFundData {
   timestamp: string;
 }
 
+// Denomination counts matching API field names
 interface DenominationCount {
-  coins_1: number;
-  coins_5: number;
-  coins_10: number;
-  coins_25: number;
-  bill_20: number;
-  bill_50: number;
-  bill_100: number;
-  bill_500: number;
-  bill_1000: number;
+  thousand: number;
+  fiveHundred: number;
+  twoHundred: number;
+  oneHundred: number;
+  fifty: number;
+  twenty: number;
+  twentyCoins: number;
+  tenCoins: number;
+  fiveCoins: number;
+  oneCoins: number;
+  centavos: number;
 }
 
 const denominationValues: Record<keyof DenominationCount, number> = {
-  coins_1: 1,
-  coins_5: 5,
-  coins_10: 10,
-  coins_25: 25,
-  bill_20: 20,
-  bill_50: 50,
-  bill_100: 100,
-  bill_500: 500,
-  bill_1000: 1000,
+  thousand: 1000,
+  fiveHundred: 500,
+  twoHundred: 200,
+  oneHundred: 100,
+  fifty: 50,
+  twenty: 20,
+  twentyCoins: 20,
+  tenCoins: 10,
+  fiveCoins: 5,
+  oneCoins: 1,
+  centavos: 0.01,
 };
 
 const denominationLabels: Record<keyof DenominationCount, string> = {
-  coins_1: "₱1 Coins",
-  coins_5: "₱5 Coins",
-  coins_10: "₱10 Coins",
-  coins_25: "₱25 Coins",
-  bill_20: "₱20 Bills",
-  bill_50: "₱50 Bills",
-  bill_100: "₱100 Bills",
-  bill_500: "₱500 Bills",
-  bill_1000: "₱1000 Bills",
+  thousand: "P1000 Bills",
+  fiveHundred: "P500 Bills",
+  twoHundred: "P200 Bills",
+  oneHundred: "P100 Bills",
+  fifty: "P50 Bills",
+  twenty: "P20 Bills",
+  twentyCoins: "P20 Coins",
+  tenCoins: "P10 Coins",
+  fiveCoins: "P5 Coins",
+  oneCoins: "P1 Coins",
+  centavos: "Centavos",
 };
 
 export default function CashFundModal({
   isOpen,
   onClose,
   onConfirmFund,
+  allowClose = true,
 }: CashFundModalProps) {
   const [step, setStep] = useState<"denomination" | "photo">("denomination");
   const [denominations, setDenominations] = useState<DenominationCount>({
-    coins_1: 0,
-    coins_5: 0,
-    coins_10: 0,
-    coins_25: 0,
-    bill_20: 0,
-    bill_50: 0,
-    bill_100: 0,
-    bill_500: 0,
-    bill_1000: 0,
+    thousand: 0,
+    fiveHundred: 0,
+    twoHundred: 0,
+    oneHundred: 0,
+    fifty: 0,
+    twenty: 0,
+    twentyCoins: 0,
+    tenCoins: 0,
+    fiveCoins: 0,
+    oneCoins: 0,
+    centavos: 0,
   });
 
   const [photoData, setPhotoData] = useState<string | null>(null);
@@ -175,15 +187,17 @@ export default function CashFundModal({
   const resetModal = () => {
     setStep("denomination");
     setDenominations({
-      coins_1: 0,
-      coins_5: 0,
-      coins_10: 0,
-      coins_25: 0,
-      bill_20: 0,
-      bill_50: 0,
-      bill_100: 0,
-      bill_500: 0,
-      bill_1000: 0,
+      thousand: 0,
+      fiveHundred: 0,
+      twoHundred: 0,
+      oneHundred: 0,
+      fifty: 0,
+      twenty: 0,
+      twentyCoins: 0,
+      tenCoins: 0,
+      fiveCoins: 0,
+      oneCoins: 0,
+      centavos: 0,
     });
     setPhotoData(null);
     setShowCameraModal(false);
@@ -192,6 +206,7 @@ export default function CashFundModal({
 
   // Handle close
   const handleClose = () => {
+    if (!allowClose) return; // Prevent closing if not allowed
     resetModal();
     onClose();
   };
@@ -205,7 +220,7 @@ export default function CashFundModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
+            onClick={allowClose ? handleClose : undefined}
             className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
           />
 
@@ -220,12 +235,14 @@ export default function CashFundModal({
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
               <div className="relative bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
-                <button
-                  onClick={handleClose}
-                  className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+                {allowClose && (
+                  <button
+                    onClick={handleClose}
+                    className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                )}
                 <h2 className="text-3xl font-bold text-white">
                   Cash Fund Setup
                 </h2>
@@ -240,18 +257,20 @@ export default function CashFundModal({
               <div className="flex-1 p-8 overflow-y-auto">
                 {step === "denomination" ? (
                   <div className="space-y-6">
-                    {/* Coins Section */}
+                    {/* Bills Section */}
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 mb-4">
-                        Coins
+                        Bills
                       </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {(
                           [
-                            "coins_1",
-                            "coins_5",
-                            "coins_10",
-                            "coins_25",
+                            "thousand",
+                            "fiveHundred",
+                            "twoHundred",
+                            "oneHundred",
+                            "fifty",
+                            "twenty",
                           ] as const
                         ).map((key) => (
                           <DenominationCard
@@ -268,19 +287,19 @@ export default function CashFundModal({
                       </div>
                     </div>
 
-                    {/* Bills Section */}
+                    {/* Coins Section */}
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 mb-4">
-                        Bills
+                        Coins
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {(
                           [
-                            "bill_20",
-                            "bill_50",
-                            "bill_100",
-                            "bill_500",
-                            "bill_1000",
+                            "twentyCoins",
+                            "tenCoins",
+                            "fiveCoins",
+                            "oneCoins",
+                            "centavos",
                           ] as const
                         ).map((key) => (
                           <DenominationCard
