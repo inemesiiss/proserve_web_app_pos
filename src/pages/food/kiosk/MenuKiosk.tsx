@@ -385,8 +385,12 @@
 //           (localStorage.getItem("orderType") as "dine-in" | "takeout") ||
 //           "dine-in"
 //         }
-//         onPaymentComplete={handlePaymentComplete}
+//       onPaymentComplete={handlePaymentComplete}
 //       />
 //     </motion.div>
 //   );
 // }
+
+export default function KioskMenuPage() {
+  return null;
+}

@@ -17,6 +17,7 @@ interface TransactionItem {
   price: number;
   total: number;
   category: string;
+  variants?: { name: string; price: number }[];
 }
 
 interface TransactionDetailsModalProps {
@@ -31,51 +32,22 @@ interface TransactionDetailsModalProps {
     discount: number;
     cashier: string;
   } | null;
+  items?: TransactionItem[];
+  isLoadingItems?: boolean;
 }
-
-// Mock transaction items data
-const mockTransactionItems: TransactionItem[] = [
-  {
-    id: 1,
-    name: "Burger Combo",
-    qty: 2,
-    price: 150,
-    total: 300,
-    category: "Meals",
-  },
-  {
-    id: 2,
-    name: "Iced Coffee",
-    qty: 1,
-    price: 80,
-    total: 80,
-    category: "Beverages",
-  },
-  {
-    id: 3,
-    name: "French Fries",
-    qty: 1,
-    price: 65,
-    total: 65,
-    category: "Sides",
-  },
-  {
-    id: 4,
-    name: "Chicken Wings",
-    qty: 1,
-    price: 120,
-    total: 120,
-    category: "Ala Carte",
-  },
-];
 
 export default function TransactionDetailsModal({
   isOpen,
   onClose,
   transaction,
+  items = [],
+  isLoadingItems = false,
 }: TransactionDetailsModalProps) {
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [showRefundConfirm, setShowRefundConfirm] = useState(false);
+
+  // Use provided items or fallback to empty array
+  const transactionItems = items;
 
   if (!transaction) return null;
 
@@ -88,10 +60,10 @@ export default function TransactionDetailsModal({
   };
 
   const handleSelectAll = () => {
-    if (selectedItems.length === mockTransactionItems.length) {
+    if (selectedItems.length === transactionItems.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(mockTransactionItems.map((item) => item.id));
+      setSelectedItems(transactionItems.map((item) => item.id));
     }
   };
 
@@ -107,11 +79,8 @@ export default function TransactionDetailsModal({
     onClose();
   };
 
-  const subtotal = mockTransactionItems.reduce(
-    (sum, item) => sum + item.total,
-    0
-  );
-  const selectedTotal = mockTransactionItems
+  const subtotal = transactionItems.reduce((sum, item) => sum + item.total, 0);
+  const selectedTotal = transactionItems
     .filter((item) => selectedItems.includes(item.id))
     .reduce((sum, item) => sum + item.total, 0);
 
@@ -165,15 +134,27 @@ export default function TransactionDetailsModal({
                   size="sm"
                   onClick={handleSelectAll}
                   className="text-xs"
+                  disabled={transactionItems.length === 0}
                 >
-                  {selectedItems.length === mockTransactionItems.length
+                  {selectedItems.length === transactionItems.length &&
+                  transactionItems.length > 0
                     ? "Deselect All"
                     : "Select All"}
                 </Button>
               </div>
 
               <div className="space-y-2">
-                {mockTransactionItems.map((item) => (
+                {isLoadingItems && (
+                  <div className="text-center py-8 text-gray-500">
+                    Loading items...
+                  </div>
+                )}
+                {!isLoadingItems && transactionItems.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No items found
+                  </div>
+                )}
+                {transactionItems.map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-4 p-3 border rounded-lg transition-all cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${
@@ -200,6 +181,18 @@ export default function TransactionDetailsModal({
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         Qty: {item.qty} × ₱{item.price.toFixed(2)}
                       </p>
+                      {/* Show variants if any */}
+                      {item.variants && item.variants.length > 0 && (
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {item.variants.map((v, idx) => (
+                            <span key={idx}>
+                              {v.name}
+                              {v.price > 0 && ` (+₱${v.price.toFixed(2)})`}
+                              {idx < item.variants!.length - 1 && ", "}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-lg">

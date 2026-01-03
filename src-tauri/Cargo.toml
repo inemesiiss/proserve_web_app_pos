@@ -24,3 +24,10 @@ log = "0.4"
 tauri = { version = "2.8.5", features = [] }
 printers = "2.2.0"
 tauri-plugin-shell = "2"
+
+# Ensure panics can be caught instead of aborting
+[profile.dev]
+panic = "unwind"
+
+[profile.release]
+panic = "unwind"

@@ -42,7 +42,6 @@ function BMBranch() {
   const [branchData, setBranchData] = useState([]);
 
   const [type, setType] = useState(1);
-  const [data, setData] = useState();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -115,7 +114,6 @@ function BMBranch() {
             className="cursor-pointer text-orange-500"
             onClick={() => {
               setType(2);
-              setData(item);
               setIsAddModalOpen(true);
             }}
           />
@@ -209,12 +207,9 @@ function BMBranch() {
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          setData(undefined);
         }}
         onSubmit={handleSubmitBranch}
         type={type}
-        data={data}
-        count={count}
       />
     </div>
   );

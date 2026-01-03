@@ -2,15 +2,38 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import Header from "@/components/food/components/cashier/Header";
 import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import MealCustomizationModal from "@/components/food/modals/MealCustomizationModal";
-import { Search, Loader2 } from "lucide-react";
-import { useGetBranchProductsQuery } from "@/store/api/Transaction";
+import SecurityPasscodeModal from "@/components/food/modals/security/SecurityPasscodeModalv2";
+import CashFundModal from "@/components/food/components/cashier/CashFundModal";
+import type { CashFundData } from "@/components/food/components/cashier/CashFundModal";
+import {
+  Search,
+  Loader2,
+  ScanBarcode,
+  Package,
+  Receipt,
+  X,
+} from "lucide-react";
+import {
+  useGetBranchProductsQuery,
+  useCreateCashFundMutation,
+} from "@/store/api/Transaction";
 import type { CategorizedProduct } from "@/types/transaction";
 import { formatCurrency } from "@/function/reusables/reuseables";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import {
+  getCashierSession,
+  updateCashierActivity,
+  isSessionExpired,
+  clearCashierSession,
+  type CashierSession,
+} from "@/utils/cashierSession";
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
@@ -21,62 +44,405 @@ const getImageUrl = (imagePath: string | null): string => {
   return `${API_DOMAIN}${imagePath}`;
 };
 
+// Helper function to safely get branch ID from localStorage
+const getBranchIdFromStorage = (): number | null => {
+  try {
+    const branchValue = localStorage.getItem("branch");
+    if (branchValue) {
+      const branchId = parseInt(branchValue, 10);
+      return isNaN(branchId) ? null : branchId;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error reading branch from localStorage:", error);
+    return null;
+  }
+};
+
 export default function FoodTransactionPage() {
+  const navigate = useNavigate();
   const { addItem } = useFoodOrder();
-  const [filteredCategory, setFilteredCategory] = useState("All");
+
+  // Cash fund API mutation
+  const [createCashFund] = useCreateCashFundMutation();
+
+  // Get branch ID from localStorage
+  const [branchId, setBranchId] = useState<number | null>(null);
+  const [isCheckingBranch, setIsCheckingBranch] = useState(true);
+
+  // Cashier session state
+  const [cashierSession, setCashierSession] = useState<CashierSession | null>(
+    null
+  );
+  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
+  const activityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cash fund modal state - shows when cashier hasn't set their cash fund yet
+  const [showCashFundModal, setShowCashFundModal] = useState(false);
+  const [requiresCashFund, setRequiresCashFund] = useState(false);
+
+  // Check for branch ID and cashier session on mount
+  useEffect(() => {
+    const storedBranchId = getBranchIdFromStorage();
+    if (!storedBranchId) {
+      // Redirect to main if no branch ID found
+      console.warn(
+        "No branch ID found in localStorage, redirecting to /food/main"
+      );
+      navigate("/food/main", { replace: true });
+      return;
+    }
+    setBranchId(storedBranchId);
+
+    // Check cashier session
+    const session = getCashierSession();
+    if (session) {
+      setCashierSession(session);
+      setIsCheckingBranch(false);
+    } else {
+      // No valid session, show passcode modal
+      setShowPasscodeModal(true);
+      setIsCheckingBranch(false);
+    }
+  }, [navigate]);
+
+  // Activity tracker - update last activity on user interactions
+  useEffect(() => {
+    const handleActivity = () => {
+      if (cashierSession) {
+        updateCashierActivity();
+      }
+    };
+
+    // Track user activity events
+    const events = ["mousedown", "keydown", "touchstart", "scroll"];
+    events.forEach((event) => {
+      window.addEventListener(event, handleActivity);
+    });
+
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
+    };
+  }, [cashierSession]);
+
+  // Session expiry checker - runs every minute
+  useEffect(() => {
+    if (!cashierSession) return;
+
+    const checkSessionExpiry = () => {
+      if (isSessionExpired()) {
+        clearCashierSession();
+        setCashierSession(null);
+        setShowPasscodeModal(true);
+        toast.warning("Session expired due to inactivity", {
+          description: "Please enter your passcode to continue",
+          duration: 3000,
+        });
+      }
+    };
+
+    // Check immediately and then every minute
+    checkSessionExpiry();
+    activityCheckIntervalRef.current = setInterval(checkSessionExpiry, 60000);
+
+    return () => {
+      if (activityCheckIntervalRef.current) {
+        clearInterval(activityCheckIntervalRef.current);
+      }
+    };
+  }, [cashierSession]);
+
+  // Handle successful passcode verification
+  const handlePasscodeSuccess = (verifiedUser: any) => {
+    setCashierSession({
+      cashierId: verifiedUser.branchUserId,
+      cashierFullname: verifiedUser.fullName,
+    });
+    setShowPasscodeModal(false);
+
+    // Check if cashier needs to set cash fund (hasLogin = false means first login of the day)
+    if (!verifiedUser.hasLogin) {
+      // Cashier hasn't set their cash fund yet, show the modal
+      setRequiresCashFund(true);
+      setShowCashFundModal(true);
+      toast.info(`Welcome, ${verifiedUser.fullName}!`, {
+        description: "Please set your beginning cash fund to continue.",
+        duration: 3000,
+      });
+    } else {
+      // Cashier already has an active session with cash fund
+      setRequiresCashFund(false);
+      toast.success(`Welcome back, ${verifiedUser.fullName}!`, {
+        duration: 2000,
+      });
+    }
+  };
+
+  // Handle cash fund confirmation
+  const handleCashFundConfirm = async (fundData: CashFundData) => {
+    if (!cashierSession) {
+      toast.error("No cashier session found");
+      return;
+    }
+
+    try {
+      // Send cash fund data to backend API
+      await createCashFund({
+        userId: cashierSession.cashierId,
+        img: fundData.photoData,
+        thousand: fundData.denominations.thousand,
+        fiveHundred: fundData.denominations.fiveHundred,
+        twoHundred: fundData.denominations.twoHundred,
+        oneHundred: fundData.denominations.oneHundred,
+        fifty: fundData.denominations.fifty,
+        twenty: fundData.denominations.twenty,
+        twentyCoins: fundData.denominations.twentyCoins,
+        tenCoins: fundData.denominations.tenCoins,
+        fiveCoins: fundData.denominations.fiveCoins,
+        oneCoins: fundData.denominations.oneCoins,
+        centavos: fundData.denominations.centavos,
+      }).unwrap();
+
+      setShowCashFundModal(false);
+      setRequiresCashFund(false);
+      toast.success("Cash fund set successfully!", {
+        description: `Starting amount: P${fundData.totalAmount.toLocaleString()}`,
+        duration: 3000,
+      });
+    } catch (error: any) {
+      console.error("Failed to create cash fund:", error);
+      toast.error("Failed to set cash fund", {
+        description: error?.data?.message || "Please try again",
+        duration: 3000,
+      });
+    }
+  };
+
+  // Handle cashier logout from header
+  const handleCashierLogout = () => {
+    clearCashierSession();
+    setCashierSession(null);
+    setRequiresCashFund(false);
+    toast.info("You have been logged out", {
+      description: "Please select a user to continue",
+      duration: 2000,
+    });
+    setShowPasscodeModal(true);
+  };
+
+  // Category filter state - stores both ID (for API) and label (for display)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null
+  );
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState("All");
   const [selectedProduct, setSelectedProduct] =
     useState<CategorizedProduct | null>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get branch ID from route params or context - adjust based on your setup
-  const branchId = 1; // TODO: Get from route params or user context
+  // Scanner Mode State
+  const [scannerMode, setScannerMode] = useState<"product" | "order">(
+    "product"
+  );
+  const [isScannerEnabled, setIsScannerEnabled] = useState(false);
+  const scannerBufferRef = useRef<string>("");
+  const scannerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ Fetch products from API
+  // Debounce search to avoid too many API calls
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
+
+  // ✅ Fetch products from API with category and search filters
+  // Skip the query if branchId is not yet available
   const {
     data: apiProducts = [],
     isLoading,
+    isFetching,
     error,
-  } = useGetBranchProductsQuery(branchId);
-
-  // ✅ Filter logic with search
-  const filteredProducts = useMemo(() => {
-    let products = apiProducts;
-
-    // Filter by category if not "All"
-    if (filteredCategory !== "All") {
-      products = products.filter(
-        (cp) => cp.prod_categ.toString() === filteredCategory
-      );
+  } = useGetBranchProductsQuery(
+    {
+      branchId: branchId || 0,
+      category: selectedCategoryId,
+      search: debouncedSearch,
+    },
+    {
+      skip: !branchId, // Skip query until branchId is available
     }
+  );
 
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      products = products.filter(
-        (cp) =>
-          cp.prod_name.toLowerCase().includes(query) ||
-          cp.prod_code.toLowerCase().includes(query)
+  // Handle category filter from sidebar
+  const handleCategoryFilter = (
+    categoryId: number | null,
+    categoryLabel: string
+  ) => {
+    setSelectedCategoryId(categoryId);
+    setSelectedCategoryLabel(categoryLabel);
+  };
+
+  // 🔊 Handle scanned barcode - process the scanned code
+  const handleScannedCode = useCallback(
+    (scannedCode: string) => {
+      if (!scannedCode.trim()) return;
+
+      console.log(
+        "📊 [Scanner] Scanned code:",
+        scannedCode,
+        "Mode:",
+        scannerMode
       );
-    }
 
-    return products;
-  }, [apiProducts, filteredCategory, searchQuery]);
-  // console.log("data", apiProducts);
+      if (scannerMode === "product") {
+        // Set the scanned code to search bar
+        setSearchQuery(scannedCode.trim());
+
+        // Focus the search input
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+
+        toast.info(`🔍 Searching for: ${scannedCode.trim()}`, {
+          duration: 1500,
+        });
+      } else if (scannerMode === "order") {
+        // TODO: Handle order scanning - lookup order by code
+        toast.info(`📋 Order scan: ${scannedCode.trim()}`, {
+          description: "Order scanning coming soon!",
+          duration: 2000,
+        });
+      }
+    },
+    [scannerMode]
+  );
+
+  // 🔊 Scanner keyboard event listener
+  useEffect(() => {
+    if (!isScannerEnabled) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field (except our search input when in product mode)
+      const activeElement = document.activeElement;
+      const isInputField =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement;
+
+      // Allow scanner input even when focused on search bar in product mode
+      if (
+        isInputField &&
+        scannerMode === "product" &&
+        activeElement !== searchInputRef.current
+      ) {
+        return;
+      }
+
+      // If typing in other inputs, ignore scanner
+      if (isInputField && scannerMode !== "product") {
+        return;
+      }
+
+      // Clear previous timeout
+      if (scannerTimeoutRef.current) {
+        clearTimeout(scannerTimeoutRef.current);
+      }
+
+      // Handle Enter key - process the scanned code
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const scannedCode = scannerBufferRef.current;
+        scannerBufferRef.current = "";
+
+        if (scannedCode.length > 0) {
+          handleScannedCode(scannedCode);
+        }
+        return;
+      }
+
+      // Ignore modifier keys and special keys
+      if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) {
+        return;
+      }
+
+      // Add character to buffer
+      scannerBufferRef.current += e.key;
+
+      // Set timeout to clear buffer if no more input (scanner is fast, typing is slow)
+      scannerTimeoutRef.current = setTimeout(() => {
+        // If buffer has content after timeout, it might be manual typing
+        // Clear it unless it looks like a complete barcode
+        if (scannerBufferRef.current.length < 3) {
+          scannerBufferRef.current = "";
+        }
+      }, 100); // 100ms - scanners are much faster than this
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (scannerTimeoutRef.current) {
+        clearTimeout(scannerTimeoutRef.current);
+      }
+    };
+  }, [isScannerEnabled, scannerMode, handleScannedCode]);
+
+  // 🔊 Auto-add product when search returns exactly one result (scanner mode)
+  useEffect(() => {
+    if (!isScannerEnabled || scannerMode !== "product") return;
+    if (!debouncedSearch || debouncedSearch.length < 3) return;
+    if (isFetching || isLoading) return;
+
+    // Check if we have exactly one product result
+    if (apiProducts.length === 1) {
+      const product = apiProducts[0];
+      const hasVariantsToCustomize = product.compositions?.some(
+        (comp) => comp.variants && comp.variants.length > 0
+      );
+
+      if (hasVariantsToCustomize) {
+        // Open customization modal
+        setSelectedProduct(product);
+        setShowCustomizationModal(true);
+        toast.info(`📦 ${product.prod_name} has options`, {
+          description: "Please select your preferences",
+          duration: 2000,
+        });
+      } else {
+        // Auto-add to cart
+        addDirectToCart(product);
+        toast.success(`✅ Added: ${product.prod_name}`, {
+          duration: 1500,
+        });
+        // Clear search after adding
+        setSearchQuery("");
+      }
+    } else if (apiProducts.length === 0 && debouncedSearch.length >= 3) {
+      toast.error(`❌ No product found: ${debouncedSearch}`, {
+        duration: 2000,
+      });
+    }
+  }, [
+    apiProducts,
+    debouncedSearch,
+    isScannerEnabled,
+    scannerMode,
+    isFetching,
+    isLoading,
+  ]);
+
   // ✅ Separate products by type for organized rendering
   const { individuals, individualsWithVariance, bundles, bundlesWithVariance } =
     useMemo(() => {
       return {
-        individuals: filteredProducts.filter((p) => p.type === "individual"),
-        individualsWithVariance: filteredProducts.filter(
+        individuals: apiProducts.filter((p) => p.type === "individual"),
+        individualsWithVariance: apiProducts.filter(
           (p) => p.type === "individual-variance"
         ),
-        bundles: filteredProducts.filter((p) => p.type === "bundle"),
-        bundlesWithVariance: filteredProducts.filter(
+        bundles: apiProducts.filter((p) => p.type === "bundle"),
+        bundlesWithVariance: apiProducts.filter(
           (p) => p.type === "bundle-variance"
         ),
       };
-    }, [filteredProducts]);
+    }, [apiProducts]);
 
   // ✅ Handle add to cart - check if product needs customization
   const handleAdd = (product: CategorizedProduct) => {
@@ -166,9 +532,21 @@ export default function FoodTransactionPage() {
 
   // Get category header text
   const getCategoryHeader = () => {
-    if (filteredCategory === "All") return "Choose your Items";
-    return `Choose your Category ${filteredCategory}`;
+    if (selectedCategoryLabel === "All") return "Choose your Items";
+    return `Category: ${selectedCategoryLabel}`;
   };
+
+  // ✅ Checking branch ID state
+  if (isCheckingBranch) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-blue-600" size={40} />
+          <p className="text-gray-600">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
 
   // ✅ Loading state
   if (isLoading) {
@@ -197,7 +575,7 @@ export default function FoodTransactionPage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* 🧭 Sidebar Navigation */}
-      <FoodSidebarNav onFilter={setFilteredCategory} />
+      <FoodSidebarNav onFilter={handleCategoryFilter} />
 
       {/* 🍔 Main Content */}
       <motion.div
@@ -212,7 +590,91 @@ export default function FoodTransactionPage() {
           showSettings={true}
           showBreak={true}
           showCashFund={true}
+          cashierName={cashierSession?.cashierFullname}
+          onCashierLogout={handleCashierLogout}
         />
+
+        {/* � Scanner Mode Toggle */}
+        <div className="mb-4 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ScanBarcode
+                size={24}
+                className={
+                  isScannerEnabled ? "text-green-600" : "text-gray-400"
+                }
+              />
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800">
+                  Barcode Scanner
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {isScannerEnabled
+                    ? `Active - Scanning for ${
+                        scannerMode === "product" ? "products" : "orders"
+                      }`
+                    : "Click to enable scanner input"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Scanner Mode Selection */}
+              {isScannerEnabled && (
+                <div className="flex items-center gap-2 border-r pr-4 mr-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="scannerMode"
+                      checked={scannerMode === "product"}
+                      onChange={() => setScannerMode("product")}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <Package size={16} className="text-blue-600" />
+                    <span className="text-xs font-medium">Product</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="scannerMode"
+                      checked={scannerMode === "order"}
+                      onChange={() => setScannerMode("order")}
+                      className="w-4 h-4 text-purple-600"
+                    />
+                    <Receipt size={16} className="text-purple-600" />
+                    <span className="text-xs font-medium">Order</span>
+                  </label>
+                </div>
+              )}
+
+              {/* Enable/Disable Toggle */}
+              <button
+                onClick={() => setIsScannerEnabled(!isScannerEnabled)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isScannerEnabled
+                    ? "bg-green-100 text-green-700 hover:bg-green-200 border border-green-300"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
+                }`}
+              >
+                {isScannerEnabled ? "✓ Scanner ON" : "Enable Scanner"}
+              </button>
+            </div>
+          </div>
+
+          {/* Scanner Status Indicator */}
+          {isScannerEnabled && (
+            <div className="mt-2 pt-2 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs text-gray-600">
+                  Ready to scan. Point scanner at barcode and scan.
+                  {scannerMode === "product" &&
+                    " Product will be auto-added if no customization needed."}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 🔍 Search Bar (Floating Top Right) & Category Header (Top Left) - STICKY */}
         <div className="sticky top-[10px] z-40 bg-gray-50 pb-4 pt-5 -mx-6 px-6 mb-6">
@@ -230,23 +692,52 @@ export default function FoodTransactionPage() {
                   size={20}
                 />
                 <Input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Search items..."
+                  placeholder={
+                    isScannerEnabled && scannerMode === "product"
+                      ? "Scan or search items..."
+                      : "Search items..."
+                  }
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  className={`pl-10 pr-10 py-2 w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white ${
+                    isScannerEnabled && scannerMode === "product"
+                      ? "border-green-400 ring-1 ring-green-200"
+                      : ""
+                  }`}
                 />
+                {/* Clear button */}
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-0.5 transition-colors"
+                    type="button"
+                    title="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+                {/* Scanner indicator (only show when no search query) */}
+                {!searchQuery &&
+                  isScannerEnabled &&
+                  scannerMode === "product" && (
+                    <ScanBarcode
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500"
+                      size={18}
+                    />
+                  )}
               </div>
             </div>
           </div>
         </div>
 
         {/* ==== 🥡 COMBINED SECTION (when All is selected) ==== */}
-        {filteredCategory === "All" ? (
+        {selectedCategoryLabel === "All" ? (
           <section>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {/* Render all products (individuals, bundles, and variants) */}
-              {filteredProducts.map((product, index) => {
+              {apiProducts.map((product, index) => {
                 const price = Number(product.basePrice) || 0;
                 const displayName = product.prod_code;
                 const buttonLabel =
@@ -517,9 +1008,27 @@ export default function FoodTransactionPage() {
         )}
 
         {/* 🧃 No results */}
-        {filteredProducts.length === 0 && (
+        {apiProducts.length === 0 && !isLoading && !isFetching && (
           <div className="text-center text-gray-500 py-10">
-            No items found in <strong>{filteredCategory}</strong>
+            No items found{" "}
+            {selectedCategoryLabel !== "All" && (
+              <>
+                in <strong>{selectedCategoryLabel}</strong>
+              </>
+            )}
+            {debouncedSearch && (
+              <>
+                {" "}
+                matching "<strong>{debouncedSearch}</strong>"
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Loading indicator for filtering */}
+        {isFetching && !isLoading && (
+          <div className="text-center text-gray-500 py-4">
+            <Loader2 className="animate-spin text-blue-600 mx-auto" size={24} />
           </div>
         )}
       </motion.div>
@@ -560,6 +1069,28 @@ export default function FoodTransactionPage() {
           onConfirm={handleCustomizationConfirm}
         />
       )}
+
+      {/* Security Passcode Modal - Required for cashier authentication */}
+      <SecurityPasscodeModal
+        isOpen={showPasscodeModal}
+        onClose={() => setShowPasscodeModal(false)}
+        onSuccess={handlePasscodeSuccess}
+        branchId={branchId || 1}
+        textMessage="Please select your name and enter your PIN to access the cashier system."
+        allowClose={false}
+      />
+
+      {/* Cash Fund Modal - Required when hasLogin is false (first login of the day) */}
+      <CashFundModal
+        isOpen={showCashFundModal}
+        onClose={() => {
+          if (!requiresCashFund) {
+            setShowCashFundModal(false);
+          }
+        }}
+        onConfirmFund={handleCashFundConfirm}
+        allowClose={!requiresCashFund}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { useGetCategoriesQuery } from "@/store/api/Transaction";
 const DEFAULT_ITEMS = [{ id: 0, label: "All", image: "/food/food/meal.png" }];
 
 interface FoodSidebarNavProps {
-  onFilter: (category: string) => void;
+  onFilter: (categoryId: number | null, categoryLabel: string) => void;
 }
 
 export default function FoodSidebarNav({ onFilter }: FoodSidebarNavProps) {
@@ -38,9 +38,10 @@ export default function FoodSidebarNav({ onFilter }: FoodSidebarNavProps) {
     return DEFAULT_ITEMS;
   }, [categoriesData]);
 
-  const handleFilter = (category: string) => {
-    setSelectedCategory(category);
-    onFilter(category);
+  const handleFilter = (categoryId: number, categoryLabel: string) => {
+    setSelectedCategory(categoryLabel);
+    // Pass null for "All" (id=0), otherwise pass the category ID
+    onFilter(categoryId === 0 ? null : categoryId, categoryLabel);
   };
 
   return (
@@ -80,7 +81,7 @@ export default function FoodSidebarNav({ onFilter }: FoodSidebarNavProps) {
           return (
             <motion.button
               key={item.id}
-              onClick={() => handleFilter(item.label)}
+              onClick={() => handleFilter(item.id, item.label)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
               className={cn(

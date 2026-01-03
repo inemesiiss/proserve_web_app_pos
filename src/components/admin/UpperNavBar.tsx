@@ -1,18 +1,17 @@
 import { motion } from "framer-motion";
-import {
-  // LogOut,
-  SquareArrowLeft,
-  User,
-} from "lucide-react";
+import { User } from "lucide-react";
 // import { useDispatch } from "react-redux";
-import {
-  Link,
-  //  useNavigate
-} from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+import BackButton from "../food/components/cashier/BackButton";
+// import {
+//   Link,
+//   //  useNavigate
+// } from "react-router-dom";
 // import { QuickThemeToggle } from "@/components/reusables/QuickThemeToggle";
 // import Logo from "@/assets/PROSERVELOGO.png";
 // import { logout as logoutAction } from "@/store/auth/authSlice";
 // import { useLogoutMutation } from "@/store/api/authApi";
+
 // import BackButton from "../food/components/cashier/BackButton";
 
 interface UpperNavBarProps {
@@ -78,6 +77,10 @@ export default function UpperNavBar({
             User
           </span>
         </div>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold text-blue-700">{""}</h2>
+          {<BackButton to={"/food/main"} label="Home" />}
+        </div>
 
         {/* <button
           onClick={handleLogout}
@@ -86,12 +89,12 @@ export default function UpperNavBar({
           <LogOut className="w-4 h-4" />
           <span className="text-sm font-medium">Logout</span>
         </button> */}
-        <Link to="/food/main">
+        {/* <Link to="/food/main">
           <span className="flex items-center gap-2 bg-gray-500 text-white px-3 py-1.5 rounded-full hover:bg-gray-600 transition shadow-sm cursor-pointer">
             <SquareArrowLeft />
             <span className="text-sm font-medium">Back</span>
           </span>
-        </Link>
+        </Link> */}
         {/* <div className="">
           <BackButton to="/food/main" label="Back" />
         </div> */}

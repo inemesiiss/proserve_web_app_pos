@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import authService from "@/services/authService";
 import type { User, LoginCredentials } from "@/services/authService";
+import { sessionExpiryManager } from "@/utils/sessionExpiry";
 
 interface AuthContextType {
   user: User | null;
@@ -51,6 +52,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // After successful login, fetch user data
       const userData = await authService.getCurrentUser();
       setUser(userData);
+      // Reset session expiry manager on successful login
+      sessionExpiryManager.reset();
     } catch (error) {
       console.error("Login error:", error);
       throw error;

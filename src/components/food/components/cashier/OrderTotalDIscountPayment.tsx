@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import { useCreateCashierTransactionMutation } from "@/store/api/Transaction";
 import ReceiptPrinter from "@/components/food/components/Print/PrintReceipt";
 import PaymentModal from "../../modals/food/PaymentCashLessModal";
 import OrderTotalDiscountModal from "../../modals/security/OrderTotalDiscountModal";
-import { X } from "lucide-react";
+import { X, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function FoodTotalDiscountPaymentSection() {
   const {
@@ -40,6 +41,7 @@ export default function FoodTotalDiscountPaymentSection() {
   const [cashReceived, setCashReceived] = useState(0);
   const [shouldPrint, setShouldPrint] = useState(false);
   const [invoiceNum, setInvoiceNum] = useState<string | null>(null);
+  const [orderNum, setOrderNum] = useState<string>("");
   const [cashlessModalisOpen, setCashlessModalOpen] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
 
@@ -142,7 +144,20 @@ export default function FoodTotalDiscountPaymentSection() {
 
       if (response.success && response.invoiceNum) {
         setInvoiceNum(response.invoiceNum);
+        setOrderNum(response.orderNum || "");
         setShouldPrint(true);
+
+        // 🎉 Show success toast
+        toast.success("Transaction Successful!", {
+          description: `Invoice #${response.invoiceNum} has been created`,
+          duration: 2000,
+          icon: <CheckCircle className="text-green-500" size={20} />,
+          style: {
+            background: "#10B981",
+            color: "white",
+            border: "none",
+          },
+        });
       }
     } catch (error) {
       console.error("❌ [handleCreateTransaction] Error:", error);
@@ -153,6 +168,7 @@ export default function FoodTotalDiscountPaymentSection() {
   const handlePayment = () => {
     setCashReceived(0);
     setInvoiceNum(null);
+    setOrderNum("");
     setShouldPrint(false);
     clearOrder();
   };
@@ -163,28 +179,11 @@ export default function FoodTotalDiscountPaymentSection() {
   const handleResetCash = () => {
     setCashReceived(0);
     setShouldPrint(false);
+    setInvoiceNum(null);
   };
 
-  // 🧠 Auto-trigger print if cash received >= total
-  useEffect(() => {
-    console.log("💳 [Payment Check]", {
-      paymentMode,
-      cashReceived,
-      grandTotal,
-      printerConfigured: !!deviceSettings.receiptPrinter,
-    });
-
-    if (
-      paymentMode === "cash" &&
-      cashReceived >= grandTotal &&
-      grandTotal > 0
-    ) {
-      console.log("✅ [AUTO PRINT] Conditions met, triggering print...");
-      setShouldPrint(true);
-    } else {
-      setShouldPrint(false);
-    }
-  }, [cashReceived, paymentMode, grandTotal, deviceSettings.receiptPrinter]);
+  // Note: shouldPrint is only set to true in handleCreateTransaction
+  // after we successfully get an invoiceNum from the backend
 
   return (
     <div className="p-5 bg-white rounded-xl shadow-md w-full max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">
@@ -506,6 +505,8 @@ export default function FoodTotalDiscountPaymentSection() {
               cashReceived={cashReceived}
               p_name={deviceSettings.receiptPrinter}
               invoiceNum={invoiceNum}
+              orderNum={orderNum}
+              cashierName="Cashier" // TODO: Get from auth context
               onSuccess={handlePayment}
             />
           </>

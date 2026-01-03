@@ -3,13 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Lottie from "lottie-react";
-import SecurityPasscodeModal from "@/components/food/modals/security/SecurityPasscodeModal";
+import ManagerPasscodeModal from "@/components/food/modals/security/ManagerPasscodeModal";
+import type { VerifiedUser } from "@/store/api/User";
+
+// Helper function to get branch ID from localStorage
+const getBranchIdFromStorage = (): number => {
+  try {
+    const branchValue = localStorage.getItem("branch");
+    if (branchValue) {
+      const branchId = parseInt(branchValue, 10);
+      return isNaN(branchId) ? 1 : branchId;
+    }
+    return 1;
+  } catch {
+    return 1;
+  }
+};
 
 export default function DirectorySelection() {
   const navigate = useNavigate();
   const [animations, setAnimations] = useState<Record<string, any>>({});
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [branchId] = useState<number>(getBranchIdFromStorage());
 
   useEffect(() => {
     async function loadAnimations() {
@@ -33,8 +49,7 @@ export default function DirectorySelection() {
       name: "Analytic Dashboard",
       animation: animations.dashboard,
       path: "/bm/dashboard",
-      passcode: "123456",
-      textMessage: "Enter 4-digit access code for Analytics",
+      textMessage: "Select user and enter PIN to access Analytics",
       digitCount: 6,
     },
     {
@@ -42,29 +57,35 @@ export default function DirectorySelection() {
       name: "Reports",
       animation: animations.reports,
       path: "/bm/reports/transaction",
-      passcode: "123456",
-      textMessage: "Enter manager code to access Reports",
+      textMessage: "Select user and enter PIN to access Reports",
       digitCount: 6,
     },
     {
       id: "user",
-      name: "User Access",
+      name: "Cashier Access",
       animation: animations.user,
       path: "/food/transaction",
-      passcode: "123456",
-      textMessage: "Enter admin passcode to manage users",
+      textMessage: "Select user and enter PIN to access Cashier",
       digitCount: 6,
     },
   ];
 
   const handleItemClick = (item: any) => {
+    // Cashier Access navigates directly - it has its own security modal on the transaction page
+    if (item.id === "user") {
+      navigate(item.path);
+      return;
+    }
+    // Reports and Dashboard require passcode verification
     setSelectedItem(item);
     setShowModal(true);
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = (verifiedUser: VerifiedUser) => {
     if (selectedItem) {
-      navigate(selectedItem.path, { state: { id: selectedItem.id } });
+      navigate(selectedItem.path, {
+        state: { id: selectedItem.id, user: verifiedUser },
+      });
       setShowModal(false);
       setSelectedItem(null);
     }
@@ -175,13 +196,13 @@ export default function DirectorySelection() {
       </motion.p> */}
 
       {selectedItem && (
-        <SecurityPasscodeModal
+        <ManagerPasscodeModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
           onSuccess={handleSuccess}
           textMessage={selectedItem.textMessage}
           digitCount={selectedItem.digitCount}
-          correctCode={selectedItem.passcode}
+          branchId={branchId}
         />
       )}
     </div>
