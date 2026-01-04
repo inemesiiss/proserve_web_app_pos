@@ -9,6 +9,7 @@ import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import MealCustomizationModal from "@/components/food/modals/MealCustomizationModal";
 import SecurityPasscodeModal from "@/components/food/modals/security/SecurityPasscodeModalv2";
 import CashFundModal from "@/components/food/components/cashier/CashFundModal";
+import OnBreakModal from "@/components/food/components/cashier/OnBreakModal";
 import type { CashFundData } from "@/components/food/components/cashier/CashFundModal";
 import {
   Search,
@@ -32,6 +33,8 @@ import {
   updateCashierActivity,
   isSessionExpired,
   clearCashierSession,
+  isOnBreak,
+  updateBreakUntil,
   type CashierSession,
 } from "@/utils/cashierSession";
 
@@ -81,6 +84,9 @@ export default function FoodTransactionPage() {
   const [showCashFundModal, setShowCashFundModal] = useState(false);
   const [requiresCashFund, setRequiresCashFund] = useState(false);
 
+  // Break modal state - shows when cashier is on break
+  const [showBreakModal, setShowBreakModal] = useState(false);
+
   // Check for branch ID and cashier session on mount
   useEffect(() => {
     const storedBranchId = getBranchIdFromStorage();
@@ -98,6 +104,12 @@ export default function FoodTransactionPage() {
     const session = getCashierSession();
     if (session) {
       setCashierSession(session);
+
+      // Check if cashier is currently on break
+      if (isOnBreak()) {
+        setShowBreakModal(true);
+      }
+
       setIsCheckingBranch(false);
     } else {
       // No valid session, show passcode modal
@@ -162,7 +174,24 @@ export default function FoodTransactionPage() {
     });
     setShowPasscodeModal(false);
 
-    // Check if cashier needs to set cash fund (hasLogin = false means first login of the day)
+    // Priority 1: Check if cashier is on break (break_until is set and not expired)
+    if (verifiedUser.breakUntil) {
+      const breakEndTime = new Date(verifiedUser.breakUntil).getTime();
+      const currentTime = Date.now();
+
+      if (currentTime < breakEndTime) {
+        // Cashier is still on break, show break modal
+        updateBreakUntil(verifiedUser.breakUntil);
+        setShowBreakModal(true);
+        toast.info(`Welcome back, ${verifiedUser.fullName}!`, {
+          description: "You are currently on break.",
+          duration: 3000,
+        });
+        return; // Don't proceed to cash fund check
+      }
+    }
+
+    // Priority 2: Check if cashier needs to set cash fund (hasLogin = false means first login of the day)
     if (!verifiedUser.hasLogin) {
       // Cashier hasn't set their cash fund yet, show the modal
       setRequiresCashFund(true);
@@ -178,6 +207,16 @@ export default function FoodTransactionPage() {
         duration: 2000,
       });
     }
+  };
+
+  // Handle time in from break
+  const handleTimeIn = () => {
+    setShowBreakModal(false);
+    // Check if cashier needs cash fund after timing in
+    // This would depend on your business logic
+    toast.success("You're back! Ready to serve.", {
+      duration: 2000,
+    });
   };
 
   // Handle cash fund confirmation
@@ -592,6 +631,7 @@ export default function FoodTransactionPage() {
           showCashFund={true}
           cashierName={cashierSession?.cashierFullname}
           onCashierLogout={handleCashierLogout}
+          onBreakStart={() => setShowBreakModal(true)}
         />
 
         {/* � Scanner Mode Toggle */}
@@ -1090,6 +1130,13 @@ export default function FoodTransactionPage() {
         }}
         onConfirmFund={handleCashFundConfirm}
         allowClose={!requiresCashFund}
+      />
+
+      {/* On Break Modal - Shows when cashier is on break */}
+      <OnBreakModal
+        isOpen={showBreakModal}
+        onTimeIn={handleTimeIn}
+        cashierName={cashierSession?.cashierFullname}
       />
     </div>
   );

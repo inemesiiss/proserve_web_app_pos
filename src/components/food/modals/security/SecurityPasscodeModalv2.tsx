@@ -152,10 +152,12 @@ export default function SecurityPasscodeModal({
       // The verify API may not always return the fullname
       const displayName = selectedUserData.fullName || result.fullName;
 
-      // Save session to localStorage
+      // Save session to localStorage (rewrites every time cashier logs in)
       saveCashierSession({
         cashierId: result.branchUserId,
         cashierFullname: displayName,
+        hasLogin: result.hasLogin,
+        breakUntil: result.breakUntil, // Save break status from API
       });
 
       // Update activity timestamp

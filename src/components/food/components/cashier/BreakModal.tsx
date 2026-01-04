@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Utensils, Coffee, Timer, Waves, Target, Users } from "lucide-react";
+import { useCreateTimeRecordMutation } from "@/store/api/Transaction";
+import { toast } from "sonner";
+import { getCashierSession, updateBreakUntil } from "@/utils/cashierSession";
 
 interface BreakModalProps {
   isOpen: boolean;
@@ -14,6 +17,7 @@ export type BreakType = {
   id: string;
   name: string;
   duration: string;
+  durationMinutes: number; // actual minutes for API
   description: string;
   icon: React.ReactNode;
 };
@@ -23,29 +27,34 @@ const breakTypes: BreakType[] = [
     id: "1_hour",
     name: "1 Hour Break",
     duration: "60 min",
+    durationMinutes: 60,
     description:
-      "A standard 30-minute lunch break to grab a meal and recharge.",
+      "A standard 60-minute lunch break to grab a meal and recharge.",
     icon: <Utensils className="w-8 h-8" />,
   },
   {
     id: "30_minutes",
     name: "30 Minutes Break",
     duration: "30 min",
+    durationMinutes: 30,
     description:
-      "A quick 15-minute break for a coffee, stretch, or a mental reset.",
+      "A quick 30-minute break for a coffee, stretch, or a mental reset.",
     icon: <Coffee className="w-8 h-8" />,
   },
   {
     id: "15_minutes",
     name: "15 Minutes Break",
     duration: "15 min",
-    description: "A brief 5-minute personal break as needed during your shift.",
+    durationMinutes: 15,
+    description:
+      "A brief 15-minute personal break as needed during your shift.",
     icon: <Timer className="w-8 h-8" />,
   },
   {
     id: "restroom",
     name: "Restroom Break",
     duration: "45 min",
+    durationMinutes: 45,
     description:
       "An extended 45-minute break, for more complex tasks or personal appointments.",
     icon: <Waves className="w-8 h-8" />,
@@ -54,6 +63,7 @@ const breakTypes: BreakType[] = [
     id: "coaching",
     name: "Coaching",
     duration: "20 min",
+    durationMinutes: 20,
     description:
       "A 20-minute break specifically for administrative tasks or urgent calls.",
     icon: <Target className="w-8 h-8" />,
@@ -62,6 +72,7 @@ const breakTypes: BreakType[] = [
     id: "meeting",
     name: "Meeting Break",
     duration: "10 min",
+    durationMinutes: 10,
     description:
       "A brief 10-minute break to prepare for an upcoming team meeting or briefing.",
     icon: <Users className="w-8 h-8" />,
@@ -74,14 +85,58 @@ export default function BreakModal({
   onConfirmBreak,
 }: BreakModalProps) {
   const [selectedBreak, setSelectedBreak] = useState<string | null>(null);
+  const [createTimeRecord, { isLoading }] = useCreateTimeRecordMutation();
 
-  const handleConfirm = () => {
-    if (selectedBreak) {
-      const breakType = breakTypes.find((b) => b.id === selectedBreak);
-      if (breakType) {
-        onConfirmBreak(breakType);
-        onClose();
+  // Helper to get branchId from localStorage
+  const getBranchId = (): number => {
+    try {
+      const branchValue = localStorage.getItem("branch");
+      if (branchValue) {
+        const branchId = parseInt(branchValue, 10);
+        return isNaN(branchId) ? 1 : branchId;
       }
+      return 1;
+    } catch {
+      return 1;
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedBreak) return;
+
+    const breakType = breakTypes.find((b) => b.id === selectedBreak);
+    if (!breakType) return;
+
+    // Get cashier session from localStorage
+    const cashierSession = getCashierSession();
+    if (!cashierSession) {
+      toast.error("No active cashier session found");
+      return;
+    }
+
+    const branchId = getBranchId();
+
+    try {
+      // Call API to create break record
+      await createTimeRecord({
+        branchId,
+        userId: cashierSession.cashierId,
+        types: 3, // 3 = BREAK
+        bHours: breakType.durationMinutes,
+      }).unwrap();
+
+      // Calculate break end time and save to localStorage
+      const breakEndTime = new Date();
+      breakEndTime.setMinutes(
+        breakEndTime.getMinutes() + breakType.durationMinutes
+      );
+      updateBreakUntil(breakEndTime.toISOString());
+
+      toast.success(`${breakType.name} started successfully`);
+      onConfirmBreak(breakType);
+      onClose();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to start break");
     }
   };
 
@@ -200,16 +255,24 @@ export default function BreakModal({
                 <Button
                   onClick={onClose}
                   variant="outline"
+                  disabled={isLoading}
                   className="px-6 py-2 bg-white hover:bg-gray-100 text-gray-700 border-gray-300"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={!selectedBreak}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selectedBreak || isLoading}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
                 >
-                  Confirm Break
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Starting...
+                    </span>
+                  ) : (
+                    "Confirm Break"
+                  )}
                 </Button>
               </div>
             </div>

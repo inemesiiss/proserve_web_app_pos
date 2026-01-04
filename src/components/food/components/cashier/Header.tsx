@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BackButton from "./BackButton";
 import DeviceSettingsModal from "@/components/admin/modals/DeviceSettingsModal";
 import BreakModal from "./BreakModal";
@@ -8,7 +8,8 @@ import CameraModal from "./CameraModal";
 import CashFundModal from "./CashFundModal";
 import type { CashFundData } from "./CashFundModal";
 import { Button } from "@/components/ui/button";
-import { Settings, Coffee, Wallet, UserCircle, LogOut } from "lucide-react";
+import { Settings, Coffee, UserCircle, LogOut } from "lucide-react";
+import { isOnBreak as checkIsOnBreak } from "@/utils/cashierSession";
 
 interface HeaderProps {
   headerText: string;
@@ -18,6 +19,7 @@ interface HeaderProps {
   showCashFund?: boolean; // controls visibility of cash fund button
   cashierName?: string; // cashier name to display
   onCashierLogout?: () => void; // callback when cashier clicks logout
+  onBreakStart?: () => void; // callback when break starts (to show OnBreakModal)
 }
 
 export default function Header({
@@ -28,6 +30,7 @@ export default function Header({
   showCashFund = false,
   cashierName,
   onCashierLogout,
+  onBreakStart,
 }: HeaderProps) {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
   const [showBreakModal, setShowBreakModal] = useState(false);
@@ -38,6 +41,11 @@ export default function Header({
     "break-in"
   );
   const [isOnBreak, setIsOnBreak] = useState(false);
+
+  // Check if cashier is on break when component mounts
+  useEffect(() => {
+    setIsOnBreak(checkIsOnBreak());
+  }, []);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleBreakClick = () => {
@@ -67,7 +75,10 @@ export default function Header({
 
     if (type === "break-in") {
       setIsOnBreak(true);
-      // Here you can save break start data to backend
+      // Notify parent component to show OnBreakModal
+      if (onBreakStart) {
+        onBreakStart();
+      }
     } else {
       setIsOnBreak(false);
       setSelectedBreak(null);
@@ -157,7 +168,7 @@ export default function Header({
               {isOnBreak ? "End Break" : "Take a Break"}
             </Button>
           )}
-          {showCashFund && (
+          {/* {showCashFund && (
             <Button
               onClick={() => setShowCashFundModal(true)}
               className="px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-semibold bg-blue-600 hover:bg-blue-700 text-white"
@@ -166,7 +177,7 @@ export default function Header({
               <Wallet size={18} />
               Cash Fund
             </Button>
-          )}
+          )} */}
           {showSettings && (
             <Button
               onClick={() => setShowDeviceSettings(true)}
