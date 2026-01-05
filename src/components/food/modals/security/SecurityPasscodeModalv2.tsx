@@ -9,6 +9,7 @@ import {
   Loader2,
   UserCircle,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
 import {
   Select,
@@ -36,6 +37,8 @@ interface SecurityPasscodeModalProps {
   digitCount?: number;
   branchId?: number;
   allowClose?: boolean; // If false, user cannot close modal without successful login
+  showBackButton?: boolean; // Show back to directory button
+  onBack?: () => void; // Callback when back button is clicked
 }
 
 export default function SecurityPasscodeModal({
@@ -46,6 +49,8 @@ export default function SecurityPasscodeModal({
   digitCount = 6,
   branchId = 1,
   allowClose = true,
+  showBackButton = false,
+  onBack,
 }: SecurityPasscodeModalProps) {
   // Check for existing session
   const [savedSession, setSavedSession] = useState<{
@@ -158,6 +163,7 @@ export default function SecurityPasscodeModal({
         cashierFullname: displayName,
         hasLogin: result.hasLogin,
         breakUntil: result.breakUntil, // Save break status from API
+        breakId: result.breakId, // Save break ID from API
       });
 
       // Update activity timestamp
@@ -216,6 +222,17 @@ export default function SecurityPasscodeModal({
             exit={{ scale: 0.9, opacity: 0 }}
             className="bg-white rounded-3xl shadow-2xl p-10 w-[380px] flex flex-col items-center space-y-6 relative"
           >
+            {/* Back button - top left */}
+            {showBackButton && onBack && (
+              <button
+                onClick={onBack}
+                className="absolute top-4 left-4 flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors text-sm"
+              >
+                <ArrowLeft size={18} />
+                <span>Back</span>
+              </button>
+            )}
+
             {allowClose && (
               <button
                 onClick={handleClose}
@@ -229,6 +246,17 @@ export default function SecurityPasscodeModal({
               {textMessage}
             </h2>
 
+            {/* Loading overlay when fetching users */}
+            {isLoadingUsers && !savedSession && (
+              <div className="w-full flex flex-col items-center py-8">
+                <Loader2
+                  size={40}
+                  className="text-blue-600 animate-spin mb-3"
+                />
+                <p className="text-sm text-gray-500">Loading users...</p>
+              </div>
+            )}
+
             {/* Error message display */}
             {errorMessage && (
               <div className="w-full text-center text-red-500 text-sm font-medium bg-red-50 py-2 px-3 rounded-lg">
@@ -236,139 +264,158 @@ export default function SecurityPasscodeModal({
               </div>
             )}
 
-            {/* Show saved user info or user dropdown */}
-            {showingSavedUser ? (
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Current User
-                </label>
-                <div className="w-full h-11 rounded-xl border border-blue-300 bg-blue-50 px-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <UserCircle size={20} className="text-blue-600" />
-                    <span className="font-semibold text-blue-700">
-                      {savedSession.cashierFullname}
-                    </span>
+            {/* Only show content when users are loaded or there's a saved session */}
+            {(!isLoadingUsers || savedSession) && (
+              <>
+                {/* Show saved user info or user dropdown */}
+                {showingSavedUser ? (
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Current User
+                    </label>
+                    <div className="w-full h-11 rounded-xl border border-blue-300 bg-blue-50 px-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <UserCircle size={20} className="text-blue-600" />
+                        <span className="font-semibold text-blue-700">
+                          {savedSession.cashierFullname}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleSwitchUser}
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        Switch
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Enter your passcode to continue
+                    </p>
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Select User
+                    </label>
+                    <Select
+                      value={selectedUser}
+                      onValueChange={setSelectedUser}
+                    >
+                      <SelectTrigger className="w-full h-11 rounded-xl border-gray-300 bg-gray-50 focus:ring-blue-500">
+                        <div className="flex items-center gap-2">
+                          {isLoadingUsers ? (
+                            <Loader2
+                              size={16}
+                              className="text-gray-500 animate-spin"
+                            />
+                          ) : (
+                            <User size={16} className="text-gray-500" />
+                          )}
+                          <SelectValue
+                            placeholder={
+                              isLoadingUsers
+                                ? "Loading users..."
+                                : "Choose a user..."
+                            }
+                          />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="bg-white rounded-xl shadow-lg border-gray-200">
+                        {branchUsers.map((user) => (
+                          <SelectItem
+                            key={user.id}
+                            value={user.id.toString()}
+                            className="cursor-pointer hover:bg-gray-100 rounded-lg"
+                          >
+                            {getUserDisplayName(user)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <motion.div
+                  animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
+                  transition={{ duration: 0.3 }}
+                  className="w-full flex flex-col items-center mt-4"
+                >
+                  <div className="flex justify-center space-x-2">
+                    {[...Array(digitCount)].map((_, idx) => (
+                      <div
+                        key={idx}
+                        className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center text-lg font-semibold ${
+                          error
+                            ? "border-red-500 text-red-500"
+                            : "border-gray-300 text-gray-700"
+                        }`}
+                      >
+                        {showDigits
+                          ? passcode[idx] || ""
+                          : passcode[idx]
+                          ? "•"
+                          : ""}
+                      </div>
+                    ))}
                   </div>
                   <button
-                    onClick={handleSwitchUser}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                    onClick={() => setShowDigits(!showDigits)}
+                    className="mt-3 text-gray-500 hover:text-gray-700"
                   >
-                    <RefreshCw size={14} />
-                    Switch
+                    {showDigits ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
+                </motion.div>
+
+                <div className="grid grid-cols-3 gap-3 mt-6 w-full">
+                  {[
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                    "6",
+                    "7",
+                    "8",
+                    "9",
+                    ".",
+                    "0",
+                    "←",
+                  ].map((key) => (
+                    <Button
+                      key={key}
+                      onClick={() =>
+                        key === "←" ? handleDelete() : handleKeyPress(key)
+                      }
+                      className="h-12 text-lg font-semibold rounded-xl shadow-sm hover:bg-gray-200"
+                      variant="outline"
+                    >
+                      {key}
+                    </Button>
+                  ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  Enter your passcode to continue
-                </p>
-              </div>
-            ) : (
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Select User
-                </label>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger className="w-full h-11 rounded-xl border-gray-300 bg-gray-50 focus:ring-blue-500">
-                    <div className="flex items-center gap-2">
-                      {isLoadingUsers ? (
-                        <Loader2
-                          size={16}
-                          className="text-gray-500 animate-spin"
-                        />
-                      ) : (
-                        <User size={16} className="text-gray-500" />
-                      )}
-                      <SelectValue
-                        placeholder={
-                          isLoadingUsers
-                            ? "Loading users..."
-                            : "Choose a user..."
-                        }
-                      />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="bg-white rounded-xl shadow-lg border-gray-200">
-                    {branchUsers.map((user) => (
-                      <SelectItem
-                        key={user.id}
-                        value={user.id.toString()}
-                        className="cursor-pointer hover:bg-gray-100 rounded-lg"
-                      >
-                        {getUserDisplayName(user)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
-            <motion.div
-              animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
-              transition={{ duration: 0.3 }}
-              className="w-full flex flex-col items-center mt-4"
-            >
-              <div className="flex justify-center space-x-2">
-                {[...Array(digitCount)].map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center text-lg font-semibold ${
-                      error
-                        ? "border-red-500 text-red-500"
-                        : "border-gray-300 text-gray-700"
-                    }`}
-                  >
-                    {showDigits
-                      ? passcode[idx] || ""
-                      : passcode[idx]
-                      ? "•"
-                      : ""}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setShowDigits(!showDigits)}
-                className="mt-3 text-gray-500 hover:text-gray-700"
-              >
-                {showDigits ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </motion.div>
-
-            <div className="grid grid-cols-3 gap-3 mt-6 w-full">
-              {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "←"].map(
-                (key) => (
+                <div className="flex justify-between w-full mt-6">
                   <Button
-                    key={key}
-                    onClick={() =>
-                      key === "←" ? handleDelete() : handleKeyPress(key)
-                    }
-                    className="h-12 text-lg font-semibold rounded-xl shadow-sm hover:bg-gray-200"
                     variant="outline"
+                    onClick={handleReset}
+                    disabled={isVerifying}
                   >
-                    {key}
+                    Reset
                   </Button>
-                )
-              )}
-            </div>
-
-            <div className="flex justify-between w-full mt-6">
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                disabled={isVerifying}
-              >
-                Reset
-              </Button>
-              <Button
-                className="bg-blue-600 text-white hover:bg-blue-700 min-w-[100px]"
-                onClick={handleConfirm}
-                disabled={isVerifying || isLoadingUsers}
-              >
-                {isVerifying ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  "Confirm"
-                )}
-              </Button>
-            </div>
+                  <Button
+                    className="bg-blue-600 text-white hover:bg-blue-700 min-w-[100px]"
+                    onClick={handleConfirm}
+                    disabled={isVerifying || isLoadingUsers}
+                  >
+                    {isVerifying ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      "Confirm"
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </motion.div>
         </motion.div>
       )}

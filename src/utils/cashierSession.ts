@@ -6,6 +6,7 @@ const CASHIER_NAME_KEY = "cashierFullname";
 const CASHIER_LAST_ACTIVITY_KEY = "cashierLastActivity";
 const CASHIER_HAS_LOGIN_KEY = "cashierHasLogin";
 const CASHIER_BREAK_UNTIL_KEY = "cashierBreakUntil";
+const CASHIER_BREAK_ID_KEY = "cashierBreakId";
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 export interface CashierSession {
@@ -13,6 +14,7 @@ export interface CashierSession {
   cashierFullname: string;
   hasLogin?: boolean;
   breakUntil?: string | null; // ISO date string when break ends
+  breakId?: number | null; // ID of the active break record
 }
 
 // Save cashier session to localStorage
@@ -35,18 +37,38 @@ export const saveCashierSession = (session: CashierSession): void => {
         localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
       }
     }
+
+    // Save breakId - rewrite every time cashier logs in
+    if (session.breakId !== undefined) {
+      if (session.breakId) {
+        localStorage.setItem(CASHIER_BREAK_ID_KEY, session.breakId.toString());
+      } else {
+        localStorage.removeItem(CASHIER_BREAK_ID_KEY);
+      }
+    }
   } catch (error) {
     console.error("Error saving cashier session:", error);
   }
 };
 
 // Update break until time (called when starting a break)
-export const updateBreakUntil = (breakUntil: string | null): void => {
+export const updateBreakUntil = (
+  breakUntil: string | null,
+  breakId?: number | null
+): void => {
   try {
     if (breakUntil) {
       localStorage.setItem(CASHIER_BREAK_UNTIL_KEY, breakUntil);
     } else {
       localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
+    }
+
+    if (breakId !== undefined) {
+      if (breakId) {
+        localStorage.setItem(CASHIER_BREAK_ID_KEY, breakId.toString());
+      } else {
+        localStorage.removeItem(CASHIER_BREAK_ID_KEY);
+      }
     }
   } catch (error) {
     console.error("Error updating break until:", error);
@@ -57,8 +79,21 @@ export const updateBreakUntil = (breakUntil: string | null): void => {
 export const clearBreakUntil = (): void => {
   try {
     localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
+    localStorage.removeItem(CASHIER_BREAK_ID_KEY);
   } catch (error) {
     console.error("Error clearing break until:", error);
+  }
+};
+
+// Get break ID
+export const getBreakId = (): number | null => {
+  try {
+    const breakId = localStorage.getItem(CASHIER_BREAK_ID_KEY);
+    if (!breakId) return null;
+    return parseInt(breakId, 10);
+  } catch (error) {
+    console.error("Error getting break ID:", error);
+    return null;
   }
 };
 

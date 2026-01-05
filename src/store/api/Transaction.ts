@@ -216,6 +216,8 @@ export const transactionApi = createApi({
         userId: number;
         types: 1 | 2 | 3 | 4; // 1=IN, 2=OUT, 3=BREAK, 4=BACK_FROM_BREAK
         bHours?: number; // break duration in minutes (for break type)
+        breakId?: number; // ID of the break record to update (for type 4)
+        img?: string; // base64 image data for break photo
       }
     >({
       query: (payload) => ({
