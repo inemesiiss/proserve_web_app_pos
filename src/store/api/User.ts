@@ -45,6 +45,8 @@ interface VerifyPasscodeApiResponse {
     } | null;
     fullname?: string | null;
     has_login: boolean;
+    break_until: string | null; // ISO date string when break ends, null if not on break
+    break_id: number | null; // ID of the active break record
   };
   message?: string;
 }
@@ -55,6 +57,8 @@ export interface VerifiedUser {
   userId: number;
   fullName: string;
   hasLogin: boolean;
+  breakUntil: string | null; // ISO date string when break ends
+  breakId: number | null; // ID of the active break record
 }
 
 // Transform API response to dropdown-friendly format
@@ -117,6 +121,8 @@ export const userApi = createApi({
           userId: data.id,
           fullName,
           hasLogin: data.has_login,
+          breakUntil: data.break_until,
+          breakId: data.break_id,
         };
       },
     }),

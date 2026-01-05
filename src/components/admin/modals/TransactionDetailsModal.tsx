@@ -10,6 +10,16 @@ import { Separator } from "@/components/ui/separator";
 import Badge from "@/components/ui/badge";
 import ConfirmationYesNo from "@/components/reusables/ConfirmationYesNo";
 
+interface Variant {
+  id: number;
+  product: {
+    id: number;
+    prod_name: string;
+    image: string | null;
+  };
+  calculated_price: string;
+}
+
 interface TransactionItem {
   id: number;
   name: string;
@@ -17,7 +27,13 @@ interface TransactionItem {
   price: number;
   total: number;
   category: string;
-  variants?: { name: string; price: number }[];
+  // New fields from API
+  curr_price?: string;
+  total_price?: string;
+  total_discount?: string;
+  grand_total?: string;
+  is_voided?: boolean;
+  variants?: Variant[] | { name: string; price: number }[];
 }
 
 interface TransactionDetailsModalProps {
@@ -79,61 +95,71 @@ export default function TransactionDetailsModal({
     onClose();
   };
 
-  const subtotal = transactionItems.reduce((sum, item) => sum + item.total, 0);
+  // Calculate subtotal from items (curr_price * qty for each item)
+  const subtotal = transactionItems.reduce((sum, item) => {
+    const unitPrice = parseFloat(item.curr_price || "0") || item.price;
+    const qty = parseFloat(String(item.qty)) || 1;
+    return sum + unitPrice * qty;
+  }, 0);
+
+  // Calculate selected items total for refund
   const selectedTotal = transactionItems
     .filter((item) => selectedItems.includes(item.id))
-    .reduce((sum, item) => sum + item.total, 0);
+    .reduce((sum, item) => {
+      const unitPrice = parseFloat(item.curr_price || "0") || item.price;
+      const qty = parseFloat(String(item.qty)) || 1;
+      const discount = parseFloat(item.total_discount || "0");
+      return sum + unitPrice * qty - discount;
+    }, 0);
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-4">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl font-bold">
               Transaction Details
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
-            {/* Transaction Information */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="space-y-3">
+            {/* Transaction Information - Compact Grid */}
+            <div className="grid grid-cols-4 gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  OR Number
-                </p>
-                <p className="font-semibold text-lg">{transaction.or}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">OR #</p>
+                <p className="font-semibold truncate">{transaction.or}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Date & Time
-                </p>
-                <p className="font-semibold">{transaction.date}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Date</p>
+                <p className="font-medium text-xs">{transaction.date}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Branch
                 </p>
-                <p className="font-semibold">{transaction.branch}</p>
+                <p className="font-medium truncate">{transaction.branch}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Cashier
                 </p>
-                <p className="font-semibold">{transaction.cashier || "N/A"}</p>
+                <p className="font-medium truncate">
+                  {transaction.cashier || "N/A"}
+                </p>
               </div>
             </div>
 
-            <Separator />
-
-            {/* Items List */}
+            {/* Items List - Compact Table */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Items Purchased</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold">
+                  Items ({transactionItems.length})
+                </h3>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleSelectAll}
-                  className="text-xs"
+                  className="text-xs h-7 px-2"
                   disabled={transactionItems.length === 0}
                 >
                   {selectedItems.length === transactionItems.length &&
@@ -143,119 +169,183 @@ export default function TransactionDetailsModal({
                 </Button>
               </div>
 
-              <div className="space-y-2">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-600 dark:text-gray-300">
+                <div className="col-span-1"></div>
+                <div className="col-span-4">Item</div>
+                <div className="col-span-1 text-center">Qty</div>
+                <div className="col-span-2 text-right">Price</div>
+                <div className="col-span-2 text-right">Discount</div>
+                <div className="col-span-2 text-right">Total</div>
+              </div>
+
+              <div className="max-h-[280px] overflow-y-auto">
                 {isLoadingItems && (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-4 text-gray-500 text-sm">
                     Loading items...
                   </div>
                 )}
                 {!isLoadingItems && transactionItems.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-4 text-gray-500 text-sm">
                     No items found
                   </div>
                 )}
-                {transactionItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-4 p-3 border rounded-lg transition-all cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                      selectedItems.includes(item.id)
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-200 dark:border-gray-700"
-                    }`}
-                    onClick={() => handleSelectItem(item.id)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(item.id)}
-                      onChange={() => handleSelectItem(item.id)}
-                      className="w-5 h-5 cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">{item.name}</p>
-                        <Badge variant="secondary" className="text-xs">
-                          {item.category}
-                        </Badge>
+                {transactionItems.map((item) => {
+                  // Calculate price: curr_price * qty
+                  const unitPrice =
+                    parseFloat(item.curr_price || "0") || item.price;
+                  const qty = parseFloat(String(item.qty)) || 1;
+                  const itemTotal = unitPrice * qty;
+
+                  // Get discount per item
+                  const totalDiscount = parseFloat(item.total_discount || "0");
+
+                  // Grand total = (price * qty) - discount
+                  const grandTotal = itemTotal - totalDiscount;
+
+                  const isVoided = item.is_voided;
+
+                  // Check if variants is the new API format
+                  const hasNewVariants =
+                    item.variants &&
+                    item.variants.length > 0 &&
+                    "product" in (item.variants[0] as Variant);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`grid grid-cols-12 gap-1 px-2 py-2 border-b border-gray-100 dark:border-gray-700 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        selectedItems.includes(item.id)
+                          ? "bg-blue-50 dark:bg-blue-900/20"
+                          : ""
+                      } ${isVoided ? "opacity-50 line-through" : ""}`}
+                      onClick={() => handleSelectItem(item.id)}
+                    >
+                      {/* Checkbox */}
+                      <div className="col-span-1 flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(item.id)}
+                          onChange={() => handleSelectItem(item.id)}
+                          className="w-4 h-4 cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                        />
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Qty: {item.qty} × ₱{item.price.toFixed(2)}
-                      </p>
-                      {/* Show variants if any */}
-                      {item.variants && item.variants.length > 0 && (
-                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          {item.variants.map((v, idx) => (
-                            <span key={idx}>
-                              {v.name}
-                              {v.price > 0 && ` (+₱${v.price.toFixed(2)})`}
-                              {idx < item.variants!.length - 1 && ", "}
-                            </span>
-                          ))}
+
+                      {/* Item Name & Variants */}
+                      <div className="col-span-4">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium text-xs truncate">
+                            {item.name}
+                          </span>
+                          {isVoided && (
+                            <Badge
+                              variant="error"
+                              className="text-[10px] px-1 py-0"
+                            >
+                              VOID
+                            </Badge>
+                          )}
                         </div>
-                      )}
+                        {/* Variants - Compact inline display */}
+                        {item.variants && item.variants.length > 0 && (
+                          <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                            {hasNewVariants
+                              ? (item.variants as Variant[])
+                                  .map((v) => v.product.prod_name)
+                                  .join(", ")
+                              : (
+                                  item.variants as {
+                                    name: string;
+                                    price: number;
+                                  }[]
+                                )
+                                  .map((v) => v.name)
+                                  .join(", ")}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Quantity */}
+                      <div className="col-span-1 text-center text-xs flex items-center justify-center">
+                        {item.qty}
+                      </div>
+
+                      {/* Price (curr_price * qty) */}
+                      <div className="col-span-2 text-right text-xs flex items-center justify-end">
+                        ₱{itemTotal.toFixed(2)}
+                      </div>
+
+                      {/* Discount */}
+                      <div className="col-span-2 text-right text-xs flex items-center justify-end">
+                        {totalDiscount > 0 ? (
+                          <span className="text-green-600">
+                            -₱{totalDiscount.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </div>
+
+                      {/* Grand Total */}
+                      <div className="col-span-2 text-right font-semibold text-xs flex items-center justify-end">
+                        ₱{grandTotal.toFixed(2)}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg">
-                        ₱{item.total.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            <Separator />
+            <Separator className="my-2" />
 
-            {/* Transaction Summary */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
-                  Subtotal
-                </span>
-                <span className="font-semibold">₱{subtotal.toFixed(2)}</span>
+            {/* Transaction Summary - Compact */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Subtotal</span>
+                <span className="font-medium">₱{subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
-                  Discount
-                </span>
-                <span className="font-semibold text-green-600">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Discount</span>
+                <span className="font-medium text-green-600">
                   -₱{transaction.discount.toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                <span className="font-semibold">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Tax</span>
+                <span className="font-medium">
                   ₱{transaction.tax.toFixed(2)}
                 </span>
               </div>
-              <Separator />
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total Amount</span>
+              <div className="flex justify-between font-bold text-base">
+                <span>Total</span>
                 <span>₱{transaction.amount.toFixed(2)}</span>
               </div>
-
-              {selectedItems.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="flex justify-between text-lg font-bold text-red-600">
-                    <span>Refund Amount</span>
-                    <span>₱{selectedTotal.toFixed(2)}</span>
-                  </div>
-                </>
-              )}
             </div>
 
+            {selectedItems.length > 0 && (
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 flex justify-between items-center">
+                <span className="text-sm font-medium text-red-700 dark:text-red-400">
+                  Refund Amount ({selectedItems.length} items)
+                </span>
+                <span className="font-bold text-red-600">
+                  ₱{selectedTotal.toFixed(2)}
+                </span>
+              </div>
+            )}
+
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-end pt-4">
-              <Button variant="outline" onClick={onClose}>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" size="sm" onClick={onClose}>
                 Close
               </Button>
               <Button
+                size="sm"
                 onClick={handleRefund}
                 disabled={selectedItems.length === 0}
                 className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400"
               >
-                Refund Selected Items ({selectedItems.length})
+                Refund ({selectedItems.length})
               </Button>
             </div>
           </div>

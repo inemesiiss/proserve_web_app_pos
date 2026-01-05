@@ -14,6 +14,7 @@ export type BreakType = {
   id: string;
   name: string;
   duration: string;
+  durationMinutes: number; // actual minutes for API
   description: string;
   icon: React.ReactNode;
 };
@@ -23,29 +24,34 @@ const breakTypes: BreakType[] = [
     id: "1_hour",
     name: "1 Hour Break",
     duration: "60 min",
+    durationMinutes: 60,
     description:
-      "A standard 30-minute lunch break to grab a meal and recharge.",
+      "A standard 60-minute lunch break to grab a meal and recharge.",
     icon: <Utensils className="w-8 h-8" />,
   },
   {
     id: "30_minutes",
     name: "30 Minutes Break",
     duration: "30 min",
+    durationMinutes: 30,
     description:
-      "A quick 15-minute break for a coffee, stretch, or a mental reset.",
+      "A quick 30-minute break for a coffee, stretch, or a mental reset.",
     icon: <Coffee className="w-8 h-8" />,
   },
   {
     id: "15_minutes",
     name: "15 Minutes Break",
     duration: "15 min",
-    description: "A brief 5-minute personal break as needed during your shift.",
+    durationMinutes: 15,
+    description:
+      "A brief 15-minute personal break as needed during your shift.",
     icon: <Timer className="w-8 h-8" />,
   },
   {
     id: "restroom",
     name: "Restroom Break",
     duration: "45 min",
+    durationMinutes: 45,
     description:
       "An extended 45-minute break, for more complex tasks or personal appointments.",
     icon: <Waves className="w-8 h-8" />,
@@ -54,6 +60,7 @@ const breakTypes: BreakType[] = [
     id: "coaching",
     name: "Coaching",
     duration: "20 min",
+    durationMinutes: 20,
     description:
       "A 20-minute break specifically for administrative tasks or urgent calls.",
     icon: <Target className="w-8 h-8" />,
@@ -62,6 +69,7 @@ const breakTypes: BreakType[] = [
     id: "meeting",
     name: "Meeting Break",
     duration: "10 min",
+    durationMinutes: 10,
     description:
       "A brief 10-minute break to prepare for an upcoming team meeting or briefing.",
     icon: <Users className="w-8 h-8" />,
@@ -76,13 +84,15 @@ export default function BreakModal({
   const [selectedBreak, setSelectedBreak] = useState<string | null>(null);
 
   const handleConfirm = () => {
-    if (selectedBreak) {
-      const breakType = breakTypes.find((b) => b.id === selectedBreak);
-      if (breakType) {
-        onConfirmBreak(breakType);
-        onClose();
-      }
-    }
+    if (!selectedBreak) return;
+
+    const breakType = breakTypes.find((b) => b.id === selectedBreak);
+    if (!breakType) return;
+
+    // Just pass the selected break type to the parent (Header)
+    // API call will be made in Header after camera capture
+    onConfirmBreak(breakType);
+    onClose();
   };
 
   return (
@@ -207,7 +217,7 @@ export default function BreakModal({
                 <Button
                   onClick={handleConfirm}
                   disabled={!selectedBreak}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
                 >
                   Confirm Break
                 </Button>

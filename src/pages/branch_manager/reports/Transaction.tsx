@@ -98,6 +98,9 @@ function BMReportTransaction() {
       { purchase: selectedPurchaseId! },
       { skip: !selectedPurchaseId }
     );
+  if (purchaseItemsData) {
+    console.log("Purchase Items Data:", purchaseItemsData);
+  }
 
   // Transform purchase items for modal display
   const transformedItems = (purchaseItemsData?.data || []).map(

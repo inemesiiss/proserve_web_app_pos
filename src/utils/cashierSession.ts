@@ -4,11 +4,17 @@
 const CASHIER_ID_KEY = "cashierId";
 const CASHIER_NAME_KEY = "cashierFullname";
 const CASHIER_LAST_ACTIVITY_KEY = "cashierLastActivity";
+const CASHIER_HAS_LOGIN_KEY = "cashierHasLogin";
+const CASHIER_BREAK_UNTIL_KEY = "cashierBreakUntil";
+const CASHIER_BREAK_ID_KEY = "cashierBreakId";
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 export interface CashierSession {
   cashierId: number;
   cashierFullname: string;
+  hasLogin?: boolean;
+  breakUntil?: string | null; // ISO date string when break ends
+  breakId?: number | null; // ID of the active break record
 }
 
 // Save cashier session to localStorage
@@ -17,8 +23,140 @@ export const saveCashierSession = (session: CashierSession): void => {
     localStorage.setItem(CASHIER_ID_KEY, session.cashierId.toString());
     localStorage.setItem(CASHIER_NAME_KEY, session.cashierFullname);
     localStorage.setItem(CASHIER_LAST_ACTIVITY_KEY, Date.now().toString());
+
+    // Save hasLogin status
+    if (session.hasLogin !== undefined) {
+      localStorage.setItem(CASHIER_HAS_LOGIN_KEY, session.hasLogin.toString());
+    }
+
+    // Save breakUntil - rewrite every time cashier logs in
+    if (session.breakUntil !== undefined) {
+      if (session.breakUntil) {
+        localStorage.setItem(CASHIER_BREAK_UNTIL_KEY, session.breakUntil);
+      } else {
+        localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
+      }
+    }
+
+    // Save breakId - rewrite every time cashier logs in
+    if (session.breakId !== undefined) {
+      if (session.breakId) {
+        localStorage.setItem(CASHIER_BREAK_ID_KEY, session.breakId.toString());
+      } else {
+        localStorage.removeItem(CASHIER_BREAK_ID_KEY);
+      }
+    }
   } catch (error) {
     console.error("Error saving cashier session:", error);
+  }
+};
+
+// Update break until time (called when starting a break)
+export const updateBreakUntil = (
+  breakUntil: string | null,
+  breakId?: number | null
+): void => {
+  try {
+    if (breakUntil) {
+      localStorage.setItem(CASHIER_BREAK_UNTIL_KEY, breakUntil);
+    } else {
+      localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
+    }
+
+    if (breakId !== undefined) {
+      if (breakId) {
+        localStorage.setItem(CASHIER_BREAK_ID_KEY, breakId.toString());
+      } else {
+        localStorage.removeItem(CASHIER_BREAK_ID_KEY);
+      }
+    }
+  } catch (error) {
+    console.error("Error updating break until:", error);
+  }
+};
+
+// Clear break (called when timing in from break)
+export const clearBreakUntil = (): void => {
+  try {
+    localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
+    localStorage.removeItem(CASHIER_BREAK_ID_KEY);
+  } catch (error) {
+    console.error("Error clearing break until:", error);
+  }
+};
+
+// Get break ID
+export const getBreakId = (): number | null => {
+  try {
+    const breakId = localStorage.getItem(CASHIER_BREAK_ID_KEY);
+    if (!breakId) return null;
+    return parseInt(breakId, 10);
+  } catch (error) {
+    console.error("Error getting break ID:", error);
+    return null;
+  }
+};
+
+// Check if cashier is currently on break
+export const isOnBreak = (): boolean => {
+  try {
+    const breakUntil = localStorage.getItem(CASHIER_BREAK_UNTIL_KEY);
+    if (!breakUntil) return false;
+
+    const breakEndTime = new Date(breakUntil).getTime();
+    const currentTime = Date.now();
+
+    return currentTime < breakEndTime;
+  } catch (error) {
+    console.error("Error checking break status:", error);
+    return false;
+  }
+};
+
+// Get break end time
+export const getBreakUntil = (): string | null => {
+  try {
+    return localStorage.getItem(CASHIER_BREAK_UNTIL_KEY);
+  } catch (error) {
+    console.error("Error getting break until:", error);
+    return null;
+  }
+};
+
+// Get remaining break time in milliseconds
+export const getBreakRemainingTime = (): number => {
+  try {
+    const breakUntil = localStorage.getItem(CASHIER_BREAK_UNTIL_KEY);
+    if (!breakUntil) return 0;
+
+    const breakEndTime = new Date(breakUntil).getTime();
+    const currentTime = Date.now();
+    const remaining = breakEndTime - currentTime;
+
+    return remaining > 0 ? remaining : 0;
+  } catch (error) {
+    console.error("Error getting break remaining time:", error);
+    return 0;
+  }
+};
+
+// Check if cashier has already logged in today (hasLogin = true means cash fund already set)
+export const getHasLogin = (): boolean => {
+  try {
+    const hasLogin = localStorage.getItem(CASHIER_HAS_LOGIN_KEY);
+    return hasLogin === "true";
+  } catch (error) {
+    console.error("Error getting hasLogin status:", error);
+    return false;
+  }
+};
+
+// Set hasLogin status
+export const setHasLogin = (value: boolean): void => {
+  try {
+    localStorage.setItem(CASHIER_HAS_LOGIN_KEY, value.toString());
+  } catch (error) {
+    console.error("Error setting hasLogin status:", error);
   }
 };
 
@@ -81,6 +219,8 @@ export const clearCashierSession = (): void => {
     localStorage.removeItem(CASHIER_ID_KEY);
     localStorage.removeItem(CASHIER_NAME_KEY);
     localStorage.removeItem(CASHIER_LAST_ACTIVITY_KEY);
+    localStorage.removeItem(CASHIER_HAS_LOGIN_KEY);
+    localStorage.removeItem(CASHIER_BREAK_UNTIL_KEY);
   } catch (error) {
     console.error("Error clearing cashier session:", error);
   }

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BackButton from "./BackButton";
 import DeviceSettingsModal from "@/components/admin/modals/DeviceSettingsModal";
 import BreakModal from "./BreakModal";
@@ -8,7 +8,14 @@ import CameraModal from "./CameraModal";
 import CashFundModal from "./CashFundModal";
 import type { CashFundData } from "./CashFundModal";
 import { Button } from "@/components/ui/button";
-import { Settings, Coffee, Wallet, UserCircle, LogOut } from "lucide-react";
+import { Settings, Coffee, UserCircle, LogOut } from "lucide-react";
+import {
+  isOnBreak as checkIsOnBreak,
+  updateBreakUntil,
+  getCashierSession,
+} from "@/utils/cashierSession";
+import { useCreateTimeRecordMutation } from "@/store/api/Transaction";
+import { toast } from "sonner";
 
 interface HeaderProps {
   headerText: string;
@@ -18,6 +25,7 @@ interface HeaderProps {
   showCashFund?: boolean; // controls visibility of cash fund button
   cashierName?: string; // cashier name to display
   onCashierLogout?: () => void; // callback when cashier clicks logout
+  onBreakStart?: () => void; // callback when break starts (to show OnBreakModal)
 }
 
 export default function Header({
@@ -28,6 +36,7 @@ export default function Header({
   showCashFund = false,
   cashierName,
   onCashierLogout,
+  onBreakStart,
 }: HeaderProps) {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
   const [showBreakModal, setShowBreakModal] = useState(false);
@@ -38,14 +47,51 @@ export default function Header({
     "break-in"
   );
   const [isOnBreak, setIsOnBreak] = useState(false);
+  const [createTimeRecord] = useCreateTimeRecordMutation();
+
+  // Helper to get branchId from localStorage
+  const getBranchId = (): number => {
+    try {
+      const branchValue = localStorage.getItem("branch");
+      if (branchValue) {
+        const branchId = parseInt(branchValue, 10);
+        return isNaN(branchId) ? 1 : branchId;
+      }
+      return 1;
+    } catch {
+      return 1;
+    }
+  };
+
+  // Check if cashier is on break when component mounts and listen for changes
+  useEffect(() => {
+    // Initial check
+    setIsOnBreak(checkIsOnBreak());
+
+    // Listen for break status changes from other components
+    const handleBreakStatusChange = (
+      event: CustomEvent<{ isOnBreak: boolean }>
+    ) => {
+      setIsOnBreak(event.detail.isOnBreak);
+    };
+
+    window.addEventListener(
+      "breakStatusChanged",
+      handleBreakStatusChange as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "breakStatusChanged",
+        handleBreakStatusChange as EventListener
+      );
+    };
+  }, []);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleBreakClick = () => {
-    if (isOnBreak) {
-      // End break - go directly to camera
-      setBreakType("break-out");
-      setShowBreakCamera(true);
-    } else {
+    // Only allow starting breaks - ending break is done via Time In in OnBreakModal
+    if (!isOnBreak) {
       // Start break - show break selection modal
       setBreakType("break-in");
       setShowBreakModal(true);
@@ -58,21 +104,68 @@ export default function Header({
     setShowBreakCamera(true);
   };
 
-  const handleCameraCapture = (imageData: string, type: string) => {
+  const handleCameraCapture = async (imageData: string, type: string) => {
+    // Close camera modal immediately
+    setShowBreakCamera(false);
+
     console.log("Break photo captured:", {
       type,
       breakName: selectedBreak?.name,
-      imageData,
+      imageData: imageData ? "captured" : "none",
     });
 
-    if (type === "break-in") {
-      setIsOnBreak(true);
-      // Here you can save break start data to backend
-    } else {
-      setIsOnBreak(false);
-      setSelectedBreak(null);
-      // Here you can save break end data to backend
+    if (type === "break-in" && selectedBreak) {
+      // Get cashier session from localStorage
+      const cashierSession = getCashierSession();
+      if (!cashierSession) {
+        toast.error("No active cashier session found");
+        return;
+      }
+
+      const branchId = getBranchId();
+
+      try {
+        // Strip data URL prefix if present (e.g., "data:image/png;base64,")
+        const base64Image = imageData.includes("base64,")
+          ? imageData.split("base64,")[1]
+          : imageData;
+
+        // Call API to create break record with image
+        const response = await createTimeRecord({
+          branchId,
+          userId: cashierSession.cashierId,
+          types: 3, // 3 = BREAK
+          bHours: selectedBreak.durationMinutes,
+          img: base64Image, // Include the captured image (base64 only)
+        }).unwrap();
+
+        console.log("Break API response:", response);
+
+        // Get break_until and break_id from API response
+        const breakUntil = response.data?.break_until || null;
+        const breakId = response.data?.break_id || null;
+
+        // Save break info to localStorage (rewrites existing values)
+        updateBreakUntil(breakUntil, breakId);
+
+        // Dispatch event to notify all components that break has started
+        window.dispatchEvent(
+          new CustomEvent("breakStatusChanged", { detail: { isOnBreak: true } })
+        );
+
+        toast.success(`${selectedBreak.name} started successfully`);
+        setIsOnBreak(true);
+
+        // Notify parent component to show OnBreakModal
+        if (onBreakStart) {
+          onBreakStart();
+        }
+      } catch (error: any) {
+        console.error("Break API error:", error);
+        toast.error(error?.data?.message || "Failed to start break");
+      }
     }
+    // Note: break-out is now handled via OnBreakModal Time In button
   };
 
   const handleCashFundConfirm = (fundData: CashFundData) => {
@@ -143,21 +236,22 @@ export default function Header({
           {showBreak && (
             <Button
               onClick={handleBreakClick}
+              disabled={isOnBreak}
               className={`
                 px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-semibold
                 ${
                   isOnBreak
-                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    ? "bg-gray-400 cursor-not-allowed text-white"
                     : "bg-green-600 hover:bg-green-700 text-white"
                 }
               `}
-              title={isOnBreak ? "End Break" : "Take a Break"}
+              title={isOnBreak ? "Currently on break" : "Take a Break"}
             >
               <Coffee size={18} />
-              {isOnBreak ? "End Break" : "Take a Break"}
+              {isOnBreak ? "On Break" : "Take a Break"}
             </Button>
           )}
-          {showCashFund && (
+          {/* {showCashFund && (
             <Button
               onClick={() => setShowCashFundModal(true)}
               className="px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-semibold bg-blue-600 hover:bg-blue-700 text-white"
@@ -166,7 +260,7 @@ export default function Header({
               <Wallet size={18} />
               Cash Fund
             </Button>
-          )}
+          )} */}
           {showSettings && (
             <Button
               onClick={() => setShowDeviceSettings(true)}

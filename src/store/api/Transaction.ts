@@ -202,6 +202,30 @@ export const transactionApi = createApi({
         body: payload,
       }),
     }),
+
+    /**
+     * Mutation: Create time record (time-in, time-out, break, back from break)
+     * POST /api/cashier/create_time_record
+     * Creates time-in, time-out, break, or back-from-break record for a user
+     * types: 1=IN, 2=OUT, 3=BREAK, 4=BACK_FROM_BREAK
+     */
+    createTimeRecord: builder.mutation<
+      { success: boolean; data?: any; message?: string },
+      {
+        branchId: number;
+        userId: number;
+        types: 1 | 2 | 3 | 4; // 1=IN, 2=OUT, 3=BREAK, 4=BACK_FROM_BREAK
+        bHours?: number; // break duration in minutes (for break type)
+        breakId?: number; // ID of the break record to update (for type 4)
+        img?: string; // base64 image data for break photo
+      }
+    >({
+      query: (payload) => ({
+        url: `/transactions/cashier/create_time_record/`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -213,4 +237,5 @@ export const {
   useGetCategoriesQuery,
   useCreateCashierTransactionMutation,
   useCreateCashFundMutation,
+  useCreateTimeRecordMutation,
 } = transactionApi;

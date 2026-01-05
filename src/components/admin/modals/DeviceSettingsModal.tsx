@@ -162,6 +162,12 @@ export default function DeviceSettingsModal({
       kitchenPrinter: settings.kitchenPrinter,
     });
 
+    // Dispatch custom event to notify other components in the same tab
+    window.dispatchEvent(new CustomEvent("deviceSettingsUpdated"));
+    console.log(
+      "📡 [DeviceSettingsModal] Dispatched deviceSettingsUpdated event"
+    );
+
     // Simulate save delay
     setTimeout(() => {
       setIsSaving(false);

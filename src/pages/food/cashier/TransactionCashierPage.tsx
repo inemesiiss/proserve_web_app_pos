@@ -9,6 +9,7 @@ import FoodSidebarNav from "@/components/food/components/cashier/SideBarNav";
 import MealCustomizationModal from "@/components/food/modals/MealCustomizationModal";
 import SecurityPasscodeModal from "@/components/food/modals/security/SecurityPasscodeModalv2";
 import CashFundModal from "@/components/food/components/cashier/CashFundModal";
+import OnBreakModal from "@/components/food/components/cashier/OnBreakModal";
 import type { CashFundData } from "@/components/food/components/cashier/CashFundModal";
 import {
   Search,
@@ -17,6 +18,7 @@ import {
   Package,
   Receipt,
   X,
+  ImageOff,
 } from "lucide-react";
 import {
   useGetBranchProductsQuery,
@@ -32,16 +34,41 @@ import {
   updateCashierActivity,
   isSessionExpired,
   clearCashierSession,
+  isOnBreak,
+  updateBreakUntil,
   type CashierSession,
 } from "@/utils/cashierSession";
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
 // Helper function to build complete image URL
-const getImageUrl = (imagePath: string | null): string => {
-  if (!imagePath) return "/static/placeholder.png";
+const getImageUrl = (imagePath: string | null): string | null => {
+  if (!imagePath) return null;
   if (imagePath.startsWith("http")) return imagePath;
   return `${API_DOMAIN}${imagePath}`;
+};
+
+// Reusable Product Image component with No Image placeholder
+const ProductImage = ({ src, alt }: { src: string | null; alt: string }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
+    return (
+      <div className="w-full h-32 rounded-lg mb-3 shadow-sm bg-gray-200 flex flex-col items-center justify-center">
+        <ImageOff size={32} className="text-gray-400 mb-1" />
+        <span className="text-xs text-gray-500 font-medium">No Image</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
+      onError={() => setHasError(true)}
+    />
+  );
 };
 
 // Helper function to safely get branch ID from localStorage
@@ -81,6 +108,30 @@ export default function FoodTransactionPage() {
   const [showCashFundModal, setShowCashFundModal] = useState(false);
   const [requiresCashFund, setRequiresCashFund] = useState(false);
 
+  // Break modal state - shows when cashier is on break
+  const [showBreakModal, setShowBreakModal] = useState(false);
+
+  // Listen for break status changes
+  useEffect(() => {
+    const handleBreakStatusChange = (
+      event: CustomEvent<{ isOnBreak: boolean }>
+    ) => {
+      setShowBreakModal(event.detail.isOnBreak);
+    };
+
+    window.addEventListener(
+      "breakStatusChanged",
+      handleBreakStatusChange as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "breakStatusChanged",
+        handleBreakStatusChange as EventListener
+      );
+    };
+  }, []);
+
   // Check for branch ID and cashier session on mount
   useEffect(() => {
     const storedBranchId = getBranchIdFromStorage();
@@ -98,6 +149,12 @@ export default function FoodTransactionPage() {
     const session = getCashierSession();
     if (session) {
       setCashierSession(session);
+
+      // Check if cashier is currently on break
+      if (isOnBreak()) {
+        setShowBreakModal(true);
+      }
+
       setIsCheckingBranch(false);
     } else {
       // No valid session, show passcode modal
@@ -162,7 +219,24 @@ export default function FoodTransactionPage() {
     });
     setShowPasscodeModal(false);
 
-    // Check if cashier needs to set cash fund (hasLogin = false means first login of the day)
+    // Priority 1: Check if cashier is on break (break_until is set and not expired)
+    if (verifiedUser.breakUntil) {
+      const breakEndTime = new Date(verifiedUser.breakUntil).getTime();
+      const currentTime = Date.now();
+
+      if (currentTime < breakEndTime) {
+        // Cashier is still on break, show break modal
+        updateBreakUntil(verifiedUser.breakUntil);
+        setShowBreakModal(true);
+        toast.info(`Welcome back, ${verifiedUser.fullName}!`, {
+          description: "You are currently on break.",
+          duration: 3000,
+        });
+        return; // Don't proceed to cash fund check
+      }
+    }
+
+    // Priority 2: Check if cashier needs to set cash fund (hasLogin = false means first login of the day)
     if (!verifiedUser.hasLogin) {
       // Cashier hasn't set their cash fund yet, show the modal
       setRequiresCashFund(true);
@@ -178,6 +252,16 @@ export default function FoodTransactionPage() {
         duration: 2000,
       });
     }
+  };
+
+  // Handle time in from break
+  const handleTimeIn = () => {
+    setShowBreakModal(false);
+    // Check if cashier needs cash fund after timing in
+    // This would depend on your business logic
+    toast.success("You're back! Ready to serve.", {
+      duration: 2000,
+    });
   };
 
   // Handle cash fund confirmation
@@ -592,10 +676,11 @@ export default function FoodTransactionPage() {
           showCashFund={true}
           cashierName={cashierSession?.cashierFullname}
           onCashierLogout={handleCashierLogout}
+          onBreakStart={() => setShowBreakModal(true)}
         />
 
-        {/* � Scanner Mode Toggle */}
-        <div className="mb-4 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+        {/* 📡 Scanner Mode Toggle - STICKY */}
+        <div className="sticky top-[20px] z-40 mb-4 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ScanBarcode
@@ -662,7 +747,7 @@ export default function FoodTransactionPage() {
           </div>
 
           {/* Scanner Status Indicator */}
-          {isScannerEnabled && (
+          {/* {isScannerEnabled && (
             <div className="mt-2 pt-2 border-t border-gray-100">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -673,11 +758,11 @@ export default function FoodTransactionPage() {
                 </span>
               </div>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* 🔍 Search Bar (Floating Top Right) & Category Header (Top Left) - STICKY */}
-        <div className="sticky top-[10px] z-40 bg-gray-50 pb-4 pt-5 -mx-6 px-6 mb-6">
+        <div className="sticky top-[80px] z-30 bg-gray-50 pb-4 pt-3 -mx-6 px-6 mb-6">
           <div className="relative">
             {/* Category Header - Top Left */}
             <h1 className="text-2xl font-bold text-gray-800">
@@ -752,15 +837,7 @@ export default function FoodTransactionPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <img
-                      src={imageUrl}
-                      alt={displayName}
-                      className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/static/placeholder.png";
-                      }}
-                    />
+                    <ProductImage src={imageUrl} alt={displayName} />
                     <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                       <div className="text-sm font-bold text-gray-800 text-center">
                         {displayName}
@@ -810,15 +887,7 @@ export default function FoodTransactionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <img
-                          src={imageUrl}
-                          alt={product.prod_code}
-                          className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/static/placeholder.png";
-                          }}
-                        />
+                        <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
                             {product.prod_code}
@@ -862,15 +931,7 @@ export default function FoodTransactionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <img
-                          src={imageUrl}
-                          alt={product.prod_code}
-                          className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/static/placeholder.png";
-                          }}
-                        />
+                        <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
                             {product.prod_code}
@@ -917,15 +978,7 @@ export default function FoodTransactionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <img
-                          src={imageUrl}
-                          alt={product.prod_code}
-                          className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/static/placeholder.png";
-                          }}
-                        />
+                        <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
                             {product.prod_code}
@@ -969,15 +1022,7 @@ export default function FoodTransactionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <img
-                          src={imageUrl}
-                          alt={product.prod_code}
-                          className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/static/placeholder.png";
-                          }}
-                        />
+                        <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
                             {product.prod_code}
@@ -1078,6 +1123,8 @@ export default function FoodTransactionPage() {
         branchId={branchId || 1}
         textMessage="Please select your name and enter your PIN to access the cashier system."
         allowClose={false}
+        showBackButton={true}
+        onBack={() => navigate("/food/main")}
       />
 
       {/* Cash Fund Modal - Required when hasLogin is false (first login of the day) */}
@@ -1090,6 +1137,13 @@ export default function FoodTransactionPage() {
         }}
         onConfirmFund={handleCashFundConfirm}
         allowClose={!requiresCashFund}
+      />
+
+      {/* On Break Modal - Shows when cashier is on break */}
+      <OnBreakModal
+        isOpen={showBreakModal}
+        onTimeIn={handleTimeIn}
+        cashierName={cashierSession?.cashierFullname}
       />
     </div>
   );
