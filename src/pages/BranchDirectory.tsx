@@ -27,6 +27,8 @@ export default function DirectorySelection() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [branchId] = useState<number>(getBranchIdFromStorage());
 
+  const roleId = localStorage.getItem("role") ?? "0";
+
   useEffect(() => {
     async function loadAnimations() {
       const dashboard = await fetch("/food/lotties/dashboard.json").then(
@@ -52,33 +54,41 @@ export default function DirectorySelection() {
       textMessage: "Select user and enter PIN to access Analytics",
       digitCount: 6,
     },
-    {
-      id: "reports",
-      name: "Reports",
-      animation: animations.reports,
-      path: "/bm/reports/transaction",
-      textMessage: "Select user and enter PIN to access Reports",
-      digitCount: 6,
-    },
-    {
-      id: "user",
-      name: "Cashier Access",
-      animation: animations.user,
-      path: "/food/transaction",
-      textMessage: "Select user and enter PIN to access Cashier",
-      digitCount: 6,
-    },
+    ...(parseInt(roleId) !== 4
+      ? [
+          {
+            id: "reports",
+            name: "Reports",
+            animation: animations.reports,
+            path: "/bm/reports/transaction",
+            textMessage: "Select user and enter PIN to access Reports",
+            digitCount: 6,
+          },
+          {
+            id: "user",
+            name: "Cashier Access",
+            animation: animations.user,
+            path: "/food/transaction",
+            textMessage: "Select user and enter PIN to access Cashier",
+            digitCount: 6,
+          },
+        ]
+      : []),
   ];
 
   const handleItemClick = (item: any) => {
     // Cashier Access navigates directly - it has its own security modal on the transaction page
-    if (item.id === "user") {
+    if (parseInt(roleId) === 4) {
       navigate(item.path);
-      return;
+    } else {
+      if (item.id === "user") {
+        navigate(item.path);
+        return;
+      }
+      // Reports and Dashboard require passcode verification
+      setSelectedItem(item);
+      setShowModal(true);
     }
-    // Reports and Dashboard require passcode verification
-    setSelectedItem(item);
-    setShowModal(true);
   };
 
   const handleSuccess = (verifiedUser: VerifiedUser) => {

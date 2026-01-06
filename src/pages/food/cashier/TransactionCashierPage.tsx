@@ -824,7 +824,7 @@ export default function FoodTransactionPage() {
               {/* Render all products (individuals, bundles, and variants) */}
               {apiProducts.map((product, index) => {
                 const price = Number(product.basePrice) || 0;
-                const displayName = product.prod_code;
+                const displayName = product.prod_name;
                 const buttonLabel =
                   product.p_type === 2 ? "Add Meal" : "Add Item";
                 const imageUrl = getImageUrl(product.image);
