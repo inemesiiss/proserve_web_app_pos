@@ -3,36 +3,34 @@ import {
   Package,
   Users,
   ClipboardList,
-  FileText,
+  DollarSign,
 } from "lucide-react";
 
 export const reportNavs = [
   {
-    label: "Reports",
-    path: "/bm/reports",
-    icon: <FileText className="w-6 h-6" />,
-    subPaths: [
-      {
-        label: "Sales and TC",
-        path: "/bm/reports/transaction",
-        icon: <BookText className="w-6 h-6" />,
-      },
-      {
-        label: "Inventory",
-        path: "/bm/reports/inventory",
-        icon: <Package className="w-6 h-6" />,
-      },
-      {
-        label: "Product Report",
-        path: "/bm/reports/product",
-        icon: <ClipboardList className="w-6 h-6" />,
-      },
-      {
-        label: "Attendance",
-        path: "/bm/reports/attendance",
-        icon: <Users className="w-6 h-6" />,
-      },
-    ],
+    label: "Sales Report",
+    path: "/bm/reports/sales",
+    icon: <DollarSign className="w-6 h-6" />,
+  },
+  {
+    label: "Purchase & Transaction",
+    path: "/bm/reports/transaction",
+    icon: <BookText className="w-6 h-6" />,
+  },
+  {
+    label: "Inventory",
+    path: "/bm/reports/inventory",
+    icon: <Package className="w-6 h-6" />,
+  },
+  {
+    label: "Product Report",
+    path: "/bm/reports/product",
+    icon: <ClipboardList className="w-6 h-6" />,
+  },
+  {
+    label: "Attendance",
+    path: "/bm/reports/attendance",
+    icon: <Users className="w-6 h-6" />,
   },
   {
     label: "Discount & Promotions",

@@ -16,6 +16,7 @@ import BMInventoryReport from "@/pages/branch_manager/reports/Inventory";
 import BMProductMixReport from "@/pages/branch_manager/reports/ProductReport";
 import BMAttendanceReport from "@/pages/branch_manager/reports/AttendanceReport";
 import BMDiscountPromotion from "@/pages/branch_manager/reports/DiscountPromotion";
+import BMSalesReport from "@/pages/branch_manager/reports/SalesReport";
 import BMCategory from "@/pages/branch_manager/Category";
 import BMComposition from "@/pages/branch_manager/Composition";
 import BMUserAccess from "@/pages/branch_manager/UserAccess";
@@ -103,6 +104,14 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
       element={
         <AdminLayout setLoggedIn={setLoggedIn}>
           <BMSettings />
+        </AdminLayout>
+      }
+    />
+    <Route
+      path="/bm/reports/sales"
+      element={
+        <AdminLayout setLoggedIn={setLoggedIn}>
+          <BMSalesReport />
         </AdminLayout>
       }
     />
