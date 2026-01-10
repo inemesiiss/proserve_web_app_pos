@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { SideBar } from "@/components/admin/SideBar";
 import TabsHeader from "@/components/admin/table/Tabs";
 import FiltersBar from "@/components/admin/table/Filters";
-import ActionButtons from "@/components/admin/table/Buttons";
 import DataTable from "@/components/admin/table/Tables";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
-import { reportNavs } from "@/navigattion/ReportNaviation";
 import TransactionDetailsModal from "@/components/admin/modals/TransactionDetailsModal";
 import {
   useGetTransactionsPerBranchQuery,
@@ -201,74 +198,64 @@ function BMReportTransaction() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <SideBar navs={reportNavs} onCollapsedChange={() => {}} />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+        Transaction Sale
+      </h1>
 
-      <div
-        className="flex-1 transition-all duration-300"
-        style={{ marginLeft: "200px" }}
-      >
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            Transaction Sale
-          </h1>
-
-          <div className="flex items-center justify-between mb-4">
-            <TabsHeader
-              tabs={[
-                { value: "completed", label: "Completed (12)" },
-                { value: "refund", label: "Refund" },
-              ]}
-              value={activeTab}
-              onChange={setActiveTab}
-            />
-            <Search
-              placeholder="Search by Invoice Number"
-              value={searchQuery}
-              onChange={handleSearch}
-              onClear={handleClearSearch}
-              containerClassName="w-72"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-            <FiltersBar showClientFilter={false} />
-            <ActionButtons />
-          </div>
-
-          {isError && (
-            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
-              Error loading transactions:{" "}
-              {(error as any)?.message || "Unknown error"}
-            </div>
-          )}
-
-          {isLoading && (
-            <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded-md">
-              Loading transactions...
-            </div>
-          )}
-
-          <DataTable
-            columns={columns}
-            data={tableData}
-            onRowClick={handleRowClick}
-          />
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-            pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
-            showMore={false}
-            onShowMore={() => {}}
-            className="mt-6"
-          />
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <TabsHeader
+          tabs={[
+            { value: "completed", label: "Completed (12)" },
+            { value: "refund", label: "Refund" },
+          ]}
+          value={activeTab}
+          onChange={setActiveTab}
+        />
+        <Search
+          placeholder="Search by Invoice Number"
+          value={searchQuery}
+          onChange={handleSearch}
+          onClear={handleClearSearch}
+          containerClassName="w-72"
+        />
       </div>
+
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+        <FiltersBar showClientFilter={false} />
+      </div>
+
+      {isError && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+          Error loading transactions:{" "}
+          {(error as any)?.message || "Unknown error"}
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded-md">
+          Loading transactions...
+        </div>
+      )}
+
+      <DataTable
+        columns={columns}
+        data={tableData}
+        onRowClick={handleRowClick}
+      />
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        pageSizeOptions={[10, 20, 50, 100]}
+        totalItems={totalItems}
+        showMore={false}
+        onShowMore={() => {}}
+        className="mt-6"
+      />
 
       <TransactionDetailsModal
         isOpen={showTransactionModal}

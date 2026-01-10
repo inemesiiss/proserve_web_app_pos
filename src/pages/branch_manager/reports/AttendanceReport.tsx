@@ -1,9 +1,6 @@
 import { useState, useMemo } from "react";
-import { SideBar } from "@/components/admin/SideBar";
-import ActionButtons from "@/components/admin/table/Buttons";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
-import { reportNavs } from "@/navigattion/ReportNaviation";
 import { useGetUsersAttendanceListQuery } from "@/store/api/Reports";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -418,7 +415,6 @@ function AttendanceDetailModal({
 }
 
 function BMAttendanceReport() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -494,192 +490,179 @@ function BMAttendanceReport() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <SideBar navs={reportNavs} onCollapsedChange={setSidebarCollapsed} />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4 dark:text-white">
+        Attendance Report
+      </h1>
 
-      <div
-        className="flex-1 transition-all duration-300"
-        style={{ marginLeft: sidebarCollapsed ? "90px" : "200px" }}
-      >
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4 dark:text-white">
-            Attendance Report
-          </h1>
-
-          <div className="flex items-center justify-between mb-4 gap-4">
-            {/* Date Filter */}
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="date-filter"
-                className="text-sm font-medium dark:text-gray-300"
-              >
-                Filter by Date:
-              </Label>
-              <Input
-                id="date-filter"
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                className="w-[180px]"
-              />
-            </div>
-
-            <Search
-              placeholder="Search by name..."
-              value={searchQuery}
-              onChange={handleSearch}
-              onClear={handleClearSearch}
-              containerClassName="w-72"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center justify-end mb-4 gap-3">
-            <ActionButtons />
-          </div>
-
-          {/* Loading State */}
-          {(isLoading || isFetching) && (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600 dark:text-gray-400">
-                Loading attendance data...
-              </span>
-            </div>
-          )}
-
-          {/* Custom Data Table with clickable rows */}
-          {!isLoading && tableData.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Name of Agent
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Branch
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Time-in
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Time-out
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      1 Hour
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      30 Mins
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      15 Mins
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Total Hours
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Images
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {tableData.map((row) => (
-                    <tr
-                      key={row.id}
-                      onClick={() => handleRowClick(row)}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {row.nameOfAgent}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {row.assignedBranch}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-green-600 dark:text-green-400 font-medium">
-                        {row.timeIn}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 dark:text-red-400 font-medium">
-                        {row.timeOut}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {row.oneHour}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {row.thirtyMins}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {row.fifteenMins}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-blue-600 dark:text-blue-400">
-                        {row.numOfHours}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">
-                        <div className="flex items-center gap-2">
-                          {row.timeInImg && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageClick(
-                                  row.timeInImg,
-                                  `${row.nameOfAgent} - Time In`
-                                );
-                              }}
-                              className="p-1 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
-                              title="View Time In Photo"
-                            >
-                              <ImageIcon className="h-4 w-4" />
-                            </button>
-                          )}
-                          {row.timeOutImg && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageClick(
-                                  row.timeOutImg,
-                                  `${row.nameOfAgent} - Time Out`
-                                );
-                              }}
-                              className="p-1 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                              title="View Time Out Photo"
-                            >
-                              <ImageIcon className="h-4 w-4" />
-                            </button>
-                          )}
-                          {row.breakRecords.length > 0 && (
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-                              {row.breakRecords.length} breaks
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!isLoading && tableData.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No attendance records found for {selectedDate}
-            </div>
-          )}
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-            pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
-            showMore={useShowMore}
-            onShowMore={handleShowMore}
-            className="mt-6"
+      <div className="flex items-center justify-between mb-4 gap-4">
+        {/* Date Filter */}
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="date-filter"
+            className="text-sm font-medium dark:text-gray-300"
+          >
+            Filter by Date:
+          </Label>
+          <Input
+            id="date-filter"
+            type="date"
+            value={selectedDate}
+            onChange={handleDateChange}
+            className="w-[180px]"
           />
         </div>
+
+        <Search
+          placeholder="Search by name..."
+          value={searchQuery}
+          onChange={handleSearch}
+          onClear={handleClearSearch}
+          containerClassName="w-72"
+        />
       </div>
+
+      {/* Loading State */}
+      {(isLoading || isFetching) && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">
+            Loading attendance data...
+          </span>
+        </div>
+      )}
+
+      {/* Custom Data Table with clickable rows */}
+      {!isLoading && tableData.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Name of Agent
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Branch
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Time-in
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Time-out
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  1 Hour
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  30 Mins
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  15 Mins
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Total Hours
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Images
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {tableData.map((row) => (
+                <tr
+                  key={row.id}
+                  onClick={() => handleRowClick(row)}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                >
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    {row.nameOfAgent}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {row.assignedBranch}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-green-600 dark:text-green-400 font-medium">
+                    {row.timeIn}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 dark:text-red-400 font-medium">
+                    {row.timeOut}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {row.oneHour}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {row.thirtyMins}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {row.fifteenMins}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-blue-600 dark:text-blue-400">
+                    {row.numOfHours}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      {row.timeInImg && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageClick(
+                              row.timeInImg,
+                              `${row.nameOfAgent} - Time In`
+                            );
+                          }}
+                          className="p-1 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                          title="View Time In Photo"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                      {row.timeOutImg && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageClick(
+                              row.timeOutImg,
+                              `${row.nameOfAgent} - Time Out`
+                            );
+                          }}
+                          className="p-1 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                          title="View Time Out Photo"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                      {row.breakRecords.length > 0 && (
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                          {row.breakRecords.length} breaks
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && tableData.length === 0 && (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          No attendance records found for {selectedDate}
+        </div>
+      )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        pageSizeOptions={[10, 20, 50, 100]}
+        totalItems={totalItems}
+        showMore={useShowMore}
+        onShowMore={handleShowMore}
+        className="mt-6"
+      />
 
       {/* Attendance Detail Modal */}
       <AttendanceDetailModal

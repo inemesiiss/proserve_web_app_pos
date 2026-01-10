@@ -1,5 +1,6 @@
 import { Route } from "react-router-dom";
 import AdminLayout from "@/components/admin/layout";
+import { ReportsLayout } from "@/pages/branch_manager/reports/ReportsLayout";
 
 // Branch Manager Pages
 import BMDashboard from "@/pages/branch_manager/Dashboard";
@@ -110,49 +111,49 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
     <Route
       path="/bm/reports/sales"
       element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
+        <ReportsLayout>
           <BMSalesReport />
-        </AdminLayout>
+        </ReportsLayout>
       }
     />
     <Route
       path="/bm/reports/transaction"
       element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
+        <ReportsLayout>
           <BMReportTransaction />
-        </AdminLayout>
+        </ReportsLayout>
       }
     />
     <Route
       path="/bm/reports/inventory"
       element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
+        <ReportsLayout>
           <BMInventoryReport />
-        </AdminLayout>
+        </ReportsLayout>
       }
     />
     <Route
       path="/bm/reports/product"
       element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
+        <ReportsLayout>
           <BMProductMixReport />
-        </AdminLayout>
+        </ReportsLayout>
       }
     />
     <Route
       path="/bm/reports/attendance"
       element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
+        <ReportsLayout>
           <BMAttendanceReport />
-        </AdminLayout>
+        </ReportsLayout>
       }
     />
     <Route
       path="/bm/reports/discount-promotion"
       element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
+        <ReportsLayout>
           <BMDiscountPromotion />
-        </AdminLayout>
+        </ReportsLayout>
       }
     />
   </>

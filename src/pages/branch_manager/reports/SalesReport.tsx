@@ -1,9 +1,6 @@
 import { useState, useMemo } from "react";
-import { SideBar } from "@/components/admin/SideBar";
-import ActionButtons from "@/components/admin/table/Buttons";
 import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
-import { reportNavs } from "@/navigattion/ReportNaviation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +126,6 @@ function SummaryCard({
 }
 
 function BMSalesReport() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -284,198 +280,180 @@ function BMSalesReport() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <SideBar navs={reportNavs} onCollapsedChange={setSidebarCollapsed} />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4 dark:text-white">Sales Report</h1>
 
-      <div
-        className="flex-1 transition-all duration-300"
-        style={{ marginLeft: sidebarCollapsed ? "90px" : "200px" }}
-      >
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4 dark:text-white">
-            Sales Report
-          </h1>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <SummaryCard
+          title="Total Sales"
+          value={formatCurrency(summaryStats.totalSales)}
+          icon={<DollarSign className="h-5 w-5" />}
+        />
+        <SummaryCard
+          title="Net Sales"
+          value={formatCurrency(summaryStats.netSales)}
+          icon={<TrendingUp className="h-5 w-5" />}
+        />
+        <SummaryCard
+          title="Cash Sales"
+          value={formatCurrency(summaryStats.cashSales)}
+          icon={<Banknote className="h-5 w-5" />}
+        />
+        <SummaryCard
+          title="Cashless Sales"
+          value={formatCurrency(summaryStats.digitalSales)}
+          icon={<CreditCard className="h-5 w-5" />}
+        />
+        <SummaryCard
+          title="Total Discount"
+          value={formatCurrency(summaryStats.totalDiscount)}
+          icon={<ShoppingCart className="h-5 w-5" />}
+        />
+      </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <SummaryCard
-              title="Total Sales"
-              value={formatCurrency(summaryStats.totalSales)}
-              icon={<DollarSign className="h-5 w-5" />}
-            />
-            <SummaryCard
-              title="Net Sales"
-              value={formatCurrency(summaryStats.netSales)}
-              icon={<TrendingUp className="h-5 w-5" />}
-            />
-            <SummaryCard
-              title="Cash Sales"
-              value={formatCurrency(summaryStats.cashSales)}
-              icon={<Banknote className="h-5 w-5" />}
-            />
-            <SummaryCard
-              title="Cashless Sales"
-              value={formatCurrency(summaryStats.digitalSales)}
-              icon={<CreditCard className="h-5 w-5" />}
-            />
-            <SummaryCard
-              title="Total Discount"
-              value={formatCurrency(summaryStats.totalDiscount)}
-              icon={<ShoppingCart className="h-5 w-5" />}
-            />
-          </div>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        {/* Date Range Filter */}
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="start-date"
+            className="text-sm font-medium dark:text-gray-300"
+          >
+            From Date:
+          </Label>
+          <Input
+            id="start-date"
+            type="date"
+            value={startDate}
+            onChange={handleStartDateChange}
+            className="w-[150px]"
+          />
+        </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            {/* Date Range Filter */}
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="start-date"
-                className="text-sm font-medium dark:text-gray-300"
-              >
-                From Date:
-              </Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={handleStartDateChange}
-                className="w-[150px]"
-              />
-            </div>
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="end-date"
+            className="text-sm font-medium dark:text-gray-300"
+          >
+            To Date:
+          </Label>
+          <Input
+            id="end-date"
+            type="date"
+            value={endDate}
+            onChange={handleEndDateChange}
+            className="w-[150px]"
+          />
+        </div>
 
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="end-date"
-                className="text-sm font-medium dark:text-gray-300"
-              >
-                To Date:
-              </Label>
-              <Input
-                id="end-date"
-                type="date"
-                value={endDate}
-                onChange={handleEndDateChange}
-                className="w-[150px]"
-              />
-            </div>
+        {/* Cashier Filter */}
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="cashier-filter"
+            className="text-sm font-medium dark:text-gray-300"
+          >
+            Cashier:
+          </Label>
+          <Select value={selectedCashier} onValueChange={handleCashierChange}>
+            <SelectTrigger className="w-[180px]" id="cashier-filter">
+              <SelectValue placeholder="Select Cashier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Cashiers</SelectItem>
+              {cashierList.map((cashier) => (
+                <SelectItem key={cashier} value={cashier}>
+                  {cashier}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            {/* Cashier Filter */}
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="cashier-filter"
-                className="text-sm font-medium dark:text-gray-300"
-              >
-                Cashier:
-              </Label>
-              <Select
-                value={selectedCashier}
-                onValueChange={handleCashierChange}
-              >
-                <SelectTrigger className="w-[180px]" id="cashier-filter">
-                  <SelectValue placeholder="Select Cashier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cashiers</SelectItem>
-                  {cashierList.map((cashier) => (
-                    <SelectItem key={cashier} value={cashier}>
-                      {cashier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="ml-auto">
-              <Search
-                placeholder="Search by tracking #..."
-                value={searchQuery}
-                onChange={handleSearch}
-                onClear={handleClearSearch}
-                containerClassName="w-72"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-end mb-4 gap-3">
-            <ActionButtons />
-          </div>
-
-          {/* Loading State */}
-          {(isLoading || isFetching) && (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600 dark:text-gray-400">
-                Loading sales data...
-              </span>
-            </div>
-          )}
-
-          {/* Data Table */}
-          {!isLoading && (
-            <div
-              className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
-              style={{ cursor: "pointer" }}
-            >
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                  <tr>
-                    {columns.map((col) => (
-                      <th
-                        key={col.key}
-                        className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >
-                        {col.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      onClick={() => {
-                        setSelectedSalesReport(filteredByDate[idx]);
-                        setIsDetailsModalOpen(true);
-                      }}
-                      className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      {columns.map((col) => (
-                        <td
-                          key={col.key}
-                          className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100"
-                        >
-                          {row[col.key as keyof typeof row]}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!isLoading && tableData.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No sales records found for the selected date range and filters
-            </div>
-          )}
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-            pageSizeOptions={[10, 20, 50, 100]}
-            totalItems={totalItems}
-            showMore={useShowMore}
-            onShowMore={handleShowMore}
-            className="mt-6"
+        <div className="ml-auto">
+          <Search
+            placeholder="Search by tracking #..."
+            value={searchQuery}
+            onChange={handleSearch}
+            onClear={handleClearSearch}
+            containerClassName="w-72"
           />
         </div>
       </div>
+
+      {/* Loading State */}
+      {(isLoading || isFetching) && (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <span className="ml-2 text-gray-600 dark:text-gray-400">
+            Loading sales data...
+          </span>
+        </div>
+      )}
+
+      {/* Data Table */}
+      {!isLoading && (
+        <div
+          className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+          style={{ cursor: "pointer" }}
+        >
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <tr>
+                {columns.map((col) => (
+                  <th
+                    key={col.key}
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableData.map((row, idx) => (
+                <tr
+                  key={idx}
+                  onClick={() => {
+                    setSelectedSalesReport(filteredByDate[idx]);
+                    setIsDetailsModalOpen(true);
+                  }}
+                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  {columns.map((col) => (
+                    <td
+                      key={col.key}
+                      className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100"
+                    >
+                      {row[col.key as keyof typeof row]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && tableData.length === 0 && (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          No sales records found for the selected date range and filters
+        </div>
+      )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        pageSizeOptions={[10, 20, 50, 100]}
+        totalItems={totalItems}
+        showMore={useShowMore}
+        onShowMore={handleShowMore}
+        className="mt-6"
+      />
 
       {/* Details Modal */}
       <SalesReportDetailsModal
