@@ -29,13 +29,15 @@ const getBranchIdFromStorage = (): number | null => {
 };
 
 const columns = [
-  { key: "created_at", label: "Date of Purchase" },
+  { key: "created_at", label: "Date" },
   { key: "invoice_num", label: "OR Number" },
-  { key: "branch", label: "Branch Name" },
-  { key: "grand_total", label: "Amount" },
-  { key: "total_tax", label: "Tax" },
-  { key: "total_discount", label: "Discount" },
-  { key: "cashier", label: "Cashier" },
+  { key: "total_price", label: "Original Price" },
+  { key: "total_items_discount", label: "Item Discount" },
+  { key: "vatable_sales", label: "Vatable Sales" },
+  { key: "vat_amount", label: "VAT" },
+  { key: "vat_exempt_sales", label: "VAT-Exempt Sales" },
+  { key: "grand_total", label: "Grand Total" },
+  { key: "cash_received", label: "Cash Received" },
 ];
 
 function BMReportTransaction() {
@@ -50,8 +52,17 @@ function BMReportTransaction() {
     branch: string;
     amount: number;
     tax: number;
-    discount: number;
+    total_discount: number;
     cashier: string;
+    total_price: number;
+    total_items_discount: number;
+    grand_total: number;
+    vatable_sales: number;
+    vat_exempt_sales: number;
+    vat_amount: number;
+    cash_received: number;
+    digital_cash_received: number;
+    id: number;
   } | null>(null);
   const [selectedPurchaseId, setSelectedPurchaseId] = useState<number | null>(
     null
@@ -113,6 +124,14 @@ function BMReportTransaction() {
           0
         ),
       category: "Product",
+      curr_price: item.curr_price,
+      total_price: item.total_price,
+      total_discount: item.total_discount,
+      grand_total: item.grand_total,
+      is_voided: item.is_voided,
+      is_refunded: item.is_refunded || false,
+      refunded_at: item.refunded_at || undefined,
+      refund_reason: item.refund_reason || undefined,
       variants: item.variants.map((v) => ({
         name: v.product.prod_name,
         price: parseFloat(v.calculated_price),
@@ -131,17 +150,25 @@ function BMReportTransaction() {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      total_price: `₱${parseFloat(transaction.total_price).toFixed(2)}`,
+      total_items_discount:
+        transaction.total_items_discount !== "0.00"
+          ? `₱${parseFloat(transaction.total_items_discount).toFixed(2)}`
+          : "-",
+      vatable_sales:
+        transaction.vatable_sales && transaction.vatable_sales !== "0.00"
+          ? `₱${parseFloat(transaction.vatable_sales).toFixed(2)}`
+          : "-",
+      vat_amount:
+        transaction.vat_amount && transaction.vat_amount !== "0.00"
+          ? `₱${parseFloat(transaction.vat_amount).toFixed(2)}`
+          : "-",
+      vat_exempt_sales:
+        transaction.vat_exempt_sales && transaction.vat_exempt_sales !== "0.00"
+          ? `₱${parseFloat(transaction.vat_exempt_sales).toFixed(2)}`
+          : "-",
       grand_total: `₱${parseFloat(transaction.grand_total).toFixed(2)}`,
-      total_tax:
-        transaction.total_tax !== "0.00"
-          ? `₱${parseFloat(transaction.total_tax).toFixed(2)}`
-          : "-",
-      total_discount:
-        transaction.total_discount !== "0.00"
-          ? `₱${parseFloat(transaction.total_discount).toFixed(2)}`
-          : "-",
-      cashier: transaction.cashier || "-",
-      branch: transaction.branch ? `Branch ${transaction.branch}` : "-",
+      cash_received: `₱${parseFloat(transaction.cash_received).toFixed(2)}`,
     })
   );
 
@@ -176,9 +203,18 @@ function BMReportTransaction() {
       or: row.invoice_num,
       branch: `Branch ${row.branch}`,
       amount: parseFloat(row.grand_total),
-      tax: parseFloat(row.total_tax),
-      discount: parseFloat(row.total_discount),
+      tax: parseFloat(row.vat_amount || 0),
+      total_discount: parseFloat(row.total_items_discount || 0),
       cashier: row.cashier || "N/A",
+      total_price: parseFloat(row.total_price),
+      total_items_discount: parseFloat(row.total_items_discount || 0),
+      grand_total: parseFloat(row.grand_total),
+      vatable_sales: parseFloat(row.vatable_sales || 0),
+      vat_exempt_sales: parseFloat(row.vat_exempt_sales || 0),
+      vat_amount: parseFloat(row.vat_amount || 0),
+      cash_received: parseFloat(row.cash_received),
+      digital_cash_received: parseFloat(row.digital_cash_received || 0),
+      id: row.id, // Add purchase ID for refund functionality
     };
     setSelectedTransaction(modalData);
     setSelectedPurchaseId(row.id); // Trigger lazy loading of purchase items

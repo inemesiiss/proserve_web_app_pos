@@ -5,6 +5,7 @@ import { authApi } from "./api/authApi";
 import { transactionApi } from "./api/Transaction";
 import { reportsApi } from "./api/Reports";
 import { userApi } from "./api/User";
+import { discountsApi } from "./api/Discounts";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     [transactionApi.reducerPath]: transactionApi.reducer,
     [reportsApi.reducerPath]: reportsApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+    [discountsApi.reducerPath]: discountsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -21,7 +23,8 @@ export const store = configureStore({
       .concat(adminApi.middleware)
       .concat(transactionApi.middleware)
       .concat(reportsApi.middleware)
-      .concat(userApi.middleware),
+      .concat(userApi.middleware)
+      .concat(discountsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

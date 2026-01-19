@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 interface DeviceSettings {
   defaultPrinter: string;
   receiptPrinter: string;
+  receiptPrinterSize: 57 | 88;
   kitchenPrinter: string;
   scanner: string;
   camera: string;
@@ -13,6 +14,7 @@ interface DeviceSettings {
 const DEFAULT_SETTINGS: DeviceSettings = {
   defaultPrinter: "",
   receiptPrinter: "",
+  receiptPrinterSize: 57,
   kitchenPrinter: "",
   scanner: "",
   camera: "",
@@ -100,7 +102,7 @@ export function useDeviceSettings() {
     }
   };
 
-  const getSetting = (key: keyof DeviceSettings): string => {
+  const getSetting = (key: keyof DeviceSettings): string | number => {
     return settings[key] || "";
   };
 

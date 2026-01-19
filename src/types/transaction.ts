@@ -149,6 +149,7 @@ export interface CartItem {
   // --- Discount tracking ---
   discount?: number; // Discount amount applied to this item
   discounted_at?: string; // ISO timestamp when discount was applied
+  discounted_id?: number; // ID of the discount applied
   discount_type?: "pwd" | "sc" | "manual" | "percentage"; // Type of discount
   discount_note?: string; // Reason or note for discount
 }

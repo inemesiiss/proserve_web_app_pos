@@ -31,6 +31,12 @@ export interface PurchaseTransaction {
   refunded_by: string | null;
   branch: number;
   manual_discounted_by: string | null;
+  // New VAT fields
+  vat_exempt_amount?: string;
+  vat_amount?: string;
+  vatable_sales?: string;
+  vat_exempt_sales?: string;
+  total_num_items?: string;
 }
 
 export interface TransactionResponse {
@@ -81,6 +87,12 @@ export interface PurchaseItem {
   voided_at: string | null;
   order_name_txt: string | null;
   variants: PurchaseItemVariant[];
+  // Additional fields
+  total_discount?: string;
+  grand_total?: string;
+  is_refunded?: boolean;
+  refunded_at?: string | undefined;
+  refund_reason?: string | null;
 }
 
 export interface PurchaseItemsResponse {

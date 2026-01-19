@@ -165,6 +165,26 @@ export const reportsApi = createApi({
       }),
       providesTags: ["reports"],
     }),
+
+    /**
+     * POST /api/sales/refund_purchase/
+     * Refund a purchase or specific purchase items
+     *
+     * Body params:
+     *  - purchase: purchase id (optional, if provided refunds entire purchase)
+     *  - purchase_items: array of purchase item ids (optional, if provided refunds specific items)
+     */
+    refundPurchase: builder.mutation<
+      { success: boolean },
+      { purchase?: string | number; purchase_items?: number[] }
+    >({
+      query: (data) => ({
+        url: `/transactions/reports/refund_purchase/`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["reports"],
+    }),
   }),
 });
 
@@ -174,4 +194,5 @@ export const {
   useGetUsersAttendanceListQuery,
   useGetSalesReportQuery,
   useGetSalesReportDetailsQuery,
+  useRefundPurchaseMutation,
 } = reportsApi;

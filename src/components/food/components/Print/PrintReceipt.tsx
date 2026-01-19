@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Printer, CheckCircle2, AlertCircle } from "lucide-react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { invoke } from "@tauri-apps/api/core";
-import { message } from "@tauri-apps/plugin-dialog";
 import dayjs from "dayjs";
 
 type PaymentMode = "cash" | "cashless";
@@ -13,7 +14,7 @@ interface ReceiptPrinterProps {
   paymentValue?: number; // only for cashless
   cashlessType?: CashlessType; // only for cashless
   p_name: string;
-  invoiceNum?: string; // invoice number from transaction (optional - if not provided, shows print button)
+  invoiceNum?: string; // invoice number from transaction
   orderNum?: string; // order number
   cashierName?: string; // cashier name
   onSuccess?: () => void;
@@ -40,46 +41,15 @@ export default function ReceiptPrinter({
   const vatExemptSales = 0; // Adjust if you have VAT-exempt items
   const totalItems = meals.length + products.length;
 
-  // Track if we've already printed to prevent double printing
-  const hasPrintedRef = useRef(false);
-
-  // // 📋 Console all data needed for printing
-  // console.log("========== 🖨️ RECEIPT PRINTER DATA ==========");
-  // console.log("📊 Payment Mode:", mode);
-  // console.log("💰 Cash Received:", cashReceived);
-  // console.log("💳 Payment Value (Cashless):", paymentValue);
-  // console.log("🏦 Cashless Type:", cashlessType);
-  // console.log("🖨️ Printer Name:", p_name);
-  // console.log("---");
-  // console.log("🍽️ MEALS:", meals);
-  // console.log("📦 PRODUCTS:", products);
-  // console.log("---");
-  // console.log("💵 Subtotal:", subTotal);
-  // console.log("🎁 Total Discount:", totalDiscount);
-  // console.log("📈 VAT (12%):", vatAmount);
-  // console.log("📊 Grand Total:", grandTotal);
-  // console.log("---");
-  // console.log("💸 Change:", mode === "cash" ? cashReceived - grandTotal : 0);
-  // console.log("==========================================");
-
-  const effectivePayment = mode === "cashless" ? paymentValue : cashReceived;
-  const change = mode === "cash" ? effectivePayment - grandTotal : 0;
-
-  const LINE_WIDTH = 42; // Wider for better formatting
+  const LINE_WIDTH = 32;
 
   function centerText(text: string, width: number = LINE_WIDTH) {
     const spaces = Math.floor((width - text.length) / 2);
     return " ".repeat(Math.max(0, spaces)) + text;
   }
 
-  function rightAlign(
-    label: string,
-    value: string,
-    width: number = LINE_WIDTH
-  ) {
-    const spaces = width - label.length - value.length;
-    return label + " ".repeat(Math.max(1, spaces)) + value;
-  }
+  const effectivePayment = mode === "cashless" ? paymentValue : cashReceived;
+  const change = mode === "cash" ? effectivePayment - grandTotal : 0;
 
   const allItems = [
     ...meals.map((i) => ({ ...i, type: "Meal" })),
@@ -87,31 +57,147 @@ export default function ReceiptPrinter({
   ];
 
   const [isPrinting, setIsPrinting] = useState(false);
+  const [printSuccess, setPrintSuccess] = useState(false);
+  const [printError, setPrintError] = useState<string | null>(null);
 
-  // 🖨️ Auto-print when invoiceNum is provided
+  // Track the last printed invoice to prevent reprinting the same invoice
+  const lastPrintedInvoiceRef = useRef<string>("");
+
+  // Auto-print when invoiceNum is provided (transaction already saved by parent)
   useEffect(() => {
-    // Only print if we have invoice number, printer name, and haven't printed yet
-    if (invoiceNum && p_name && !hasPrintedRef.current && !isPrinting) {
+    if (
+      invoiceNum &&
+      p_name &&
+      invoiceNum !== lastPrintedInvoiceRef.current &&
+      !isPrinting
+    ) {
       console.log(
-        "🖨️ [AutoPrint] Triggering auto-print for invoice:",
+        "🖨️ [AutoPrint] New invoice detected, auto-printing:",
         invoiceNum
       );
-      hasPrintedRef.current = true; // Prevent double printing
+      lastPrintedInvoiceRef.current = invoiceNum;
       handlePrint();
     }
-  }, [invoiceNum, p_name]);
+  }, [invoiceNum]); // Only depend on invoiceNum - when it changes, print once
+
+  // Generate plain text receipt for thermal printer (matching the image format)
+  const generateTextReceipt = (): string => {
+    const dateTime = dayjs().format("MM/DD/YYYY HH:mm:ss");
+
+    // Header
+    let receipt = centerText("KIOSK OUTPUT RECEIPT") + "\n\n";
+    receipt += centerText("Proserv  Food Retail") + "\n";
+    receipt += centerText("Unit 11-A GF Century Plaza") + "\n";
+    receipt += centerText("Perea Makati City, Philippines") + "\n";
+    receipt += centerText("VAT Reg. TIN: 123-456-000-000") + "\n";
+    receipt += centerText("VAT Reg. Date: 05/05/2020") + "\n";
+    receipt += centerText("MIN: 123456789000000") + "\n\n";
+    receipt += "================================\n\n";
+
+    // Items
+    receipt += "QTY  Item                 Amount\n";
+    allItems.forEach((item) => {
+      const discountCode =
+        item.discount_type === "pwd"
+          ? "(PWD)"
+          : item.discount_type === "sc"
+          ? "(SC)"
+          : "";
+      const itemName = (
+        item.name + (discountCode ? " " + discountCode : "")
+      ).trim();
+      const amount = (item.price * item.qty).toFixed(2);
+      const qty = String(item.qty).padStart(2);
+      const name = itemName.padEnd(18).slice(0, 18);
+      const amt = amount.padStart(7);
+      receipt += `${qty}   ${name} ${amt}\n`;
+    });
+
+    receipt +=
+      "\nSubtotal:".padEnd(25) + subTotal.toFixed(2).padStart(7) + "\n\n";
+    receipt += "================================\n\n";
+
+    // VAT and totals
+    if (totalDiscount > 0) {
+      receipt +=
+        "Discount:".padEnd(25) +
+        `-${totalDiscount.toFixed(2)}`.padStart(7) +
+        "\n";
+    }
+    receipt +=
+      "VAT Sales:".padEnd(25) + vatableSales.toFixed(2).padStart(7) + "\n";
+    receipt +=
+      "VAT (12%):".padEnd(25) + vatAmount.toFixed(2).padStart(7) + "\n";
+    receipt +=
+      "VAT Exempt Sales:".padEnd(25) +
+      vatExemptSales.toFixed(2).padStart(7) +
+      "\n";
+    receipt += "Total:".padEnd(25) + grandTotal.toFixed(2).padStart(7) + "\n";
+
+    if (mode === "cash") {
+      receipt +=
+        "Cash:".padEnd(25) + cashReceived.toFixed(2).padStart(7) + "\n";
+    } else {
+      receipt +=
+        `Payment (${cashlessType?.toUpperCase() || "CASHLESS"}):`.padEnd(25) +
+        paymentValue.toFixed(2).padStart(7) +
+        "\n";
+    }
+    receipt += "Change:".padEnd(25) + change.toFixed(2).padStart(7) + "\n\n";
+
+    receipt += "================================\n\n";
+
+    // Transaction details
+    receipt += `TOTAL ITEM (S):          ${totalItems}\n`;
+    receipt += `INV #:                   ${invoiceNum}\n`;
+    receipt += `CASHIER:                 ${cashierName}\n`;
+    receipt += `Order #:                 ${orderNum}\n`;
+    receipt += `Date and Time:           ${dateTime}\n`;
+    receipt += `Cash:                    ${
+      mode === "cash" ? cashReceived.toFixed(2) : "0.00"
+    }\n`;
+    receipt += `Change:                  ${change.toFixed(2)}\n\n`;
+
+    // Signature section
+    receipt += "Name: _________________________\n";
+    receipt += "Address: ______________________\n";
+    receipt += "TIN No.: ______________________\n";
+    receipt += "Bus Style: ____________________\n\n";
+
+    receipt += centerText("This serves as your invoice.") + "\n\n";
+    receipt += "================================\n\n";
+
+    // QR Code section
+    receipt += centerText("Scan for your feedback") + "\n";
+    receipt += centerText("[QR CODE PLACEHOLDER]") + "\n\n";
+
+    receipt += "================================\n\n";
+
+    // Supplier info
+    receipt += centerText("ProServ Communication") + "\n";
+    receipt += centerText("Unit 11-A GF Century Plaza") + "\n";
+    receipt += centerText("Perea Makati City, Philippines") + "\n";
+    receipt += centerText("Marikao Luzada 1014 PHL") + "\n";
+    receipt += centerText("VAT Reg. TIN: 123-456-000-000") + "\n";
+    receipt += centerText("VAT Reg. Date: 05/05/2020") + "\n";
+    receipt += centerText("Accred No: 0000-000000000-000000") + "\n";
+    receipt += centerText("PTU No.: ARSP202300168") + "\n\n";
+
+    return receipt;
+  };
 
   const handlePrint = async () => {
-    // console.log("🖨️ [PrintReceipt] Print handler triggered");
-    // console.log("📋 [PrintReceipt] Mode:", mode);
-    // console.log("🖨️ [PrintReceipt] Printer Name:", p_name);
-    // console.log(
-    //   "💵 [PrintReceipt] Amount:",
-    //   mode === "cash" ? cashReceived : paymentValue
-    // );
+    console.log("🖨️ [PrintReceipt] Print handler triggered");
+    console.log("📋 [PrintReceipt] Mode:", mode);
+    console.log("🖨️ [PrintReceipt] Printer Name:", p_name);
+    console.log(
+      "💵 [PrintReceipt] Amount:",
+      mode === "cash" ? cashReceived : paymentValue
+    );
 
     try {
       setIsPrinting(true);
+      setPrintError(null);
 
       console.log("🔍 [PrintReceipt] Fetching available printers...");
       const printers: string[] = await invoke("list_printers");
@@ -119,9 +205,9 @@ export default function ReceiptPrinter({
 
       if (!printers || printers.length === 0) {
         console.error("❌ [PrintReceipt] No printers detected");
-        await message("No printer detected. Please connect a printer.", {
-          title: "Printer Error",
-        });
+        setPrintError(
+          "No printer detected. Please connect a printer and try again."
+        );
         setIsPrinting(false);
         return;
       }
@@ -131,9 +217,9 @@ export default function ReceiptPrinter({
           `❌ [PrintReceipt] Printer "${p_name}" not found in list:`,
           printers
         );
-        await message(`Printer "${p_name}" not found.`, {
-          title: "Printer Error",
-        });
+        setPrintError(
+          `Printer "${p_name}" not found. Please select a valid printer.`
+        );
         setIsPrinting(false);
         return;
       }
@@ -142,135 +228,142 @@ export default function ReceiptPrinter({
         "✅ [PrintReceipt] Printer verified, constructing receipt..."
       );
 
-      const DASHED_LINE = "- ".repeat(Math.floor(LINE_WIDTH / 2));
-      const STAR_LINE = "*".repeat(LINE_WIDTH);
-      const dateTime = dayjs().format("MM/DD/YYYY HH:mm:ss");
-      const dateIssued = dayjs().format("MMM DD, YYYY");
+      // TODO: Save transaction to database here before printing
+      // Example: await invoke('save_transaction', { invoiceNum, orderNum, grandTotal, items: allItems, ... });
+      console.log("💾 [PrintReceipt] Saving transaction (TODO: implement)");
 
-      // Construct receipt text matching the design
-      const receipt = `
-${centerText("Proserv Food Retail")}
-
-${centerText("Unit 11-A GF Century Plaza")}
-${centerText("Perea Makati City, Philippines")}
-${centerText("Machine Serial 1212345")}
-${centerText("VAT Reg TIN: 000-000-000-000")}
-${centerText("MIN: 12345678890")}
-
-${DASHED_LINE}
-${"QTY".padEnd(6)}${"Item".padEnd(24)}${"Amount".padStart(12)}
-${allItems
-  .map(
-    (item) =>
-      `${item.qty.toString().padEnd(6)}${item.name.padEnd(24).slice(0, 24)}${(
-        item.price * item.qty
-      )
-        .toFixed(2)
-        .padStart(12)}`
-  )
-  .join("\n")}
-${rightAlign("Subtotal", subTotal.toFixed(2))}
-${DASHED_LINE}
-
-${rightAlign("Discount", totalDiscount.toFixed(2))}
-${rightAlign("VAT Sales", vatableSales.toFixed(2))}
-${rightAlign("VAT", vatAmount.toFixed(2))}
-${rightAlign("VAT Exempt Sales", vatExemptSales.toFixed(2))}
-${rightAlign("Total", grandTotal.toFixed(2))}
-${
-  mode === "cash"
-    ? `${rightAlign("Cash", cashReceived.toFixed(2))}
-${rightAlign("Change", change.toFixed(2))}`
-    : `${rightAlign(
-        `Payment (${cashlessType?.toUpperCase() || "CASHLESS"})`,
-        paymentValue.toFixed(2)
-      )}`
-}
-
-${"TOTAL ITEM(S):".padEnd(20)}${totalItems}
-${"INV #:".padEnd(20)}${invoiceNum}
-${"CASHIER:".padEnd(20)}${cashierName}
-${"Order #:".padEnd(20)}${orderNum}
-${"Date and Time:".padEnd(20)}${dateTime}
-${
-  mode === "cash"
-    ? `${"Cash:".padEnd(20)}${cashReceived.toFixed(2)}
-${"Change:".padEnd(20)}${change.toFixed(2)}`
-    : `${"Payment:".padEnd(20)}${paymentValue.toFixed(2)} (${
-        cashlessType?.toUpperCase() || "CASHLESS"
-      })`
-}
-
-
-${"Name:".padEnd(15)}${"_".repeat(25)}
-${"Address:".padEnd(15)}${"_".repeat(25)}
-${"TIN No:".padEnd(15)}${"_".repeat(25)}
-${"Bus Style:".padEnd(15)}${"_".repeat(25)}
-
-${centerText("This serves as your invoice.")}
-
-${STAR_LINE}
-
-${centerText("Scan for your feedback")}
-${centerText("[QR CODE PLACEHOLDER]")}
-
-${STAR_LINE}
-
-${centerText("POS SUPPLIER")}
-${centerText("ProServ Communication")}
-
-${centerText("Unit 11-A GF Century Plaza")}
-${centerText("Perea Makati City, Philippines")}
-${centerText("Machine Serial 1212345")}
-${centerText("VAT Reg TIN: 000-000-000-000")}
-${centerText("MIN: 12345678890")}
-${centerText("Accred No: 0000-989765421")}
-${centerText(`Date Issued: ${dateIssued}`)}
-${centerText("PTU No: AFRF09763864")}
-`;
+      // Generate plain text receipt
+      const receipt = generateTextReceipt();
 
       console.log(
         "📝 [PrintReceipt] Receipt content generated, sending to printer:",
         p_name
       );
-      await invoke("print_receipt", { content: receipt });
+      await invoke("print_receipt", { printerName: p_name, content: receipt });
 
       console.log("✅ [PrintReceipt] Print command sent successfully");
+
       clearOrder();
-      await message("Receipt printed successfully!", { title: "Success" });
       console.log("✨ [PrintReceipt] Order cleared, calling onSuccess");
-      onSuccess && onSuccess();
+      setPrintSuccess(true);
+      setIsPrinting(false);
+
+      // Call onSuccess after a short delay to show success state
+      setTimeout(() => {
+        onSuccess && onSuccess();
+      }, 1500);
     } catch (err) {
       console.error("❌ [PrintReceipt] Print error:", err);
-      await message("Printing failed. Please try again. " + String(err), {
-        title: "Print Error",
-      });
-    } finally {
+      setPrintError(`Printing failed: ${String(err)}`);
       setIsPrinting(false);
+      // Reset the ref so user can retry
+      lastPrintedInvoiceRef.current = "";
     }
   };
 
-  // If invoiceNum is provided, auto-print will trigger via useEffect
-  // If not, show a manual print button
-  const showManualPrintButton = !invoiceNum && p_name;
+  if (printSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="mt-6"
+      >
+        <div className="text-center space-y-4">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", delay: 0.2 }}
+            className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto"
+          >
+            <CheckCircle2 className="w-10 h-10 text-green-600" />
+          </motion.div>
+          <p className="text-green-600 font-bold text-lg">
+            Receipt Printed Successfully!
+          </p>
+          <p className="text-gray-600 text-sm">Closing in a moment...</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (printError) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="mt-6"
+      >
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center space-y-4">
+          <div className="flex justify-center">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <div>
+            <p className="text-red-600 font-bold text-lg mb-2">
+              Printing Failed
+            </p>
+            <p className="text-gray-700 text-sm">{printError}</p>
+          </div>
+          <button
+            onClick={() => {
+              setPrintError(null);
+              setIsPrinting(false);
+            }}
+            className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
-    <div className="mt-4">
-      {isPrinting && (
-        <div className="flex items-center justify-center gap-2 text-green-600 font-medium">
-          <span className="animate-spin">🖨️</span>
-          <span>Printing receipt...</span>
-        </div>
-      )}
-      {showManualPrintButton && !isPrinting && (
-        <button
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="mt-6"
+    >
+      {/* Show button only if no invoiceNum (manual print mode) */}
+      {!invoiceNum && (
+        <motion.button
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handlePrint}
           disabled={isPrinting || !p_name}
-          className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-2 text-sm font-bold disabled:bg-green-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl px-8 py-4 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
         >
-          Print Receipt
-        </button>
+          {isPrinting ? (
+            <>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <Printer className="w-5 h-5" />
+              </motion.div>
+              <span>Printing Receipt...</span>
+            </>
+          ) : (
+            <>
+              <Printer className="w-5 h-5" />
+              <span>Print Receipt & Finish</span>
+            </>
+          )}
+        </motion.button>
       )}
-    </div>
+
+      {/* Show auto-printing message when invoiceNum is provided */}
+      {invoiceNum && isPrinting && (
+        <div className="flex items-center justify-center gap-3 text-green-600 font-medium bg-green-50 rounded-xl p-4">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <Printer className="w-6 h-6" />
+          </motion.div>
+          <span className="text-lg">Auto-printing receipt...</span>
+        </div>
+      )}
+    </motion.div>
   );
 }

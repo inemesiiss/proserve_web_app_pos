@@ -22,10 +22,10 @@ interface OrderTotalDiscountModalProps {
     type: "percentage" | "fixed";
     value: number;
     code?: string;
-    cardNumber?: string;
-    cardholderName?: string;
-    expiryDate?: string;
-    note: string;
+    customerName?: string;
+    discountCardNum?: string;
+    discountCardExp?: string;
+    discountNote?: string;
   }) => void;
   currentTotal: number;
 }
@@ -44,10 +44,10 @@ export default function OrderTotalDiscountModal({
   );
   const [discountValue, setDiscountValue] = useState("");
   const [discountCode, setDiscountCode] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardholderName, setCardholderName] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [note, setNote] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [discountCardNum, setDiscountCardNum] = useState("");
+  const [discountCardExp, setDiscountCardExp] = useState("");
+  const [discountNote, setDiscountNote] = useState("");
   const [error, setError] = useState("");
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
 
@@ -93,19 +93,15 @@ export default function OrderTotalDiscountModal({
     }
 
     if (discountCategory === "sc-pwd") {
-      if (!cardNumber.trim()) {
+      if (!discountCardNum.trim()) {
         setError("Please enter card number");
         return;
       }
-      if (cardNumber.trim().length < 8) {
+      if (discountCardNum.trim().length < 8) {
         setError("Card number must be at least 8 characters");
         return;
       }
-      if (!cardholderName.trim()) {
-        setError("Please enter cardholder name");
-        return;
-      }
-      if (!expiryDate.trim()) {
+      if (!discountCardExp.trim()) {
         setError("Please enter expiry date");
         return;
       }
@@ -117,16 +113,16 @@ export default function OrderTotalDiscountModal({
 
   const handlePasscodeSuccess = () => {
     const value = parseFloat(discountValue);
-    let noteText = note.trim();
+    let finalNote = discountNote.trim();
 
     if (discountCategory === "voucher") {
-      noteText = noteText || `Voucher: ${discountCode.trim()}`;
+      finalNote = finalNote || `Voucher: ${discountCode.trim()}`;
     } else if (discountCategory === "sc-pwd") {
-      noteText = `Card: ${cardNumber.trim()} | Name: ${cardholderName.trim()} | Exp: ${expiryDate.trim()}${
-        noteText ? " | " + noteText : ""
-      }`;
-    } else if (!noteText) {
-      noteText = "Manual discount applied to order total";
+      finalNote =
+        finalNote ||
+        `Card: ${discountCardNum.trim()} | Exp: ${discountCardExp.trim()}${
+          customerName.trim() ? ` | Name: ${customerName.trim()}` : ""
+        }`;
     }
 
     onApplyDiscount({
@@ -134,11 +130,12 @@ export default function OrderTotalDiscountModal({
       type: discountType,
       value,
       code: discountCategory === "voucher" ? discountCode.trim() : undefined,
-      cardNumber: discountCategory === "sc-pwd" ? cardNumber.trim() : undefined,
-      cardholderName:
-        discountCategory === "sc-pwd" ? cardholderName.trim() : undefined,
-      expiryDate: discountCategory === "sc-pwd" ? expiryDate.trim() : undefined,
-      note: noteText,
+      customerName: customerName.trim() || undefined,
+      discountCardNum:
+        discountCategory === "sc-pwd" ? discountCardNum.trim() : undefined,
+      discountCardExp:
+        discountCategory === "sc-pwd" ? discountCardExp.trim() : undefined,
+      discountNote: finalNote || undefined,
     });
     handleClose();
   };
@@ -148,10 +145,10 @@ export default function OrderTotalDiscountModal({
     setDiscountType("percentage");
     setDiscountValue("");
     setDiscountCode("");
-    setCardNumber("");
-    setCardholderName("");
-    setExpiryDate("");
-    setNote("");
+    setCustomerName("");
+    setDiscountCardNum("");
+    setDiscountCardExp("");
+    setDiscountNote("");
     setError("");
     setShowPasscodeModal(false);
     onClose();
@@ -313,39 +310,19 @@ export default function OrderTotalDiscountModal({
                   <div className="space-y-4 mb-5">
                     <div>
                       <Label
-                        htmlFor="cardNumber"
-                        className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
-                      >
-                        <CreditCard size={16} />
-                        Card Number <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="cardNumber"
-                        type="text"
-                        placeholder="Enter card number"
-                        value={cardNumber}
-                        onChange={(e) => {
-                          setCardNumber(e.target.value);
-                          setError("");
-                        }}
-                        className="h-11 text-base"
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="cardholderName"
+                        htmlFor="customerName"
                         className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
                       >
                         <User size={16} />
-                        Cardholder Name <span className="text-red-500">*</span>
+                        Customer Name
                       </Label>
                       <Input
-                        id="cardholderName"
+                        id="customerName"
                         type="text"
-                        placeholder="Enter cardholder name"
-                        value={cardholderName}
+                        placeholder="Enter customer name (optional)"
+                        value={customerName}
                         onChange={(e) => {
-                          setCardholderName(e.target.value);
+                          setCustomerName(e.target.value);
                           setError("");
                         }}
                         className="h-11 text-base"
@@ -353,19 +330,40 @@ export default function OrderTotalDiscountModal({
                     </div>
                     <div>
                       <Label
-                        htmlFor="expiryDate"
+                        htmlFor="discountCardNum"
+                        className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
+                      >
+                        <CreditCard size={16} />
+                        Discount Card Number{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="discountCardNum"
+                        type="text"
+                        placeholder="Enter card number"
+                        value={discountCardNum}
+                        onChange={(e) => {
+                          setDiscountCardNum(e.target.value);
+                          setError("");
+                        }}
+                        className="h-11 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="discountCardExp"
                         className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
                       >
                         <Calendar size={16} />
-                        Expiry Date <span className="text-red-500">*</span>
+                        Card Expiry <span className="text-red-500">*</span>
                       </Label>
                       <Input
-                        id="expiryDate"
+                        id="discountCardExp"
                         type="text"
                         placeholder="MM/YYYY"
-                        value={expiryDate}
+                        value={discountCardExp}
                         onChange={(e) => {
-                          setExpiryDate(e.target.value);
+                          setDiscountCardExp(e.target.value);
                           setError("");
                         }}
                         className="h-11 text-base"
@@ -478,20 +476,17 @@ export default function OrderTotalDiscountModal({
                 {/* Note Input */}
                 <div className="mb-5">
                   <Label
-                    htmlFor="note"
+                    htmlFor="discountNote"
                     className="text-sm font-semibold text-gray-700 mb-2 block"
                   >
-                    Note{" "}
-                    {discountCategory === "manual" && (
-                      <span className="text-red-500">*</span>
-                    )}
+                    Additional Note
                   </Label>
                   <textarea
-                    id="note"
-                    placeholder="Enter additional note"
-                    value={note}
+                    id="discountNote"
+                    placeholder="Enter additional note (optional)"
+                    value={discountNote}
                     onChange={(e) => {
-                      setNote(e.target.value);
+                      setDiscountNote(e.target.value);
                       setError("");
                     }}
                     className="w-full h-16 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm"
