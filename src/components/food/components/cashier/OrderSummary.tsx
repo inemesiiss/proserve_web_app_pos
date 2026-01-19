@@ -116,19 +116,25 @@ export default function FoodOrderSummary() {
 
   const handlePwdScVerified = (data: {
     cardNumber: string;
-    name: string;
+    name?: string;
     expiryDate: string;
+    discountId: number;
+    discountCode: string;
+    discountPercentage: number;
   }) => {
     if (pwdScTarget) {
       // Apply SC/PWD discount to specific item using instanceKey
-      const note = `Card: ${data.cardNumber} | Name: ${data.name} | Exp: ${data.expiryDate}`;
+      const note = `${data.discountCode} Card: ${data.cardNumber}${
+        data.name ? ` | Name: ${data.name}` : ""
+      } | Exp: ${data.expiryDate}`;
       applyDiscount(
         pwdScTarget.id,
         pwdScTarget.type,
-        "sc",
-        20,
+        data.discountCode.toLowerCase() as "pwd" | "sc",
+        data.discountPercentage,
         note,
-        pwdScTarget.instanceKey
+        pwdScTarget.instanceKey,
+        data.discountId
       );
       setShowPwdScModal(false);
       setPwdScTarget(null);

@@ -3,27 +3,47 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CreditCard, User, Calendar, X } from "lucide-react";
+import { CreditCard, Calendar, X } from "lucide-react";
+import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 
 interface PwdScCardModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (data: {
     cardNumber: string;
-    name: string;
+    name?: string;
     expiryDate: string;
+    discountId: number;
+    discountCode: string;
+    discountPercentage: number;
   }) => void;
+  selectedDiscountId?: number;
 }
 
 export default function PwdScCardModal({
   isOpen,
   onClose,
   onSuccess,
+  selectedDiscountId,
 }: PwdScCardModalProps) {
+  const { availableDiscounts } = useFoodOrder();
   const [cardNumber, setCardNumber] = useState("");
   const [name, setName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
+  const [selectedDiscount, setSelectedDiscount] = useState<number | null>(
+    selectedDiscountId || null
+  );
   const [error, setError] = useState("");
+
+  // Get only ACTIVE PWD/SC discounts from the fetched data
+  const activeDiscounts = availableDiscounts.filter(
+    (d) => d.is_active === true
+  );
+
+  // Get inactive discounts for display purposes
+  const inactiveDiscounts = availableDiscounts.filter(
+    (d) => d.is_active === false
+  );
 
   const handleSubmit = () => {
     // Basic validation
@@ -31,12 +51,12 @@ export default function PwdScCardModal({
       setError("Card number is required");
       return;
     }
-    if (!name.trim()) {
-      setError("Name is required");
-      return;
-    }
     if (!expiryDate.trim()) {
       setError("Expiry date is required");
+      return;
+    }
+    if (!selectedDiscount) {
+      setError("Please select a discount type");
       return;
     }
 
@@ -46,11 +66,21 @@ export default function PwdScCardModal({
       return;
     }
 
+    // Get the selected discount details
+    const discount = availableDiscounts.find((d) => d.id === selectedDiscount);
+    if (!discount) {
+      setError("Invalid discount selected");
+      return;
+    }
+
     // Success - pass data to parent
     onSuccess({
       cardNumber: cardNumber.trim(),
-      name: name.trim(),
+      name: name.trim() || undefined,
       expiryDate: expiryDate.trim(),
+      discountId: discount.id,
+      discountCode: discount.discount.code,
+      discountPercentage: parseFloat(discount.discount.discount_percentage),
     });
 
     // Reset form
@@ -61,6 +91,7 @@ export default function PwdScCardModal({
     setCardNumber("");
     setName("");
     setExpiryDate("");
+    setSelectedDiscount(selectedDiscountId || null);
     setError("");
     onClose();
   };
@@ -114,6 +145,83 @@ export default function PwdScCardModal({
                 </p>
               </div>
 
+              {/* Discount Type Selector */}
+              {availableDiscounts.length > 0 && (
+                <div className="mb-5">
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    Discount Type <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="space-y-2">
+                    {/* Active Discounts */}
+                    {activeDiscounts.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-2 font-medium">
+                          Available Discounts
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {activeDiscounts.map((discount) => (
+                            <button
+                              key={discount.id}
+                              onClick={() => setSelectedDiscount(discount.id)}
+                              className={`p-3 rounded-lg border-2 transition font-medium text-sm ${
+                                selectedDiscount === discount.id
+                                  ? "border-green-600 bg-green-50 text-green-700"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50"
+                              }`}
+                            >
+                              <div className="font-semibold">
+                                {discount.discount.code}
+                              </div>
+                              <div className="text-xs mt-1">
+                                {discount.discount.name}
+                              </div>
+                              <div className="text-xs font-bold text-green-600 mt-1">
+                                {discount.discount.discount_percentage}% off
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Inactive Discounts - Disabled */}
+                    {inactiveDiscounts.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-2 font-medium">
+                          Inactive Discounts
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {inactiveDiscounts.map((discount) => (
+                            <div
+                              key={discount.id}
+                              className="p-3 rounded-lg border-2 border-gray-100 bg-gray-50 text-gray-400 font-medium text-sm cursor-not-allowed opacity-60"
+                            >
+                              <div className="font-semibold">
+                                {discount.discount.code}
+                              </div>
+                              <div className="text-xs mt-1">
+                                {discount.discount.name}
+                              </div>
+                              <div className="text-xs mt-1">(Inactive)</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* No Discounts Message */}
+              {availableDiscounts.length === 0 && (
+                <div className="mb-5 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-700">
+                    No discounts available for this branch yet. Please contact
+                    your administrator.
+                  </p>
+                </div>
+              )}
+
               {/* Card Number */}
               <div className="mb-5">
                 <Label
@@ -138,28 +246,6 @@ export default function PwdScCardModal({
                 <p className="text-xs text-gray-500 mt-1">
                   Minimum 8 characters
                 </p>
-              </div>
-
-              {/* Name */}
-              <div className="mb-5">
-                <Label
-                  htmlFor="name"
-                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
-                >
-                  <User size={16} />
-                  Full Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter cardholder name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setError("");
-                  }}
-                  className="h-12 text-base"
-                />
               </div>
 
               {/* Expiry Date */}
@@ -188,23 +274,36 @@ export default function PwdScCardModal({
               </div>
 
               {/* Info Box */}
-              <div className="mb-5 bg-green-50 border border-green-200 rounded-lg p-3">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                  Discount Information
-                </h3>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Discount Type:</span>
-                    <span className="font-semibold text-green-700">
-                      PWD / Senior Citizen
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Discount Rate:</span>
-                    <span className="font-semibold text-green-700">20%</span>
+              {selectedDiscount && (
+                <div className="mb-5 bg-green-50 border border-green-200 rounded-lg p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                    Discount Information
+                  </h3>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Discount Type:</span>
+                      <span className="font-semibold text-green-700">
+                        {
+                          availableDiscounts.find(
+                            (d) => d.id === selectedDiscount
+                          )?.discount.name
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Discount Rate:</span>
+                      <span className="font-semibold text-green-700">
+                        {
+                          availableDiscounts.find(
+                            (d) => d.id === selectedDiscount
+                          )?.discount.discount_percentage
+                        }
+                        %
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Error Message */}
               {error && (
@@ -230,7 +329,7 @@ export default function PwdScCardModal({
               <Button
                 onClick={handleSubmit}
                 disabled={
-                  !cardNumber.trim() || !name.trim() || !expiryDate.trim()
+                  !cardNumber.trim() || !expiryDate.trim() || !selectedDiscount
                 }
                 className="flex-1 h-12 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >

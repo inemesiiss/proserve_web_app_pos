@@ -13,9 +13,7 @@ export default function FoodTotalDiscountPaymentSection() {
     meals,
     products,
     subTotal,
-    totalDiscount,
     orderTotalDiscount,
-    grandTotal,
     applyOrderTotalDiscount,
     removeOrderTotalDiscount,
     orderTotalDiscountInfo,
@@ -45,33 +43,58 @@ export default function FoodTotalDiscountPaymentSection() {
   const [cashlessModalisOpen, setCashlessModalOpen] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
 
-  // Derived values
-  const vat = subTotal * 0.12;
+  // Derived values - Separate vatable and VAT-exempt (SC/PWD) items
+  // NOTE: Prices in OrderItem are already INCLUSIVE of VAT (12%)
+  const allItems = [...meals, ...products];
+
+  let grandTotal = 0;
+  let vat_amount = 0;
+
+  allItems.forEach((item) => {
+    if (item.isVoid) return; // Skip voided items
+
+    const itemTotalPrice = item.price * item.qty;
+    const itemDiscountAmount = item.itemTotalDiscount || 0;
+
+    if (item.discount_type === "pwd" || item.discount_type === "sc") {
+      // SC/PWD items: The final price is the pre-tax amount after discount (VAT-exempt)
+      // The vatExemptSalesAmount already includes the correct calculation
+      const finalPrice =
+        item.vatExemptSalesAmount || itemTotalPrice - itemDiscountAmount;
+      grandTotal += finalPrice;
+      // No VAT for SC/PWD items
+    } else {
+      // Regular items: Already inclusive of VAT, just add the final price
+      const finalPrice = itemTotalPrice - itemDiscountAmount;
+      grandTotal += finalPrice;
+
+      // Extract VAT from the original price (before discount)
+      const itemVat = itemTotalPrice * (12 / 112);
+      vat_amount += itemVat;
+    }
+  });
+
+  // Apply order-level discount if any
+  grandTotal -= orderTotalDiscount;
+
   const change = cashReceived - grandTotal;
 
   // 🔄 Handle transaction creation (before printing)
   const handleCreateTransaction = async () => {
-    console.log(
-      "💳 [handleCreateTransaction] Starting transaction creation..."
-    );
-    console.log("🍽️ [handleCreateTransaction] Meals count:", meals.length);
-    console.log("🍽️ [handleCreateTransaction] Meals data:", meals);
-    console.log(
-      "📦 [handleCreateTransaction] Products count:",
-      products.length
-    );
-    console.log("📦 [handleCreateTransaction] Products data:", products);
-
     try {
       const transactionPayload = {
         purchase: {
           clientId: 1, // TODO: Get from context/user
           branchId: 1, // TODO: Get from context/user
           outletId: 1, // TODO: Get from context/user
-          grandTotal,
-          subTotal,
+          grandTotal: grandTotal,
+          subTotal: grandTotal + vat_amount,
           cashReceived,
-          totalDiscount: totalDiscount + orderTotalDiscount,
+          totalDiscount:
+            allItems.reduce(
+              (sum, item) => sum + (item.itemTotalDiscount || 0),
+              0
+            ) + orderTotalDiscount,
           status: "completed",
         },
         items: [
@@ -97,6 +120,7 @@ export default function FoodTotalDiscountPaymentSection() {
                 : undefined,
             discount_type: meal.discount_type,
             discount_note: meal.discount_note,
+            discount_id: meal.discountId,
           })),
           ...products.map((product) => ({
             productId: product.id,
@@ -120,6 +144,10 @@ export default function FoodTotalDiscountPaymentSection() {
                 : undefined,
             discount_type: product.discount_type,
             discount_note: product.discount_note,
+            discount_id: product.discountId,
+            discount_card_num: product.discountCardCode,
+            discount_card_name: product.discountCardName,
+            discount_card_exp: product.discountCardExp,
           })),
         ],
       };
@@ -175,7 +203,6 @@ export default function FoodTotalDiscountPaymentSection() {
 
   const handleAddCash = (value: number) =>
     setCashReceived((prev) => prev + value);
-  const handleExactAmount = () => setCashReceived(grandTotal);
   const handleResetCash = () => {
     setCashReceived(0);
     setShouldPrint(false);
@@ -217,7 +244,10 @@ export default function FoodTotalDiscountPaymentSection() {
         <div className="flex justify-between">
           <span>Subtotal</span>
           <span>
-            ₱{subTotal.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+            ₱
+            {(grandTotal + vat_amount).toLocaleString("en-PH", {
+              minimumFractionDigits: 2,
+            })}
           </span>
         </div>
 
@@ -225,9 +255,11 @@ export default function FoodTotalDiscountPaymentSection() {
           <span>Item Discounts</span>
           <span>
             -₱
-            {totalDiscount.toLocaleString("en-PH", {
-              minimumFractionDigits: 2,
-            })}
+            {allItems
+              .reduce((sum, item) => sum + (item.itemTotalDiscount || 0), 0)
+              .toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+              })}
           </span>
         </div>
 
@@ -244,9 +276,9 @@ export default function FoodTotalDiscountPaymentSection() {
         )}
 
         <div className="flex justify-between">
-          <span>12% VAT</span>
+          <span>VAT (included in prices)</span>
           <span>
-            ₱{vat.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+            ₱{vat_amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
           </span>
         </div>
 
@@ -283,11 +315,11 @@ export default function FoodTotalDiscountPaymentSection() {
                   ? `${orderTotalDiscountInfo.value}% discount`
                   : `₱${orderTotalDiscountInfo.value.toFixed(2)} discount`}
               </div>
-              {orderTotalDiscountInfo.note && (
+              {/* {orderTotalDiscountInfo.note && (
                 <div className="text-xs text-gray-500 mt-1">
                   {orderTotalDiscountInfo.note}
                 </div>
-              )}
+              )} */}
             </div>
             <button
               onClick={removeOrderTotalDiscount}
@@ -392,7 +424,7 @@ export default function FoodTotalDiscountPaymentSection() {
             </div>
             <div className="grid grid-cols-3 gap-2 mb-2">
               <button
-                onClick={handleExactAmount}
+                onClick={() => setCashReceived(grandTotal)}
                 className="rounded-lg py-2 text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white"
               >
                 Exact Amount
@@ -520,7 +552,7 @@ export default function FoodTotalDiscountPaymentSection() {
           applyOrderTotalDiscount(discountData);
           setShowDiscountModal(false);
         }}
-        currentTotal={subTotal - totalDiscount}
+        currentTotal={grandTotal + vat_amount}
       />
     </div>
   );

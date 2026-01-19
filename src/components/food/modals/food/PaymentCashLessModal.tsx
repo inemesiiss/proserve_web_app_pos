@@ -4,6 +4,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import ReceiptPrinter from "@/components/food/components/Print/PrintReceipt"; // <-- correct import path
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
+import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export default function PaymentModal({
   selectedPrinter,
 }: PaymentModalProps) {
   const { clearOrder } = useFoodOrder();
+  const {} = useDeviceSettings();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("none");
   const [isPaid, setIsPaid] = useState(false);
 

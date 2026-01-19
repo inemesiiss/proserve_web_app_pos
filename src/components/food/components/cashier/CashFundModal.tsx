@@ -232,9 +232,9 @@ export default function CashFundModal({
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
-              <div className="relative bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
+              <div className="relative bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
                 {allowClose && (
                   <button
                     onClick={handleClose}
@@ -243,152 +243,181 @@ export default function CashFundModal({
                     <X className="w-6 h-6" />
                   </button>
                 )}
-                <h2 className="text-3xl font-bold text-white">
-                  Cash Fund Setup
-                </h2>
-                <p className="text-green-100 mt-1">
-                  {step === "denomination"
-                    ? "Enter beginning cash drawer denomination"
-                    : "Confirm cash fund with photo"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold text-white">
+                      Cash Fund Setup
+                    </h2>
+                    <p className="text-blue-100 mt-1">
+                      {step === "denomination"
+                        ? "Enter beginning cash drawer denomination"
+                        : "Confirm cash fund with photo"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-4xl font-bold text-white">
+                      ₱
+                      {totalAmount.toLocaleString("en-PH", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p className="text-blue-100 text-sm mt-1">
+                      Total Cash Fund
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Content */}
-              <div className="flex-1 p-8 overflow-y-auto">
-                {step === "denomination" ? (
-                  <div className="space-y-6">
-                    {/* Bills Section */}
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">
-                        Bills
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {(
-                          [
-                            "thousand",
-                            "fiveHundred",
-                            "twoHundred",
-                            "oneHundred",
-                            "fifty",
-                            "twenty",
-                          ] as const
-                        ).map((key) => (
-                          <DenominationCard
-                            key={key}
-                            label={denominationLabels[key]}
-                            count={denominations[key]}
-                            value={denominationValues[key]}
-                            onIncrease={() => updateDenomination(key, 1)}
-                            onDecrease={() => updateDenomination(key, -1)}
-                            onTapInput={() => openKeyboard(key)}
-                            isActive={activeInputKey === key}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Coins Section */}
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">
-                        Coins
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        {(
-                          [
-                            "twentyCoins",
-                            "tenCoins",
-                            "fiveCoins",
-                            "oneCoins",
-                            "centavos",
-                          ] as const
-                        ).map((key) => (
-                          <DenominationCard
-                            key={key}
-                            label={denominationLabels[key]}
-                            count={denominations[key]}
-                            value={denominationValues[key]}
-                            onIncrease={() => updateDenomination(key, 1)}
-                            onDecrease={() => updateDenomination(key, -1)}
-                            onTapInput={() => openKeyboard(key)}
-                            isActive={activeInputKey === key}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Total Amount */}
-                    <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                      <p className="text-sm text-gray-600">Total Cash Fund</p>
-                      <p className="text-3xl font-bold text-green-600">
-                        ₱
-                        {totalAmount.toLocaleString("en-PH", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Photo Section */}
-                    {!photoData && (
-                      <div className="flex flex-col items-center justify-center py-8">
-                        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                          <span className="text-3xl">📸</span>
+              {/* Content - Two Column Layout */}
+              <div className="flex-1 overflow-y-auto flex">
+                {/* Left Column - Input Section */}
+                <div className="flex-1 p-8 border-r border-gray-200 overflow-y-auto">
+                  {step === "denomination" ? (
+                    <div className="space-y-6">
+                      {/* Bills Section */}
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">
+                          Bills
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          {(
+                            [
+                              "thousand",
+                              "fiveHundred",
+                              "twoHundred",
+                              "oneHundred",
+                              "fifty",
+                              "twenty",
+                            ] as const
+                          ).map((key) => (
+                            <DenominationCard
+                              key={key}
+                              label={denominationLabels[key]}
+                              count={denominations[key]}
+                              value={denominationValues[key]}
+                              onIncrease={() => updateDenomination(key, 1)}
+                              onDecrease={() => updateDenomination(key, -1)}
+                              onTapInput={() => openKeyboard(key)}
+                              isActive={activeInputKey === key}
+                            />
+                          ))}
                         </div>
-                        <p className="text-gray-600 text-center mb-4 font-medium">
-                          Please take a photo to confirm you agree with this
-                          cash fund amount
+                      </div>
+
+                      {/* Coins Section */}
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">
+                          Coins
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          {(
+                            [
+                              "twentyCoins",
+                              "tenCoins",
+                              "fiveCoins",
+                              "oneCoins",
+                              "centavos",
+                            ] as const
+                          ).map((key) => (
+                            <DenominationCard
+                              key={key}
+                              label={denominationLabels[key]}
+                              count={denominations[key]}
+                              value={denominationValues[key]}
+                              onIncrease={() => updateDenomination(key, 1)}
+                              onDecrease={() => updateDenomination(key, -1)}
+                              onTapInput={() => openKeyboard(key)}
+                              isActive={activeInputKey === key}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-blue-50 rounded-lg p-4">
+                        <p className="text-sm text-gray-600">
+                          Cash Fund Amount
                         </p>
-                        <Button
-                          onClick={handleOpenCamera}
-                          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
-                        >
-                          <span className="mr-2">📷</span>
-                          Start Camera
-                        </Button>
+                        <p className="text-3xl font-bold text-blue-600 mt-2">
+                          ₱
+                          {totalAmount.toLocaleString("en-PH", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-3">
+                          By confirming, you agree that this is the correct cash
+                          amount in your drawer.
+                        </p>
                       </div>
-                    )}
 
-                    {photoData && (
-                      <div className="space-y-4">
-                        <div className="relative bg-gray-900 rounded-xl overflow-hidden aspect-video flex items-center justify-center">
-                          <img
-                            src={photoData}
-                            alt="Cash fund confirmation"
-                            className="w-full h-full object-cover"
-                            style={{ transform: "scaleX(-1)" }}
-                          />
-                          <div className="absolute top-4 left-4 bg-green-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
-                            ✓ Photo Captured
+                      {!photoData && (
+                        <div className="flex flex-col items-center justify-center py-8">
+                          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                            <span className="text-2xl">📸</span>
                           </div>
+                          <p className="text-gray-600 text-center text-sm font-medium">
+                            Photo will appear on the right
+                          </p>
                         </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column - Preview Section */}
+                <div className="w-80 bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex flex-col items-center justify-center border-l border-gray-200">
+                  {photoData ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                      <div className="relative w-full rounded-xl overflow-hidden shadow-lg">
+                        <img
+                          src={photoData}
+                          alt="Cash fund confirmation"
+                          className="w-full h-64 object-cover"
+                          style={{ transform: "scaleX(-1)" }}
+                        />
+                        <div className="absolute top-3 left-3 bg-green-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                          <span>✓</span> Photo Captured
+                        </div>
+                      </div>
+                      {step === "photo" && (
                         <Button
                           onClick={retakePhoto}
                           variant="outline"
-                          className="w-full"
+                          className="w-full text-sm"
                         >
                           <span className="mr-2">🔄</span>
                           Retake Photo
                         </Button>
+                      )}
+                    </div>
+                  ) : step === "photo" ? (
+                    <div className="flex flex-col items-center justify-center gap-4 h-full">
+                      <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-3xl">📸</span>
                       </div>
-                    )}
-
-                    {/* Summary */}
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                      <p className="text-sm text-gray-600">Cash Fund Amount</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        ₱
-                        {totalAmount.toLocaleString("en-PH", {
-                          minimumFractionDigits: 2,
-                        })}
+                      <p className="text-gray-600 text-center text-sm font-medium">
+                        Take a photo to verify the cash amount
                       </p>
-                      <p className="text-xs text-gray-500 mt-4">
-                        By confirming, you agree that this is the correct cash
-                        amount in your drawer.
+                      <Button
+                        onClick={handleOpenCamera}
+                        className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                      >
+                        <span className="mr-2">📷</span>
+                        Start Camera
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-3 h-full text-center">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-xl">👀</span>
+                      </div>
+                      <p className="text-gray-500 text-xs">
+                        Preview will appear here after photo is captured
                       </p>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Shared On-Screen Keyboard */}
@@ -407,7 +436,7 @@ export default function CashFundModal({
                         type="text"
                         value={inputValue}
                         readOnly
-                        className="w-full px-4 py-3 text-2xl font-bold text-center border-2 border-green-400 rounded-lg bg-green-50 mb-2"
+                        className="w-full px-4 py-3 text-2xl font-bold text-center border-2 border-blue-400 rounded-lg bg-blue-50 mb-2"
                       />
                       <p className="text-xs text-gray-600">
                         {activeInputKey && denominationLabels[activeInputKey]}
@@ -461,7 +490,7 @@ export default function CashFundModal({
                         </button>
                         <button
                           onClick={confirmInput}
-                          className="bg-green-500 hover:bg-green-600 border-2 border-green-700 rounded-lg py-3 font-bold text-lg text-white transition-colors active:scale-95"
+                          className="bg-blue-500 hover:bg-blue-600 border-2 border-blue-700 rounded-lg py-3 font-bold text-lg text-white transition-colors active:scale-95"
                         >
                           Confirm
                         </button>
@@ -472,22 +501,22 @@ export default function CashFundModal({
               </AnimatePresence>
 
               {/* Footer */}
-              <div className="border-t border-gray-200 px-8 py-6 bg-gray-50 flex items-center justify-between gap-3">
+              <div className="border-t border-gray-200 px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 flex items-center justify-end gap-4">
                 {step === "denomination" ? (
                   <>
                     <Button
                       onClick={handleClose}
                       variant="outline"
-                      className="px-6 py-2 bg-white hover:bg-gray-100 text-gray-700 border-gray-300"
+                      className="px-8 py-3 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg font-medium"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={() => setStep("photo")}
                       disabled={totalAmount === 0}
-                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium"
                     >
-                      Next: Photo Verification
+                      Proceed to Photo
                     </Button>
                   </>
                 ) : (
@@ -495,16 +524,16 @@ export default function CashFundModal({
                     <Button
                       onClick={() => setStep("denomination")}
                       variant="outline"
-                      className="px-6 py-2 bg-white hover:bg-gray-100 text-gray-700 border-gray-300"
+                      className="px-8 py-3 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg font-medium"
                     >
                       Back
                     </Button>
                     <Button
                       onClick={handleConfirm}
                       disabled={!photoData}
-                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium"
                     >
-                      Confirm Cash Fund
+                      Confirm & Save
                     </Button>
                   </>
                 )}
@@ -556,8 +585,8 @@ function DenominationCard({
     <div
       className={`border-2 rounded-lg p-4 text-center transition-all cursor-pointer ${
         isActive
-          ? "border-green-500 bg-green-50 shadow-lg"
-          : "border-gray-200 bg-white hover:border-green-300"
+          ? "border-blue-500 bg-blue-50 shadow-lg"
+          : "border-gray-200 bg-white hover:border-blue-300"
       }`}
     >
       <p className="text-xs font-semibold text-gray-600 mb-2">{label}</p>
@@ -578,10 +607,10 @@ function DenominationCard({
         />
         <button
           onClick={onIncrease}
-          className="w-6 h-6 rounded bg-green-100 hover:bg-green-200 flex items-center justify-center transition-colors"
+          className="w-6 h-6 rounded bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors"
           title="Increase"
         >
-          <Plus size={14} className="text-green-600" />
+          <Plus size={14} className="text-blue-600" />
         </button>
       </div>
 

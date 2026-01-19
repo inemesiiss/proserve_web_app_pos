@@ -24,6 +24,7 @@ import {
   useGetBranchProductsQuery,
   useCreateCashFundMutation,
 } from "@/store/api/Transaction";
+import { useGetCashierDiscountsQuery } from "@/store/api/Discounts";
 import type { CategorizedProduct } from "@/types/transaction";
 import { formatCurrency } from "@/function/reusables/reuseables";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -88,7 +89,7 @@ const getBranchIdFromStorage = (): number | null => {
 
 export default function FoodTransactionPage() {
   const navigate = useNavigate();
-  const { addItem } = useFoodOrder();
+  const { addItem, setAvailableDiscounts } = useFoodOrder();
 
   // Cash fund API mutation
   const [createCashFund] = useCreateCashFundMutation();
@@ -96,6 +97,19 @@ export default function FoodTransactionPage() {
   // Get branch ID from localStorage
   const [branchId, setBranchId] = useState<number | null>(null);
   const [isCheckingBranch, setIsCheckingBranch] = useState(true);
+
+  // Fetch discounts when branch ID is available
+  const { data: discountsData } = useGetCashierDiscountsQuery(
+    { bid: branchId || 0 },
+    { skip: !branchId } // Skip the query if no branchId
+  );
+
+  // Update available discounts when data is fetched
+  useEffect(() => {
+    if (discountsData?.per_item_disc?.pwd_sc) {
+      setAvailableDiscounts(discountsData.per_item_disc.pwd_sc);
+    }
+  }, [discountsData, setAvailableDiscounts]);
 
   // Cashier session state
   const [cashierSession, setCashierSession] = useState<CashierSession | null>(

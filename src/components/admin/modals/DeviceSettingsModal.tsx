@@ -30,6 +30,7 @@ interface DeviceSettingsModalProps {
 interface DeviceSettings {
   defaultPrinter: string;
   receiptPrinter: string;
+  receiptPrinterSize: 57 | 88;
   kitchenPrinter: string;
   scanner: string;
   camera: string;
@@ -44,6 +45,7 @@ export default function DeviceSettingsModal({
   const [settings, setSettings] = useState<DeviceSettings>({
     defaultPrinter: "",
     receiptPrinter: "",
+    receiptPrinterSize: 57,
     kitchenPrinter: "",
     scanner: "",
     camera: "",
@@ -85,7 +87,18 @@ export default function DeviceSettingsModal({
           "✅ [DeviceSettingsModal] Parsed settings from localStorage:",
           parsedSettings
         );
-        setSettings(parsedSettings);
+        // Merge with defaults to ensure all fields exist
+        setSettings({
+          defaultPrinter: "",
+          receiptPrinter: "",
+          receiptPrinterSize: 57,
+          kitchenPrinter: "",
+          scanner: "",
+          camera: "",
+          cashDrawer: "",
+          cardReader: "",
+          ...parsedSettings,
+        });
       } catch (e) {
         console.error(
           "❌ [DeviceSettingsModal] Error parsing saved settings:",
@@ -105,9 +118,13 @@ export default function DeviceSettingsModal({
     try {
       // Fetch real printers from Tauri
       const printerList = await invoke<string[]>("list_printers");
+      console.log(
+        "✅ [DeviceSettingsModal] Printers loaded from Tauri:",
+        printerList
+      );
 
       setAvailableDevices({
-        printers: printerList.length > 0 ? printerList : ["No printers found"],
+        printers: printerList && printerList.length > 0 ? printerList : [],
         scanners: [
           "Default Scanner",
           "Epson Perfection V600",
@@ -129,12 +146,35 @@ export default function DeviceSettingsModal({
       });
       setIsLoading(false);
     } catch (error) {
-      console.error("Error loading devices:", error);
+      console.error(
+        "❌ [DeviceSettingsModal] Error loading printers from Tauri:",
+        error
+      );
+      console.log(
+        "⚠️ [DeviceSettingsModal] No printers found or error occurred"
+      );
+
+      // Show empty list when Tauri command fails - no static fallback
       setAvailableDevices({
-        printers: ["Error loading printers"],
-        scanners: ["Default Scanner"],
-        cameras: ["Default Camera"],
-        usbDevices: ["Cash Drawer Port 1"],
+        printers: [],
+        scanners: [
+          "Default Scanner",
+          "Epson Perfection V600",
+          "Canon CanoScan LiDE 400",
+          "Honeywell Barcode Scanner",
+        ],
+        cameras: [
+          "Default Camera",
+          "Integrated Webcam",
+          "Logitech C920",
+          "USB Camera",
+        ],
+        usbDevices: [
+          "Cash Drawer Port 1",
+          "Cash Drawer Port 2",
+          "Card Reader USB 1",
+          "Card Reader USB 2",
+        ],
       });
       setIsLoading(false);
     }
@@ -326,6 +366,37 @@ export default function DeviceSettingsModal({
                         Test
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Receipt Printer Size */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Receipt Printer Size (Paper Width)
+                    </Label>
+                    <Select
+                      value={settings.receiptPrinterSize.toString()}
+                      onValueChange={(value) => {
+                        console.log("📏 [PRINTER SIZE] Selected:", value);
+                        setSettings({
+                          ...settings,
+                          receiptPrinterSize: parseInt(value) as 57 | 88,
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select printer size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="57">
+                            57mm (Standard Thermal Receipt Printer)
+                          </SelectItem>
+                          <SelectItem value="88">
+                            88mm (Wide Format / Kitchen Printer)
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Kitchen Printer */}

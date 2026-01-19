@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Camera, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CameraPermissionModal from "./CameraPermissionModal";
 
 interface CameraModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export default function CameraModal({
 }: CameraModalProps) {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [showPermission, setShowPermission] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -40,7 +42,7 @@ export default function CameraModal({
 
   useEffect(() => {
     if (isOpen && !capturedImage) {
-      startCamera();
+      setShowPermission(true);
     }
 
     return () => {
@@ -61,6 +63,16 @@ export default function CameraModal({
       console.error("Error accessing camera:", error);
       alert("Unable to access camera. Please check permissions.");
     }
+  };
+
+  const handlePermissionAllow = () => {
+    setShowPermission(false);
+    startCamera();
+  };
+
+  const handlePermissionDeny = () => {
+    setShowPermission(false);
+    handleClose();
   };
 
   const stopCamera = () => {
@@ -108,7 +120,15 @@ export default function CameraModal({
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {/* Camera Permission Modal */}
+      <CameraPermissionModal
+        isOpen={showPermission}
+        onAllow={handlePermissionAllow}
+        onDeny={handlePermissionDeny}
+        badge={badge}
+      />
+
+      {isOpen && !showPermission && (
         <>
           {/* Backdrop */}
           <motion.div

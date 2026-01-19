@@ -2,6 +2,7 @@ import { menuData } from "@/data/food/products";
 import type { Product, Meal } from "@/data/food/products";
 import { createContext, useContext, useState, useMemo } from "react";
 import type { ReactNode } from "react";
+import type { BranchDiscount } from "@/store/api/Discounts";
 
 export interface OrderItem {
   id: number;
@@ -23,6 +24,14 @@ export interface OrderItem {
   percentDiscount?: number;
   discount_type?: "pwd" | "sc" | "manual" | "percentage";
   discount_note?: string;
+  discountId?: number;
+  discountCardCode?: string;
+  discountCardName?: string;
+  discountCardExp?: string;
+
+  // --- SC/PWD VAT Calculation Fields ---
+  vatRemovedAmount?: number; // VAT that was removed from the original price
+  vatExemptSalesAmount?: number; // Amount that becomes VAT-exempt after discount (for SC/PWD)
 
   // --- Customization details for meals with variances ---
   customization?: {
@@ -76,10 +85,10 @@ interface FoodOrderContextType {
     type: "percentage" | "fixed";
     value: number;
     code?: string;
-    cardNumber?: string;
-    cardholderName?: string;
-    expiryDate?: string;
-    note: string;
+    customerName?: string;
+    discountCardNum?: string;
+    discountCardExp?: string;
+    discountNote?: string;
   }) => void;
   removeOrderTotalDiscount: () => void;
   orderTotalDiscountInfo: {
@@ -87,10 +96,10 @@ interface FoodOrderContextType {
     type: "percentage" | "fixed";
     value: number;
     code?: string;
-    cardNumber?: string;
-    cardholderName?: string;
-    expiryDate?: string;
-    note: string;
+    customerName?: string;
+    discountCardNum?: string;
+    discountCardExp?: string;
+    discountNote?: string;
   } | null;
 
   // --- Update helpers ---
@@ -112,7 +121,8 @@ interface FoodOrderContextType {
     discountType: "pwd" | "sc" | "manual" | "percentage",
     value?: number,
     note?: string,
-    instanceKey?: string
+    instanceKey?: string,
+    discountId?: number
   ) => void;
 
   // --- Upgrade helpers ---
@@ -140,6 +150,10 @@ interface FoodOrderContextType {
       additionalPrice: number;
     }[];
   };
+
+  // --- Discount data ---
+  availableDiscounts: BranchDiscount[];
+  setAvailableDiscounts: (discounts: BranchDiscount[]) => void;
 }
 
 const FoodOrderContext = createContext<FoodOrderContextType | undefined>(
@@ -149,15 +163,18 @@ const FoodOrderContext = createContext<FoodOrderContextType | undefined>(
 export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
   const [meals, setMeals] = useState<OrderItem[]>([]);
   const [products, setProducts] = useState<OrderItem[]>([]);
+  const [availableDiscounts, setAvailableDiscounts] = useState<
+    BranchDiscount[]
+  >([]);
   const [orderTotalDiscountInfo, setOrderTotalDiscountInfo] = useState<{
     discountCategory: "voucher" | "sc-pwd" | "manual";
     type: "percentage" | "fixed";
     value: number;
     code?: string;
-    cardNumber?: string;
-    cardholderName?: string;
-    expiryDate?: string;
-    note: string;
+    customerName?: string;
+    discountCardNum?: string;
+    discountCardExp?: string;
+    discountNote?: string;
   } | null>(null);
 
   // --- Core Add Function ---
@@ -257,7 +274,8 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
     discountType: "pwd" | "sc" | "manual" | "percentage",
     value?: number,
     note?: string,
-    instanceKey?: string
+    instanceKey?: string,
+    discountId?: number
   ) => {
     const setGroup = type === "meal" ? setMeals : setProducts;
     const group = type === "meal" ? meals : products;
@@ -273,18 +291,29 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
         const basePrice = i.price * i.qty;
         let discountAmount = 0;
         let percentDiscount = 0;
+        let vatRemovedAmount = 0; // VAT that was removed (for SC/PWD)
+        let vatExemptSalesAmount = 0; // Amount that becomes VAT-exempt (for SC/PWD)
 
         if (discountType === "pwd" || discountType === "sc") {
-          // Discount is 20% less VAT (12%)
-          const discounted = (basePrice * 0.8) / 1.12; // 20% off less 12% VAT
-          discountAmount = basePrice - discounted;
-          percentDiscount = 20;
+          // For PWD/SC (VAT-exempt discounts):
+          // Step 1: Remove VAT from price (VAT is 12%)
+          const vatAmount = basePrice * (12 / 112); // VAT from inclusive price
+          const preTaxPrice = basePrice - vatAmount; // VAT-exclusive amount
+
+          // Step 2: Apply percentage discount to pre-VAT amount
+          const discountPercent = value || 20; // Default to 20% if not specified
+          discountAmount = preTaxPrice * (discountPercent / 100); // Discount on pre-tax amount
+          percentDiscount = discountPercent;
+
+          // Step 3: Calculate the vat-exempt amounts
+          vatRemovedAmount = vatAmount; // The removed VAT
+          vatExemptSalesAmount = preTaxPrice - discountAmount; // What remains after discount (vat-exempt)
         } else if (discountType === "percentage" && value) {
-          // Manual percentage discount
+          // Manual percentage discount (vatable)
           percentDiscount = value;
           discountAmount = (basePrice * value) / 100;
         } else if (discountType === "manual" && value) {
-          // Manual fixed amount discount
+          // Manual fixed amount discount (vatable)
           discountAmount = value;
           percentDiscount = (value / basePrice) * 100;
         }
@@ -296,6 +325,10 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
           percentDiscount: percentDiscount,
           itemTotalDiscount: discountAmount,
           discount_note: note,
+          discountId: discountId,
+          // SC/PWD specific fields for transaction reporting
+          vatRemovedAmount: vatRemovedAmount,
+          vatExemptSalesAmount: vatExemptSalesAmount,
         };
       })
     );
@@ -307,10 +340,10 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
     type: "percentage" | "fixed";
     value: number;
     code?: string;
-    cardNumber?: string;
-    cardholderName?: string;
-    expiryDate?: string;
-    note: string;
+    customerName?: string;
+    discountCardNum?: string;
+    discountCardExp?: string;
+    discountNote?: string;
   }) => {
     setOrderTotalDiscountInfo(discountData);
   };
@@ -563,6 +596,8 @@ export const FoodOrderProvider = ({ children }: { children: ReactNode }) => {
         totalDiscount,
         orderTotalDiscount,
         grandTotal,
+        availableDiscounts,
+        setAvailableDiscounts,
       }}
     >
       {children}
