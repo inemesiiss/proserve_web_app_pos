@@ -101,7 +101,7 @@ export default function FoodTransactionPage() {
   // Fetch discounts when branch ID is available
   const { data: discountsData } = useGetCashierDiscountsQuery(
     { bid: branchId || 0 },
-    { skip: !branchId } // Skip the query if no branchId
+    { skip: !branchId }, // Skip the query if no branchId
   );
 
   // Update available discounts when data is fetched
@@ -113,7 +113,7 @@ export default function FoodTransactionPage() {
 
   // Cashier session state
   const [cashierSession, setCashierSession] = useState<CashierSession | null>(
-    null
+    null,
   );
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const activityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,20 +128,20 @@ export default function FoodTransactionPage() {
   // Listen for break status changes
   useEffect(() => {
     const handleBreakStatusChange = (
-      event: CustomEvent<{ isOnBreak: boolean }>
+      event: CustomEvent<{ isOnBreak: boolean }>,
     ) => {
       setShowBreakModal(event.detail.isOnBreak);
     };
 
     window.addEventListener(
       "breakStatusChanged",
-      handleBreakStatusChange as EventListener
+      handleBreakStatusChange as EventListener,
     );
 
     return () => {
       window.removeEventListener(
         "breakStatusChanged",
-        handleBreakStatusChange as EventListener
+        handleBreakStatusChange as EventListener,
       );
     };
   }, []);
@@ -152,7 +152,7 @@ export default function FoodTransactionPage() {
     if (!storedBranchId) {
       // Redirect to main if no branch ID found
       console.warn(
-        "No branch ID found in localStorage, redirecting to /food/main"
+        "No branch ID found in localStorage, redirecting to /food/main",
       );
       navigate("/food/main", { replace: true });
       return;
@@ -332,7 +332,7 @@ export default function FoodTransactionPage() {
 
   // Category filter state - stores both ID (for API) and label (for display)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null
+    null,
   );
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState("All");
   const [selectedProduct, setSelectedProduct] =
@@ -342,7 +342,7 @@ export default function FoodTransactionPage() {
 
   // Scanner Mode State
   const [scannerMode, setScannerMode] = useState<"product" | "order">(
-    "product"
+    "product",
   );
   const [isScannerEnabled, setIsScannerEnabled] = useState(false);
   const scannerBufferRef = useRef<string>("");
@@ -367,13 +367,13 @@ export default function FoodTransactionPage() {
     },
     {
       skip: !branchId, // Skip query until branchId is available
-    }
+    },
   );
 
   // Handle category filter from sidebar
   const handleCategoryFilter = (
     categoryId: number | null,
-    categoryLabel: string
+    categoryLabel: string,
   ) => {
     setSelectedCategoryId(categoryId);
     setSelectedCategoryLabel(categoryLabel);
@@ -388,7 +388,7 @@ export default function FoodTransactionPage() {
         "📊 [Scanner] Scanned code:",
         scannedCode,
         "Mode:",
-        scannerMode
+        scannerMode,
       );
 
       if (scannerMode === "product") {
@@ -411,7 +411,7 @@ export default function FoodTransactionPage() {
         });
       }
     },
-    [scannerMode]
+    [scannerMode],
   );
 
   // 🔊 Scanner keyboard event listener
@@ -493,7 +493,7 @@ export default function FoodTransactionPage() {
     if (apiProducts.length === 1) {
       const product = apiProducts[0];
       const hasVariantsToCustomize = product.compositions?.some(
-        (comp) => comp.variants && comp.variants.length > 0
+        (comp) => comp.variants && comp.variants.length > 0,
       );
 
       if (hasVariantsToCustomize) {
@@ -533,11 +533,11 @@ export default function FoodTransactionPage() {
       return {
         individuals: apiProducts.filter((p) => p.type === "individual"),
         individualsWithVariance: apiProducts.filter(
-          (p) => p.type === "individual-variance"
+          (p) => p.type === "individual-variance",
         ),
         bundles: apiProducts.filter((p) => p.type === "bundle"),
         bundlesWithVariance: apiProducts.filter(
-          (p) => p.type === "bundle-variance"
+          (p) => p.type === "bundle-variance",
         ),
       };
     }, [apiProducts]);
@@ -546,7 +546,7 @@ export default function FoodTransactionPage() {
   const handleAdd = (product: CategorizedProduct) => {
     // Check if product has any compositions with variants to customize
     const hasVariantsToCustomize = product.compositions?.some(
-      (comp) => comp.variants && comp.variants.length > 0
+      (comp) => comp.variants && comp.variants.length > 0,
     );
 
     if (hasVariantsToCustomize) {
@@ -904,11 +904,11 @@ export default function FoodTransactionPage() {
                         <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
-                            {product.prod_code}
-                          </div>
-                          <div className="text-xs text-gray-600 text-center">
                             {product.prod_name}
                           </div>
+                          {/* <div className="text-xs text-gray-600 text-center">
+                            {product.prod_code}
+                          </div> */}
                           <div className="text-sm text-gray-700 font-semibold">
                             ₱{price.toFixed(2)}
                           </div>
@@ -948,11 +948,11 @@ export default function FoodTransactionPage() {
                         <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
-                            {product.prod_code}
-                          </div>
-                          <div className="text-xs text-gray-600 text-center">
                             {product.prod_name}
                           </div>
+                          {/* <div className="text-xs text-gray-600 text-center">
+                            {product.prod_code}
+                          </div> */}
                           <div className="text-sm text-gray-700 font-semibold">
                             ₱{price.toFixed(2)}
                           </div>
@@ -995,11 +995,11 @@ export default function FoodTransactionPage() {
                         <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
-                            {product.prod_code}
-                          </div>
-                          <div className="text-xs text-gray-600 text-center">
                             {product.prod_name}
                           </div>
+                          {/* <div className="text-xs text-gray-600 text-center">
+                            {product.prod_code}
+                          </div> */}
                           <div className="text-sm text-gray-700 font-semibold">
                             ₱{price.toFixed(2)}
                           </div>
@@ -1039,11 +1039,11 @@ export default function FoodTransactionPage() {
                         <ProductImage src={imageUrl} alt={product.prod_code} />
                         <div className="flex flex-col items-center justify-between flex-1 min-h-0">
                           <div className="text-sm font-bold text-gray-800 text-center">
-                            {product.prod_code}
-                          </div>
-                          <div className="text-xs text-gray-600 text-center">
                             {product.prod_name}
                           </div>
+                          {/* <div className="text-xs text-gray-600 text-center">
+                            {product.prod_code}
+                          </div> */}
                           <div className="text-sm text-gray-700 font-semibold">
                             ₱{price.toFixed(2)}
                           </div>

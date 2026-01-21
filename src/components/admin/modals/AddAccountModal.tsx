@@ -107,7 +107,7 @@ export default function AddAccountModal({
     setFormData({ ...formData, logo: file });
 
     // Reset after successful upload too (optional)
-    input.value = "";
+    // input.value = "";
   };
 
   const handleChange = (field: keyof AccountFormData, value: string) => {
@@ -301,8 +301,8 @@ export default function AddAccountModal({
                         type === 1
                           ? String(formData.subscription)
                           : formData.subscription !== 0
-                          ? String(formData.subscription)
-                          : String(data.subscription)
+                            ? String(formData.subscription)
+                            : String(data.subscription)
                       }
                       onValueChange={(value) =>
                         handleChange("subscription", value)
