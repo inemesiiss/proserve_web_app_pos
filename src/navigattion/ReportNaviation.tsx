@@ -8,14 +8,14 @@ import {
 
 export const reportNavs = [
   {
-    label: "Sales Report",
+    label: "Sales Collection",
     path: "/bm/reports/sales",
-    icon: <DollarSign className="w-6 h-6" />,
+    icon: <BookText className="w-6 h-6" />,
   },
   {
-    label: "Purchase & Transaction",
+    label: "Sales & Transactions",
     path: "/bm/reports/transaction",
-    icon: <BookText className="w-6 h-6" />,
+    icon: <DollarSign className="w-6 h-6" />,
   },
   {
     label: "Inventory",

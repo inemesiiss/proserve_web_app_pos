@@ -26,11 +26,11 @@ export default function FoodTotalDiscountPaymentSection() {
 
   console.log(
     "📊 [OrderTotalDiscountPayment] Device Settings:",
-    deviceSettings
+    deviceSettings,
   );
   console.log(
     "📊 [OrderTotalDiscountPayment] Receipt Printer:",
-    deviceSettings.receiptPrinter
+    deviceSettings.receiptPrinter,
   );
 
   const [paymentMode, setPaymentMode] = useState<
@@ -93,7 +93,7 @@ export default function FoodTotalDiscountPaymentSection() {
           totalDiscount:
             allItems.reduce(
               (sum, item) => sum + (item.itemTotalDiscount || 0),
-              0
+              0,
             ) + orderTotalDiscount,
           status: "completed",
         },
@@ -154,11 +154,11 @@ export default function FoodTotalDiscountPaymentSection() {
 
       console.log(
         "📦 [handleCreateTransaction] Full Payload:",
-        transactionPayload
+        transactionPayload,
       );
       console.log(
         "📊 [handleCreateTransaction] Items count:",
-        transactionPayload.items.length
+        transactionPayload.items.length,
       );
       if (transactionPayload.items.length === 0) {
         console.warn("⚠️ [handleCreateTransaction] NO ITEMS FOUND!");
@@ -530,7 +530,7 @@ export default function FoodTotalDiscountPaymentSection() {
               "🖨️ [ReceiptPrinter] Rendering with printer:",
               deviceSettings.receiptPrinter,
               "Invoice:",
-              invoiceNum
+              invoiceNum,
             )}
             <ReceiptPrinter
               mode="cash"

@@ -31,38 +31,24 @@ export default function PwdScCardModal({
   const [name, setName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [selectedDiscount, setSelectedDiscount] = useState<number | null>(
-    selectedDiscountId || null
+    selectedDiscountId || null,
   );
   const [error, setError] = useState("");
 
   // Get only ACTIVE PWD/SC discounts from the fetched data
   const activeDiscounts = availableDiscounts.filter(
-    (d) => d.is_active === true
+    (d) => d.is_active === true,
   );
 
   // Get inactive discounts for display purposes
   const inactiveDiscounts = availableDiscounts.filter(
-    (d) => d.is_active === false
+    (d) => d.is_active === false,
   );
 
   const handleSubmit = () => {
-    // Basic validation
-    if (!cardNumber.trim()) {
-      setError("Card number is required");
-      return;
-    }
-    if (!expiryDate.trim()) {
-      setError("Expiry date is required");
-      return;
-    }
+    // Only require discount type
     if (!selectedDiscount) {
       setError("Please select a discount type");
-      return;
-    }
-
-    // Card number should be at least 8 characters
-    if (cardNumber.trim().length < 8) {
-      setError("Card number must be at least 8 characters");
       return;
     }
 
@@ -74,6 +60,7 @@ export default function PwdScCardModal({
     }
 
     // Success - pass data to parent
+
     onSuccess({
       cardNumber: cardNumber.trim(),
       name: name.trim() || undefined,
@@ -229,7 +216,7 @@ export default function PwdScCardModal({
                   className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
                 >
                   <CreditCard size={16} />
-                  Card Number <span className="text-red-500">*</span>
+                  Card Number (optional)
                 </Label>
                 <Input
                   id="cardNumber"
@@ -244,7 +231,7 @@ export default function PwdScCardModal({
                   autoFocus
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Minimum 8 characters
+                  Enter the SC/PWD card number if available
                 </p>
               </div>
 
@@ -255,7 +242,7 @@ export default function PwdScCardModal({
                   className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
                 >
                   <Calendar size={16} />
-                  Expiry Date <span className="text-red-500">*</span>
+                  Expiry Date (optional)
                 </Label>
                 <Input
                   id="expiryDate"
@@ -269,7 +256,7 @@ export default function PwdScCardModal({
                   className="h-12 text-base"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Format: MM/YYYY (e.g., 12/2025)
+                  Format: MM/YYYY (e.g., 12/2025), leave blank if not available
                 </p>
               </div>
 
@@ -285,7 +272,7 @@ export default function PwdScCardModal({
                       <span className="font-semibold text-green-700">
                         {
                           availableDiscounts.find(
-                            (d) => d.id === selectedDiscount
+                            (d) => d.id === selectedDiscount,
                           )?.discount.name
                         }
                       </span>
@@ -295,7 +282,7 @@ export default function PwdScCardModal({
                       <span className="font-semibold text-green-700">
                         {
                           availableDiscounts.find(
-                            (d) => d.id === selectedDiscount
+                            (d) => d.id === selectedDiscount,
                           )?.discount.discount_percentage
                         }
                         %
@@ -328,9 +315,7 @@ export default function PwdScCardModal({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={
-                  !cardNumber.trim() || !expiryDate.trim() || !selectedDiscount
-                }
+                disabled={!selectedDiscount}
                 className="flex-1 h-12 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Verify & Apply

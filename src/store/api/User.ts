@@ -89,9 +89,12 @@ export const userApi = createApi({
      * GET /api/transactions/cashier/get_branch_users?bid=1
      * Returns active users for a specific branch
      */
-    getBranchUsers: builder.query<UserOption[], number>({
-      query: (branchId) => ({
-        url: `/transactions/cashier/get_branch_users?bid=${branchId}`,
+    getBranchUsers: builder.query<
+      UserOption[],
+      { branchId: number; role: string }
+    >({
+      query: ({ branchId, role }) => ({
+        url: `/transactions/cashier/get_branch_users?bid=${branchId}&roles=${role}`,
         method: "GET",
       }),
       transformResponse: (response: BranchUsersApiResponse) => {

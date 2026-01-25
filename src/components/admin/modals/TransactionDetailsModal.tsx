@@ -18,6 +18,27 @@ interface Variant {
   calculated_price: string;
 }
 
+interface Transaction {
+  transaction: {
+    date: string;
+    or: string;
+    branch: string;
+    amount: number;
+    tax: number;
+    total_discount: number;
+    cashier: string;
+    total_price: number;
+    total_items_discount: number;
+    grand_total: number;
+    vatable_sales: number;
+    vat_exempt_sales: number;
+    vat_amount: number;
+    cash_received: number;
+    digital_cash_received: number;
+    id: number | string; // Purchase ID
+  } | null;
+}
+
 interface TransactionItem {
   id: number;
   name: string;
@@ -40,24 +61,7 @@ interface TransactionItem {
 interface TransactionDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  transaction: {
-    date: string;
-    or: string;
-    branch: string;
-    amount: number;
-    tax: number;
-    total_discount: number;
-    cashier: string;
-    total_price: number;
-    total_items_discount: number;
-    grand_total: number;
-    vatable_sales: number;
-    vat_exempt_sales: number;
-    vat_amount: number;
-    cash_received: number;
-    digital_cash_received: number;
-    id: number | string; // Purchase ID
-  } | null;
+  transaction: Transaction["transaction"] | null;
   items?: TransactionItem[];
   isLoadingItems?: boolean;
   onRefundSuccess?: () => void; // Callback after successful refund
@@ -78,14 +82,14 @@ export default function TransactionDetailsModal({
 
   // Use provided items or fallback to empty array
   const transactionItems = items;
-
+  console.log("Transaction Items:", transaction);
   if (!transaction) return null;
 
   const handleSelectItem = (itemId: number) => {
     setSelectedItems((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
+        : [...prev, itemId],
     );
   };
 
@@ -163,12 +167,18 @@ export default function TransactionDetailsModal({
       return sum + unitPrice * qty - discount;
     }, 0);
 
+  // Helper to close and clear selection
+  const handleCloseAndClear = () => {
+    setSelectedItems([]);
+    onClose();
+  };
+
   return (
     <>
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center"
-          onClick={onClose}
+          onClick={handleCloseAndClear}
         >
           <div
             className="bg-white dark:bg-gray-950 rounded-lg shadow-2xl w-[95%] max-h-[90vh] flex flex-col"
@@ -332,7 +342,7 @@ export default function TransactionDetailsModal({
 
                       // Get discount per item
                       const totalDiscount = parseFloat(
-                        item.total_discount || "0"
+                        item.total_discount || "0",
                       );
 
                       // Grand total = (price * qty) - discount
@@ -498,7 +508,11 @@ export default function TransactionDetailsModal({
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 justify-end pt-2">
-                  <Button variant="outline" size="sm" onClick={onClose}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCloseAndClear}
+                  >
                     Close
                   </Button>
                   <Button
@@ -521,7 +535,10 @@ export default function TransactionDetailsModal({
       {/* Refund Confirmation Modal */}
       <ConfirmationYesNo
         isOpen={showRefundConfirm}
-        onClose={() => setShowRefundConfirm(false)}
+        onClose={() => {
+          setShowRefundConfirm(false);
+          setSelectedItems([]);
+        }}
         onConfirm={handleConfirmRefund}
         title="Confirm Refund"
         message={`Are you sure you want to refund ${
@@ -530,7 +547,7 @@ export default function TransactionDetailsModal({
             ? "the entire purchase"
             : `${selectedItems.length} item(s)`
         } with a total amount of ₱${selectedTotal.toFixed(
-          2
+          2,
         )}? This action cannot be undone.`}
         confirmText={isRefunding ? "Processing..." : "Confirm Refund"}
         cancelText="Cancel"

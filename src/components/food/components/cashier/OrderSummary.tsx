@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, Trash2, Percent, Receipt } from "lucide-react";
+import { Minus, Plus, Trash2, Percent } from "lucide-react";
 import ManualDiscountModal from "../../modals/security/ManualDiscountModal";
 import PwdScCardModal from "../../modals/security/PwdScCardModal";
 import {
@@ -53,7 +53,7 @@ export default function FoodOrderSummary() {
     type: "meal" | "product",
     name: string,
     index: number,
-    instanceKey?: string
+    instanceKey?: string,
   ) => {
     setRemoveTarget({ id, type, name, index, instanceKey });
     setShowRemoveConfirm(true);
@@ -66,24 +66,24 @@ export default function FoodOrderSummary() {
         removeTarget.id,
         removeTarget.type,
         undefined,
-        removeTarget.instanceKey
+        removeTarget.instanceKey,
       );
     }
     setShowRemoveConfirm(false);
     setRemoveTarget(null);
   };
 
-  const handleManualDiscountClick = (
-    id: number,
-    type: "meal" | "product",
-    name: string,
-    price: number,
-    qty: number,
-    instanceKey?: string
-  ) => {
-    setManualDiscountTarget({ id, type, name, price, qty, instanceKey });
-    setShowManualDiscountModal(true);
-  };
+  // const handleManualDiscountClick = (
+  //   id: number,
+  //   type: "meal" | "product",
+  //   name: string,
+  //   price: number,
+  //   qty: number,
+  //   instanceKey?: string,
+  // ) => {
+  //   setManualDiscountTarget({ id, type, name, price, qty, instanceKey });
+  //   setShowManualDiscountModal(true);
+  // };
 
   const handleApplyManualDiscount = (discountData: {
     type: "percentage" | "fixed";
@@ -98,7 +98,7 @@ export default function FoodOrderSummary() {
         discountData.type === "percentage" ? "percentage" : "manual",
         discountData.value,
         discountData.note,
-        manualDiscountTarget.instanceKey
+        manualDiscountTarget.instanceKey,
       );
       setShowManualDiscountModal(false);
       setManualDiscountTarget(null);
@@ -108,7 +108,7 @@ export default function FoodOrderSummary() {
   const handlePwdScClick = (
     id: number,
     type: "meal" | "product",
-    instanceKey?: string
+    instanceKey?: string,
   ) => {
     setPwdScTarget({ id, type, instanceKey });
     setShowPwdScModal(true);
@@ -134,7 +134,7 @@ export default function FoodOrderSummary() {
         data.discountPercentage,
         note,
         pwdScTarget.instanceKey,
-        data.discountId
+        data.discountId,
       );
       setShowPwdScModal(false);
       setPwdScTarget(null);
@@ -210,7 +210,7 @@ export default function FoodOrderSummary() {
                         item.id,
                         item.type,
                         item.qty - 1,
-                        item.instanceKey
+                        item.instanceKey,
                       )
                     }
                     disabled={isVoided}
@@ -229,7 +229,7 @@ export default function FoodOrderSummary() {
                         item.id,
                         item.type,
                         item.qty + 1,
-                        item.instanceKey
+                        item.instanceKey,
                       )
                     }
                     disabled={isVoided}
@@ -286,7 +286,7 @@ export default function FoodOrderSummary() {
                 <Percent size={12} className="mr-1" />
                 SC/PWD
               </Button>
-              <Button
+              {/* <Button
                 size="sm"
                 variant={
                   isDiscounted &&
@@ -309,14 +309,14 @@ export default function FoodOrderSummary() {
                     item.name,
                     item.price,
                     item.qty,
-                    item.instanceKey
+                    item.instanceKey,
                   )
                 }
                 disabled={isVoided}
               >
                 <Receipt size={12} className="mr-1" />
                 Other Disc
-              </Button>
+              </Button> */}
               <Button
                 size="sm"
                 variant="destructive"
@@ -327,7 +327,7 @@ export default function FoodOrderSummary() {
                     item.type,
                     item.name,
                     index,
-                    item.instanceKey
+                    item.instanceKey,
                   )
                 }
                 disabled={isVoided}

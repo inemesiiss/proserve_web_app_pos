@@ -65,7 +65,7 @@ function BMReportTransaction() {
     id: number;
   } | null>(null);
   const [selectedPurchaseId, setSelectedPurchaseId] = useState<number | null>(
-    null
+    null,
   );
   const [showTransactionModal, setShowTransactionModal] = useState(false);
 
@@ -97,14 +97,14 @@ function BMReportTransaction() {
       page: currentPage,
       page_size: pageSize,
     },
-    { skip: !branchId }
+    { skip: !branchId },
   );
 
   // Lazy load purchase items when a transaction is clicked
   const { data: purchaseItemsData, isLoading: isLoadingItems } =
     useGetPurchaseItemsDetailQuery(
       { purchase: selectedPurchaseId! },
-      { skip: !selectedPurchaseId }
+      { skip: !selectedPurchaseId },
     );
   if (purchaseItemsData) {
     console.log("Purchase Items Data:", purchaseItemsData);
@@ -121,7 +121,7 @@ function BMReportTransaction() {
         parseFloat(item.curr_price) * parseFloat(item.qty) +
         item.variants.reduce(
           (sum, v) => sum + parseFloat(v.calculated_price),
-          0
+          0,
         ),
       category: "Product",
       curr_price: item.curr_price,
@@ -136,13 +136,14 @@ function BMReportTransaction() {
         name: v.product.prod_name,
         price: parseFloat(v.calculated_price),
       })),
-    })
+    }),
   );
 
   // Transform API data for table display
   const tableData = (transactionsData?.results || []).map(
     (transaction: PurchaseTransaction) => ({
       ...transaction,
+      _original: transaction, // Add original data for modal
       created_at: new Date(transaction.created_at).toLocaleString("en-US", {
         year: "2-digit",
         month: "2-digit",
@@ -169,7 +170,7 @@ function BMReportTransaction() {
           : "-",
       grand_total: `₱${parseFloat(transaction.grand_total).toFixed(2)}`,
       cash_received: `₱${parseFloat(transaction.cash_received).toFixed(2)}`,
-    })
+    }),
   );
 
   const totalItems = transactionsData?.count || 0;
@@ -191,7 +192,7 @@ function BMReportTransaction() {
   };
 
   const handleRowClick = (row: any) => {
-    // Map the raw transaction data to match modal expectations
+    // Use the original, unformatted values for modal data
     const modalData = {
       date: new Date(row.created_at).toLocaleString("en-US", {
         year: "2-digit",
@@ -202,18 +203,51 @@ function BMReportTransaction() {
       }),
       or: row.invoice_num,
       branch: `Branch ${row.branch}`,
-      amount: parseFloat(row.grand_total),
-      tax: parseFloat(row.vat_amount || 0),
-      total_discount: parseFloat(row.total_items_discount || 0),
+      amount:
+        typeof row._original?.grand_total !== "undefined"
+          ? Number(row._original.grand_total)
+          : Number(row.grand_total),
+      tax:
+        typeof row._original?.vat_amount !== "undefined"
+          ? Number(row._original.vat_amount)
+          : Number(row.vat_amount),
+      total_discount:
+        typeof row._original?.total_items_discount !== "undefined"
+          ? Number(row._original.total_items_discount)
+          : Number(row.total_items_discount),
       cashier: row.cashier || "N/A",
-      total_price: parseFloat(row.total_price),
-      total_items_discount: parseFloat(row.total_items_discount || 0),
-      grand_total: parseFloat(row.grand_total),
-      vatable_sales: parseFloat(row.vatable_sales || 0),
-      vat_exempt_sales: parseFloat(row.vat_exempt_sales || 0),
-      vat_amount: parseFloat(row.vat_amount || 0),
-      cash_received: parseFloat(row.cash_received),
-      digital_cash_received: parseFloat(row.digital_cash_received || 0),
+      total_price:
+        typeof row._original?.total_price !== "undefined"
+          ? Number(row._original.total_price)
+          : Number(row.total_price),
+      total_items_discount:
+        typeof row._original?.total_items_discount !== "undefined"
+          ? Number(row._original.total_items_discount)
+          : Number(row.total_items_discount),
+      grand_total:
+        typeof row._original?.grand_total !== "undefined"
+          ? Number(row._original.grand_total)
+          : Number(row.grand_total),
+      vatable_sales:
+        typeof row._original?.vatable_sales !== "undefined"
+          ? Number(row._original.vatable_sales)
+          : Number(row.vatable_sales),
+      vat_exempt_sales:
+        typeof row._original?.vat_exempt_sales !== "undefined"
+          ? Number(row._original.vat_exempt_sales)
+          : Number(row.vat_exempt_sales),
+      vat_amount:
+        typeof row._original?.vat_amount !== "undefined"
+          ? Number(row._original.vat_amount)
+          : Number(row.vat_amount),
+      cash_received:
+        typeof row._original?.cash_received !== "undefined"
+          ? Number(row._original.cash_received)
+          : Number(row.cash_received),
+      digital_cash_received:
+        typeof row._original?.digital_cash_received !== "undefined"
+          ? Number(row._original.digital_cash_received)
+          : Number(row.digital_cash_received),
       id: row.id, // Add purchase ID for refund functionality
     };
     setSelectedTransaction(modalData);

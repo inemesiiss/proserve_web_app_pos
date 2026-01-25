@@ -76,9 +76,12 @@ export default function SecurityPasscodeModal({
 
   // Fetch branch users from API
   const { data: branchUsers = [], isLoading: isLoadingUsers } =
-    useGetBranchUsersQuery(branchId, {
-      skip: !isOpen,
-    });
+    useGetBranchUsersQuery(
+      { branchId, role: "cashier" },
+      {
+        skip: !isOpen,
+      },
+    );
 
   // Verify passcode mutation
   const [verifyPasscode, { isLoading: isVerifying }] =
@@ -136,7 +139,7 @@ export default function SecurityPasscodeModal({
     // Find selected user to get the actual userId for API
     const selectedBranchUserId = parseInt(selectedUser, 10);
     const selectedUserData = branchUsers.find(
-      (u) => u.id === selectedBranchUserId
+      (u) => u.id === selectedBranchUserId,
     );
 
     if (!selectedUserData) {
@@ -353,8 +356,8 @@ export default function SecurityPasscodeModal({
                         {showDigits
                           ? passcode[idx] || ""
                           : passcode[idx]
-                          ? "•"
-                          : ""}
+                            ? "•"
+                            : ""}
                       </div>
                     ))}
                   </div>
