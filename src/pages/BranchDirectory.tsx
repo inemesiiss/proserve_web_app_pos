@@ -26,59 +26,79 @@ export default function DirectorySelection() {
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [branchId] = useState<number>(getBranchIdFromStorage());
+  const [roleId, setRoleId] = useState<number>(() =>
+    parseInt(localStorage.getItem("role") ?? "0"),
+  );
+  const isRestrictedRole = [4, 5].includes(roleId);
 
-  const roleId = localStorage.getItem("role") ?? "0";
+  // Debug log
+  console.log("roleId:", roleId, "isRestrictedRole:", isRestrictedRole);
+
+  // Listen for localStorage changes (e.g., in other tabs or programmatically)
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "role") {
+        setRoleId(parseInt(event.newValue ?? "0"));
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  // Optionally, update roleId on mount in case it changes before component mounts
+  useEffect(() => {
+    setRoleId(parseInt(localStorage.getItem("role") ?? "0"));
+  }, []);
 
   useEffect(() => {
     async function loadAnimations() {
       const dashboard = await fetch("/food/lotties/dashboard.json").then(
-        (res) => res.json()
+        (res) => res.json(),
       );
       const reports = await fetch("/food/lotties/reports.json").then((res) =>
-        res.json()
+        res.json(),
       );
       const user = await fetch("/food/lotties/user.json").then((res) =>
-        res.json()
+        res.json(),
       );
       setAnimations({ dashboard, user, reports });
     }
     loadAnimations();
   }, []);
 
-  const directory = [
-    {
-      id: "dashboard",
-      name: "Analytic Dashboard",
-      animation: animations.dashboard,
-      path: "/bm/dashboard",
-      textMessage: "Select user and enter PIN to access Analytics",
-      digitCount: 6,
-    },
-    ...(parseInt(roleId) !== 4
-      ? [
-          {
-            id: "reports",
-            name: "Reports",
-            animation: animations.reports,
-            path: "/bm/reports/transaction",
-            textMessage: "Select user and enter PIN to access Reports",
-            digitCount: 6,
-          },
-          {
-            id: "user",
-            name: "Cashier Access",
-            animation: animations.user,
-            path: "/food/transaction",
-            textMessage: "Select user and enter PIN to access Cashier",
-            digitCount: 6,
-          },
-        ]
-      : []),
-  ];
+  const directory = isRestrictedRole
+    ? [
+        {
+          id: "dashboard",
+          name: "Admin Access",
+          animation: animations.dashboard,
+          path: "/bm/dashboard",
+          textMessage: "Select user and enter PIN to access Analytics",
+          digitCount: 6,
+        },
+      ]
+    : [
+        {
+          id: "reports",
+          name: "Manage Access",
+          animation: animations.reports,
+          path: "/bm/reports/transaction",
+          textMessage: "Select user and enter PIN to access Reports",
+          digitCount: 6,
+        },
+        {
+          id: "user",
+          name: "Cashier Access",
+          animation: animations.user,
+          path: "/food/transaction",
+          textMessage: "Select user and enter PIN to access Cashier",
+          digitCount: 6,
+        },
+      ];
 
   const handleItemClick = (item: any) => {
     // Cashier Access navigates directly - it has its own security modal on the transaction page
-    if (parseInt(roleId) === 4) {
+    if (isRestrictedRole) {
       navigate(item.path);
     } else {
       if (item.id === "user") {

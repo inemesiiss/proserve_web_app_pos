@@ -40,7 +40,7 @@ export default function OrderTotalDiscountModal({
     "voucher" | "sc-pwd" | "manual"
   >("voucher");
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">(
-    "percentage"
+    "percentage",
   );
   const [discountValue, setDiscountValue] = useState("");
   const [discountCode, setDiscountCode] = useState("");
@@ -395,8 +395,8 @@ export default function OrderTotalDiscountModal({
                                 color === "purple"
                                   ? "#9333ea"
                                   : color === "green"
-                                  ? "#16a34a"
-                                  : "#2563eb",
+                                    ? "#16a34a"
+                                    : "#2563eb",
                             }
                           : {}
                       }
@@ -424,8 +424,8 @@ export default function OrderTotalDiscountModal({
                                 color === "purple"
                                   ? "#9333ea"
                                   : color === "green"
-                                  ? "#16a34a"
-                                  : "#2563eb",
+                                    ? "#16a34a"
+                                    : "#2563eb",
                             }
                           : {}
                       }
@@ -503,14 +503,14 @@ export default function OrderTotalDiscountModal({
                         color === "purple"
                           ? "#faf5ff"
                           : color === "green"
-                          ? "#f0fdf4"
-                          : "#eff6ff",
+                            ? "#f0fdf4"
+                            : "#eff6ff",
                       borderColor:
                         color === "purple"
                           ? "#e9d5ff"
                           : color === "green"
-                          ? "#bbf7d0"
-                          : "#bfdbfe",
+                            ? "#bbf7d0"
+                            : "#bfdbfe",
                     }}
                   >
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -530,8 +530,8 @@ export default function OrderTotalDiscountModal({
                             color === "purple"
                               ? "#7e22ce"
                               : color === "green"
-                              ? "#15803d"
-                              : "#1e40af",
+                                ? "#15803d"
+                                : "#1e40af",
                         }}
                       >
                         <span>Total Discount:</span>
@@ -548,8 +548,8 @@ export default function OrderTotalDiscountModal({
                             color === "purple"
                               ? "#e9d5ff"
                               : color === "green"
-                              ? "#bbf7d0"
-                              : "#bfdbfe",
+                                ? "#bbf7d0"
+                                : "#bfdbfe",
                         }}
                       >
                         <span className="font-semibold text-gray-700">
@@ -562,8 +562,8 @@ export default function OrderTotalDiscountModal({
                               color === "purple"
                                 ? "#7e22ce"
                                 : color === "green"
-                                ? "#15803d"
-                                : "#1e40af",
+                                  ? "#15803d"
+                                  : "#1e40af",
                           }}
                         >
                           ₱{newTotal.toFixed(2)}
@@ -603,8 +603,8 @@ export default function OrderTotalDiscountModal({
                       ? color === "purple"
                         ? "#9333ea"
                         : color === "green"
-                        ? "#16a34a"
-                        : "#2563eb"
+                          ? "#16a34a"
+                          : "#2563eb"
                       : undefined,
                   }}
                 >
