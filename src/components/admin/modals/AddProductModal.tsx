@@ -120,7 +120,7 @@ export default function AddProductModal({
 
   const getBranchDropdown = useGetAllBranchQuery(
     { cid: formData.client },
-    { skip: formData.client === 0 }
+    { skip: formData.client === 0 },
   );
   useEffect(() => {
     if (getBranchDropdown.isSuccess && getBranchDropdown.data) {
@@ -130,7 +130,7 @@ export default function AddProductModal({
 
   const getCategories = useGetAllCategoriesQuery(
     { id: formData.client },
-    { skip: formData.client === 0 }
+    { skip: formData.client === 0 },
   );
   useEffect(() => {
     if (getCategories.isSuccess && getCategories.data) {
@@ -148,8 +148,8 @@ export default function AddProductModal({
           branch: Array.isArray(data.branch)
             ? data.branch
             : typeof data.branch === "string"
-            ? data.branch.split(",").map(Number)
-            : [],
+              ? data.branch.split(",").map(Number)
+              : [],
           prod_categ: data.prod_categ,
           prod_name: data.prod_name,
           prod_size: data.prod_size,
@@ -171,6 +171,10 @@ export default function AddProductModal({
   const submitProduct = async () => {
     if (type === 1) {
       if (formData.prod_name !== "") {
+        if (formData.prod_categ === 0) {
+          toast.error("Please add product category.");
+          return;
+        }
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
@@ -193,6 +197,10 @@ export default function AddProductModal({
       }
     } else {
       if (formData.prod_name !== "") {
+        if (formData.prod_categ === 0) {
+          toast.error("Please add product category.");
+          return;
+        }
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
@@ -437,7 +445,7 @@ export default function AddProductModal({
                         <span className="font-medium">
                           {data.image.replace(
                             "/static/media/client_product/",
-                            ""
+                            "",
                           )}
                         </span>
                       </p>
