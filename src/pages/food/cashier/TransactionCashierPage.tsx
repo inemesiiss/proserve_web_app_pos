@@ -885,9 +885,9 @@ export default function FoodTransactionPage() {
             {/* Individual Products Section */}
             {individuals.length > 0 && (
               <section className="mb-8">
-                <h2 className="text-lg font-semibold mb-3 text-gray-800">
-                  Items (Simple)
-                </h2>
+                {/* <h2 className="text-lg font-semibold mb-3 text-gray-800">
+                  No Variants
+                </h2> */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {individuals.map((product, index) => {
                     const price = Number(product.basePrice) || 0;
@@ -930,7 +930,7 @@ export default function FoodTransactionPage() {
             {individualsWithVariance.length > 0 && (
               <section className="mb-8">
                 <h2 className="text-lg font-semibold mb-3 text-gray-800">
-                  Items (Customizable)
+                  Customizable
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {individualsWithVariance.map((product, index) => {

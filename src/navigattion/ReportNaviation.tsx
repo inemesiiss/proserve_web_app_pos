@@ -32,9 +32,9 @@ export const reportNavs = [
     path: "/bm/reports/attendance",
     icon: <Users className="w-6 h-6" />,
   },
-  {
-    label: "Discount & Promotions",
-    path: "/bm/reports/discount-promotion",
-    icon: <Users className="w-6 h-6" />,
-  },
+  // {
+  //   label: "Discount & Promotions",
+  //   path: "/bm/reports/discount-promotion",
+  //   icon: <Users className="w-6 h-6" />,
+  // },
 ];

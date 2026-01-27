@@ -80,7 +80,7 @@ export default function DirectorySelection() {
     : [
         {
           id: "reports",
-          name: "Manage Access",
+          name: "Managers Access",
           animation: animations.reports,
           path: "/bm/reports/transaction",
           textMessage: "Select user and enter PIN to access Reports",
