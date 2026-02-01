@@ -4,6 +4,7 @@ import { ReportsLayout } from "@/pages/branch_manager/reports/ReportsLayout";
 
 // Branch Manager Pages
 import BMDashboard from "@/pages/branch_manager/Dashboard";
+import DashboardSales from "@/pages/branch_manager/DashboardSales";
 import BMAccounts from "@/pages/branch_manager/Accounts";
 import BMBranch from "@/pages/branch_manager/Branch";
 import BMProduct from "@/pages/branch_manager/Product";
@@ -34,6 +35,14 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
         <AdminLayout setLoggedIn={setLoggedIn}>
           <BMDashboard />
         </AdminLayout>
+      }
+    />
+    <Route
+      path="/bm/dashboard-sales"
+      element={
+        <ReportsLayout>
+          <DashboardSales />
+        </ReportsLayout>
       }
     />
     <Route

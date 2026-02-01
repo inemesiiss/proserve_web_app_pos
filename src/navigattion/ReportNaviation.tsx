@@ -8,10 +8,16 @@ import {
 
 export const reportNavs = [
   {
-    label: "Sales Collection",
-    path: "/bm/reports/sales",
+    label: "Analytic Dashboard",
+    path: "/bm/dashboard-sales",
+
     icon: <BookText className="w-6 h-6" />,
   },
+  // {
+  //   label: "Sales Collection",
+  //   path: "/bm/reports/sales",
+  //   icon: <BookText className="w-6 h-6" />,
+  // },
   {
     label: "Sales & Transactions",
     path: "/bm/reports/transaction",
