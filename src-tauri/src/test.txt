@@ -1,0 +1,135 @@
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct DeviceInfo {
+    pub manufacturer: String,
+    pub model: String,
+    pub serial_number: String,
+}
+
+
+
+
+
+
+
+#[tauri::command]
+pub fn get_device_info() -> DeviceInfo {
+    #[cfg(target_os = "windows")]
+    {
+        use std::process::Command;
+
+        let output = Command::new("powershell")
+            .args([
+                "-Command",
+                "Get-CimInstance Win32_ComputerSystem | Select -ExpandProperty Manufacturer,Model; \
+                 Get-CimInstance Win32_BIOS | Select -ExpandProperty SerialNumber"
+            ])
+            .output()
+            .unwrap_or_else(|_| panic!("PowerShell command failed"));
+
+        let lines: Vec<String> = String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .map(|l| l.trim().to_string())
+            .filter(|l| !l.is_empty())
+            .collect();
+
+        DeviceInfo {
+            manufacturer: lines.get(0).cloned().unwrap_or_default(),
+            model: lines.get(1).cloned().unwrap_or_default(),
+            serial_number: lines.get(2).cloned().unwrap_or_default(),
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+
+        // macOS: use system_profiler
+        let output = Command::new("system_profiler")
+            .args(["SPHardwareDataType"])
+            .output()
+            .unwrap_or_else(|_| panic!("system_profiler command failed"));
+
+        let text = String::from_utf8_lossy(&output.stdout);
+        let mut manufacturer = "Apple".to_string(); // macOS devices are always Apple
+        let mut model = String::new();
+        let mut serial_number = String::new();
+
+        for line in text.lines() {
+            let line = line.trim();
+            if line.starts_with("Model Name:") {
+                model = line.replace("Model Name:", "").trim().to_string();
+            }
+            if line.starts_with("Serial Number") {
+                serial_number = line.split(":").nth(1).unwrap_or("").trim().to_string();
+            }
+        }
+
+        DeviceInfo { manufacturer, model, serial_number }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::process::Command;
+
+        let manufacturer = std::fs::read_to_string("/sys/devices/virtual/dmi/id/sys_vendor")
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let model = std::fs::read_to_string("/sys/devices/virtual/dmi/id/product_name")
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let serial_number = std::fs::read_to_string("/sys/devices/virtual/dmi/id/product_serial")
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+
+        DeviceInfo { manufacturer, model, serial_number }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        // For mobile (Tauri + WASM target)
+        // Hardware info is generally unavailable, return placeholder
+        DeviceInfo {
+            manufacturer: "Unknown".to_string(),
+            model: "Unknown".to_string(),
+            serial_number: "Unknown".to_string(),
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////Front End
+
+import { invoke } from "@tauri-apps/api";
+
+interface DeviceInfo {
+  manufacturer: string;
+  model: string;
+  serial_number: string;
+}
+
+async function showDeviceInfo() {
+  const device: DeviceInfo = await invoke("get_device_info");
+  console.log(device.manufacturer, device.model, device.serial_number);
+
+  // Display on UI
+  document.getElementById("manufacturer")!.innerText = device.manufacturer;
+  document.getElementById("model")!.innerText = device.model;
+  document.getElementById("serial_number")!.innerText = device.serial_number;
+}
+
+showDeviceInfo();

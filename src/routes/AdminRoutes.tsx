@@ -20,95 +20,100 @@ interface AdminRoutesProps {
   setLoggedIn?: (v: boolean) => void;
 }
 
-export const getAdminRoutes = ({ setLoggedIn }: AdminRoutesProps) => (
-  <>
-    <Route
-      path="/admin/dashboard"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminDashboard />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/accounts"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminAccounts />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/branch"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminBranch />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/product"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminProduct />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/terminal"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminTerminal />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/users"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminUser />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/settings"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminSettings />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/reports/transaction"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminReportTransaction />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/reports/inventory"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminInventoryReport />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/reports/product"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminProductMixReport />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/admin/reports/attendance"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <AdminAttendanceReport />
-        </AdminLayout>
-      }
-    />
-  </>
-);
+export const getAdminRoutes = ({ setLoggedIn }: AdminRoutesProps) => {
+  const role = Number(localStorage.getItem("role"));
+  return (
+    <>
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminDashboard />
+          </AdminLayout>
+        }
+      />
+      {role === 4 && (
+        <Route
+          path="/admin/accounts"
+          element={
+            <AdminLayout setLoggedIn={setLoggedIn}>
+              <AdminAccounts />
+            </AdminLayout>
+          }
+        />
+      )}
+      <Route
+        path="/admin/branch"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminBranch />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/product"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminProduct />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/terminal"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminTerminal />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminUser />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminSettings />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports/transaction"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminReportTransaction />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports/inventory"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminInventoryReport />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports/product"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminProductMixReport />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports/attendance"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <AdminAttendanceReport />
+          </AdminLayout>
+        }
+      />
+    </>
+  );
+};

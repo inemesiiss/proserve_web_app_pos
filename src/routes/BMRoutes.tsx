@@ -26,135 +26,140 @@ interface BMRoutesProps {
   setLoggedIn?: (v: boolean) => void;
 }
 
-export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => (
-  <>
-    <Route
-      path="/bm/dashboard"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMDashboard />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/accounts"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMAccounts />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/branch"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMBranch />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/product/product"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMProduct />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/product/composition"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMComposition />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/product/category"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMCategory />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/terminal"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMTerminal />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/users/manager"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMUser />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/users/user"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMUserAccess />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/settings"
-      element={
-        <AdminLayout setLoggedIn={setLoggedIn}>
-          <BMSettings />
-        </AdminLayout>
-      }
-    />
-    <Route
-      path="/bm/reports/sales"
-      element={
-        <ReportsLayout>
-          <BMSalesReport />
-        </ReportsLayout>
-      }
-    />
-    <Route
-      path="/bm/reports/transaction"
-      element={
-        <ReportsLayout>
-          <BMReportTransaction />
-        </ReportsLayout>
-      }
-    />
-    <Route
-      path="/bm/reports/inventory"
-      element={
-        <ReportsLayout>
-          <BMInventoryReport />
-        </ReportsLayout>
-      }
-    />
-    <Route
-      path="/bm/reports/product"
-      element={
-        <ReportsLayout>
-          <BMProductMixReport />
-        </ReportsLayout>
-      }
-    />
-    <Route
-      path="/bm/reports/attendance"
-      element={
-        <ReportsLayout>
-          <BMAttendanceReport />
-        </ReportsLayout>
-      }
-    />
-    <Route
-      path="/bm/reports/discount-promotion"
-      element={
-        <ReportsLayout>
-          <BMDiscountPromotion />
-        </ReportsLayout>
-      }
-    />
-  </>
-);
+export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => {
+  const role = Number(localStorage.getItem("role"));
+  return (
+    <>
+      <Route
+        path="/bm/dashboard"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMDashboard />
+          </AdminLayout>
+        }
+      />
+      {role === 4 && (
+        <Route
+          path="/bm/accounts"
+          element={
+            <AdminLayout setLoggedIn={setLoggedIn}>
+              <BMAccounts />
+            </AdminLayout>
+          }
+        />
+      )}
+      <Route
+        path="/bm/branch"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMBranch />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/product/product"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMProduct />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/product/composition"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMComposition />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/product/category"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMCategory />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/terminal"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMTerminal />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/users/manager"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMUser />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/users/user"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMUserAccess />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/settings"
+        element={
+          <AdminLayout setLoggedIn={setLoggedIn}>
+            <BMSettings />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/bm/reports/sales"
+        element={
+          <ReportsLayout>
+            <BMSalesReport />
+          </ReportsLayout>
+        }
+      />
+      <Route
+        path="/bm/reports/transaction"
+        element={
+          <ReportsLayout>
+            <BMReportTransaction />
+          </ReportsLayout>
+        }
+      />
+      <Route
+        path="/bm/reports/inventory"
+        element={
+          <ReportsLayout>
+            <BMInventoryReport />
+          </ReportsLayout>
+        }
+      />
+      <Route
+        path="/bm/reports/product"
+        element={
+          <ReportsLayout>
+            <BMProductMixReport />
+          </ReportsLayout>
+        }
+      />
+      <Route
+        path="/bm/reports/attendance"
+        element={
+          <ReportsLayout>
+            <BMAttendanceReport />
+          </ReportsLayout>
+        }
+      />
+      <Route
+        path="/bm/reports/discount-promotion"
+        element={
+          <ReportsLayout>
+            <BMDiscountPromotion />
+          </ReportsLayout>
+        }
+      />
+    </>
+  );
+};

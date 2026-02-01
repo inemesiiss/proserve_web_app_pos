@@ -19,13 +19,13 @@ export default function AccountActionButtons({
         <Plus className="w-4 h-4 mr-2" />
         Add Account
       </Button>
-      <Button
+      {/* <Button
         className="bg-blue-500 hover:bg-blue-600 text-white"
         onClick={onImportCSV}
       >
         <Upload className="w-4 h-4 mr-2" />
         Import CSV
-      </Button>
+      </Button> */}
     </div>
   );
 }
