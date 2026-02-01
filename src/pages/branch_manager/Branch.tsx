@@ -17,6 +17,7 @@ import { useGetBranchListQuery, useGetClientsQuery } from "@/store/api/Admin";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
 import { PencilLine } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import UploadBranchModal from "@/components/admin/modals/UploadBranchModal";
 
 const branchColumns = [
   { key: "client", label: "Account Name" },
@@ -38,10 +39,12 @@ function BMBranch() {
   const [accountFilter, setAccountFilter] = useState("0");
   const [accountFilter1, setAccountFilter1] = useState("0");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpModalOpen, setIsUpModalOpen] = useState(false);
 
   const [branchData, setBranchData] = useState([]);
 
   const [type, setType] = useState(1);
+  const [data, setData] = useState();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -65,7 +68,8 @@ function BMBranch() {
   };
 
   const handleImportCSV = () => {
-    console.log("Import CSV clicked");
+    setIsUpModalOpen(true);
+    // console.log("Import CSV clicked");
   };
 
   const handleGo = () => {
@@ -97,7 +101,7 @@ function BMBranch() {
       const updated = data.map((item: any) => ({
         ...item,
         client: getClientDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.client
+          (item1: any) => item1.id === item.client,
         ).name,
         address: item.block_no + " " + item.subdivision + " " + item.street,
         status: (
@@ -114,17 +118,21 @@ function BMBranch() {
             className="cursor-pointer text-orange-500"
             onClick={() => {
               setType(2);
+              setData(item);
               setIsAddModalOpen(true);
             }}
           />
         ),
       }));
 
+      console.log("Branch Data: ", updated);
       setBranchData(updated);
       setTotalPages(Math.ceil(getBranches?.data?.count / pageSize));
       setCount(getBranches.data.count);
     }
   }, [getBranches.isSuccess, getBranches.data]);
+
+  const role = Number(localStorage.getItem("role"));
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -139,13 +147,15 @@ function BMBranch() {
             Branch Management
           </h1>
 
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex-1"></div>
-            <BranchActionButtons
-              onAddBranch={handleAddBranch}
-              onImportCSV={handleImportCSV}
-            />
-          </div>
+          {(role === 4 || role === 3) && (
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1"></div>
+              <BranchActionButtons
+                onAddBranch={handleAddBranch}
+                onImportCSV={handleImportCSV}
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -207,6 +217,17 @@ function BMBranch() {
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
+        }}
+        onSubmit={handleSubmitBranch}
+        type={type}
+        setType={setType}
+        data={data}
+      />
+
+      <UploadBranchModal
+        isOpen={isUpModalOpen}
+        onClose={() => {
+          setIsUpModalOpen(false);
         }}
         onSubmit={handleSubmitBranch}
         type={type}

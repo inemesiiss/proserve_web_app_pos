@@ -51,7 +51,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       navs.forEach((item) => {
         if (item.subPaths) {
           const shouldBeOpen = item.subPaths.some((s) =>
-            location.pathname.startsWith(s.path)
+            location.pathname.startsWith(s.path),
           );
           if (shouldBeOpen) {
             setOpenMap((prev) => ({ ...prev, [item.label]: true }));
@@ -73,10 +73,10 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
       //   path: "/admin/reports",
       //   icon: <BookText className="w-6 h-6" />,
       // },
-      ...(role !== 3
+      ...(role === 4
         ? [
             {
-              label: "Account",
+              label: `Account`,
               path: "/bm/accounts",
               icon: <Building2 className="w-6 h-6" />,
             },
@@ -100,14 +100,14 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
           ...(role !== 2
             ? [
                 {
-                  label: "Managers Access",
+                  label: "Manager",
                   path: "/bm/users/manager",
                   icon: <BookText className="w-6 h-6" />,
                 },
               ]
             : []),
           {
-            label: "Users Access",
+            label: "Cashier",
             path: "/bm/users/user",
             icon: <BookText className="w-6 h-6" />,
           },
@@ -156,7 +156,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
 
     const asideClass = cn(
       "fixed left-0 top-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg flex flex-col overflow-hidden",
-      className
+      className,
     );
 
     return (
@@ -227,7 +227,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                       "flex items-center justify-between w-full p-3 rounded-lg transition-all ",
                       parentActive
                         ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent",
                     )}
                   >
                     <button
@@ -240,7 +240,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                           "flex items-center justify-center rounded-md p-2 ",
                           parentActive
                             ? "bg-indigo-50 dark:bg-indigo-800 "
-                            : "bg-gray-50 dark:bg-gray-700"
+                            : "bg-gray-50 dark:bg-gray-700",
                         )}
                       >
                         {item.icon}
@@ -268,14 +268,14 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                           "p-1 rounded ",
                           isOpen
                             ? "text-indigo-600 dark:text-indigo-400"
-                            : "text-gray-400 dark:text-gray-500"
+                            : "text-gray-400 dark:text-gray-500",
                         )}
                         aria-label={`Toggle ${item.label}`}
                       >
                         <ChevronLeft
                           className={cn(
                             "w-4 h-4 transition-transform",
-                            isOpen && "rotate-90"
+                            isOpen && "rotate-90",
                           )}
                         />
                       </button>
@@ -288,7 +288,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                       "flex items-center gap-3 w-full p-3 rounded-lg transition-all ",
                       active
                         ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent",
                     )}
                   >
                     <div
@@ -296,7 +296,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                         "flex items-center justify-center rounded-md p-2",
                         active
                           ? "bg-indigo-50 dark:bg-indigo-800"
-                          : "bg-gray-50 dark:bg-gray-700"
+                          : "bg-gray-50 dark:bg-gray-700",
                       )}
                     >
                       {item.icon}
@@ -352,7 +352,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
                                 "flex items-center gap-2 w-full p-2 rounded text-sm transition-all duration-200 ",
                                 subActive
                                   ? "bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300"
-                                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200",
                               )}
                             >
                               {sub.icon && (
@@ -389,7 +389,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
         </AnimatePresence>
       </motion.aside>
     );
-  }
+  },
 );
 
 SideBar.displayName = "SideBar";

@@ -111,13 +111,13 @@ function BMTerminal() {
       const updated = data.map((item: any) => ({
         ...item,
         branchCode: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch
+          (item1: any) => item1.id === item.branch,
         ).code,
         branchName: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch
+          (item1: any) => item1.id === item.branch,
         ).name,
         accountName: getClientDropdown?.data?.data.find(
-          (item1: any) => String(item1.id) === String(item.client)
+          (item1: any) => String(item1.id) === String(item.client),
         ).name,
         status: (
           <div
@@ -139,7 +139,7 @@ function BMTerminal() {
           />
         ),
       }));
-
+      console.log("Terminal", updated);
       setTerminalData(updated);
       setTotalPages(Math.ceil(getTerminal?.data?.count / pageSize));
       setCount(getTerminal.data.count);

@@ -105,6 +105,17 @@ export const adminApi = createApi({
       },
       invalidatesTags: ["admin"],
     }),
+    ///api/adminpos/add_branch_template
+    addBranchTemplate: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_branch_template/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
     ///api/adminpos/get_branch
     getBranchList: builder.query({
       query: ({ search, id, type, page, pageSize }) => {
@@ -368,6 +379,57 @@ export const adminApi = createApi({
       },
       providesTags: ["admin"],
     }),
+    //get_client_excel
+    getClientExcel: builder.query({
+      query: () => {
+        return {
+          url: `/adminpos/get_client_excel`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    // /api/adminpos/get_address_excel
+    getAddressExcel: builder.query({
+      query: () => {
+        return {
+          url: `/adminpos/get_address_excel`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    ///api/adminpos/get_branch_excel
+    getBranchExcel: builder.query({
+      query: () => {
+        return {
+          url: `/adminpos/get_branch_excel`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    // /api/adminpos/get_category_excel
+    getCategoryExcel: builder.query({
+      query: () => {
+        return {
+          url: `/adminpos/get_category_excel`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    ///api/adminpos/add_client_product_template
+    addClientProductTemplate: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_client_product_template/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
   }),
 });
 
@@ -407,4 +469,10 @@ export const {
   useAddCompositionMutation,
   useUpCompositionMutation,
   useGetProductsCompQuery,
+  useGetClientExcelQuery,
+  useGetAddressExcelQuery,
+  useAddBranchTemplateMutation,
+  useGetBranchExcelQuery,
+  useGetCategoryExcelQuery,
+  useAddClientProductTemplateMutation,
 } = adminApi;
