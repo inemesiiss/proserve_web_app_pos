@@ -28,6 +28,7 @@ interface AddBranchModalProps {
   type: number;
   data?: any;
   count?: number;
+  setType: React.Dispatch<React.SetStateAction<number>>;
 }
 
 type bpAddress = {
@@ -41,7 +42,7 @@ type bpAddress = {
 
 interface BranchFormData {
   id: number;
-  client: number;
+  client: number | string;
   code: string;
   name: string;
   block_no: string;
@@ -60,7 +61,10 @@ export default function AddBranchModal({
   onClose,
   onSubmit,
   type,
+  data,
+  setType,
 }: AddBranchModalProps) {
+  console.log("Data: ", data);
   const initial = {
     id: 0,
     client: 0,
@@ -94,24 +98,46 @@ export default function AddBranchModal({
   };
 
   const handleClose = () => {
-    setFormData(initial);
+    setFormData({
+      id: 0,
+      client: 0,
+      code: "",
+      name: "",
+      block_no: "",
+      subdivision: "",
+      street: "",
+      barangay: 0,
+      contact_person: "",
+      contact_no: "",
+      email: "",
+      status: 1,
+      bp_address: {
+        regionId: 0,
+        provinceId: 0,
+        cityId: 0,
+        barangayId: 0,
+        barangayName: "",
+        cityName: "",
+      },
+    });
+    setType(1);
     onClose();
   };
 
   const getBranchDropdown = useGetAllBranchQuery(
     { cid: formData.client },
-    { skip: formData.client === 0 }
+    { skip: formData.client === 0 },
   );
   useEffect(() => {
     if (getBranchDropdown.isSuccess && getBranchDropdown.data) {
       const selected = client.find(
-        (c) => String(c.id) === String(formData.client)
+        (c) => String(c.id) === String(formData.client),
       );
       const prefix = selected
         ? selected.name.substring(0, 3).toUpperCase()
         : "";
       const newCode = `${prefix}-${String(
-        getBranchDropdown.data.data.length + 1
+        getBranchDropdown.data.data.length + 1,
       ).padStart(3, "0")}`;
 
       setFormData((prev) => ({
@@ -131,6 +157,33 @@ export default function AddBranchModal({
       setClient(getClientDropdown.data.data);
     }
   }, [getClientDropdown.isSuccess, getClientDropdown.data]);
+
+  useEffect(() => {
+    if (data && isOpen) {
+      setFormData({
+        id: data.id,
+        client: String(data.client),
+        code: data.code,
+        name: data.name,
+        block_no: data.block_no,
+        subdivision: data.subdivision,
+        street: data.street,
+        barangay: data.barangay,
+        contact_person: data.contact_person,
+        contact_no: data.contact_no,
+        email: data.email,
+        status: data.status,
+        bp_address: {
+          regionId: data.bp_address.regionId,
+          provinceId: data.bp_address.provinceId,
+          cityId: data.bp_address.cityId,
+          barangayId: data.bp_address.barangayId,
+          barangayName: data.bp_address.barangayName,
+          cityName: data.bp_address.cityName,
+        },
+      });
+    }
+  }, [data, isOpen]);
 
   const [addBranch] = useAddBranchMutation();
   const [upBranch] = useUpBranchMutation();

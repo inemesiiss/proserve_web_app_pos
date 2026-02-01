@@ -29,7 +29,7 @@ export default function DirectorySelection() {
   const [roleId, setRoleId] = useState<number>(() =>
     parseInt(localStorage.getItem("role") ?? "0"),
   );
-  const isRestrictedRole = [4, 5].includes(roleId);
+  const isRestrictedRole = [4].includes(roleId);
 
   // Debug log
   console.log("roleId:", roleId, "isRestrictedRole:", isRestrictedRole);
@@ -78,6 +78,14 @@ export default function DirectorySelection() {
         },
       ]
     : [
+        {
+          id: "dashboard",
+          name: "Admin Access",
+          animation: animations.dashboard,
+          path: "/bm/dashboard",
+          textMessage: "Select user and enter PIN to access Analytics",
+          digitCount: 6,
+        },
         {
           id: "reports",
           name: "Managers Access",
@@ -139,7 +147,17 @@ export default function DirectorySelection() {
         <div className="h-1.5 w-32 bg-blue-500 rounded-full mt-2 shadow-sm"></div>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 w-full max-w-6xl justify-items-center">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 w-full max-w-6xl justify-items-center"> */}
+      <div
+        className={`grid gap-10 w-full justify-items-center
+    ${
+      directory.length === 1
+        ? "grid-cols-1 sm:grid-cols-1 max-w-6xl place-content-center"
+        : directory.length === 2
+          ? "grid-cols-1 sm:grid-cols-2 max-w-3xl place-content-center"
+          : "grid-cols-1 sm:grid-cols-3 max-w-6xl"
+    }`}
+      >
         {directory.map((item, index) => (
           <motion.div
             key={item.id}

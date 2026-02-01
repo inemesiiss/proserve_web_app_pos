@@ -17,6 +17,8 @@ import { useGetClientsQuery, useGetProductsQuery } from "@/store/api/Admin";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PencilLine } from "lucide-react";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
+import UploadBranchModal from "@/components/admin/modals/UploadBranchModal";
+import UploadProductModal from "@/components/admin/modals/UploadProductModal";
 
 // Mock data for products
 
@@ -51,6 +53,7 @@ function BMProduct() {
   const [client1, setClient1] = useState("0");
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpModalOpen, setIsUpModalOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -74,7 +77,8 @@ function BMProduct() {
   };
 
   const handleImportCSV = () => {
-    console.log("Import CSV clicked");
+    setIsUpModalOpen(true);
+    // console.log("Import CSV clicked");
   };
 
   const handleGo = () => {
@@ -106,7 +110,7 @@ function BMProduct() {
       const updated = data.map((item: any) => ({
         ...item,
         client: getClientDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.client
+          (item1: any) => item1.id === item.client,
         ).name,
         image: (
           <div>
@@ -227,6 +231,15 @@ function BMProduct() {
         type={type}
         setType={setType}
         data={data}
+      />
+
+      <UploadProductModal
+        isOpen={isUpModalOpen}
+        onClose={() => {
+          setIsUpModalOpen(false);
+        }}
+        onSubmit={handleSubmitProduct}
+        type={type}
       />
     </div>
   );
