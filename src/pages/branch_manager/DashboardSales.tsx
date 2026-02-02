@@ -120,7 +120,7 @@ function DashboardSales() {
           padding: "20px",
         }}
       >
-        <div className="flex flex-col gap-4 pr-10">
+        <div className="flex flex-col gap-4">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div>
@@ -235,13 +235,13 @@ function DashboardSales() {
           </div>
 
           {/* Charts Grid */}
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 w-full">
             {/* Monthly Chart - Full Width */}
             <Card className="bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Monthly</CardTitle>
               </CardHeader>
-              <CardContent className="flex h-72">
+              <CardContent className="h-72 w-full flex">
                 <ChartContainer config={monthlyChartConfig}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={monthlyData}>
@@ -282,7 +282,7 @@ function DashboardSales() {
                 <CardHeader>
                   <CardTitle className="text-lg">Weekly</CardTitle>
                 </CardHeader>
-                <CardContent className="flex h-72">
+                <CardContent className="h-72 w-full flex">
                   <ChartContainer config={weeklyChartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
@@ -351,7 +351,7 @@ function DashboardSales() {
               <CardHeader>
                 <CardTitle className="text-lg">Hourly</CardTitle>
               </CardHeader>
-              <CardContent className="flex h-72">
+              <CardContent className="h-72 w-full flex">
                 <ChartContainer config={hourlyChartConfig}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
