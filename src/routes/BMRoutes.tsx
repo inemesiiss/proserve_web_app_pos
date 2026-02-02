@@ -21,6 +21,7 @@ import BMSalesReport from "@/pages/branch_manager/reports/SalesReport";
 import BMCategory from "@/pages/branch_manager/Category";
 import BMComposition from "@/pages/branch_manager/Composition";
 import BMUserAccess from "@/pages/branch_manager/UserAccess";
+import DashboardSales from "@/pages/branch_manager/DashboardSales";
 
 interface BMRoutesProps {
   setLoggedIn?: (v: boolean) => void;
@@ -157,6 +158,14 @@ export const getBMRoutes = ({ setLoggedIn }: BMRoutesProps) => {
         element={
           <ReportsLayout>
             <BMDiscountPromotion />
+          </ReportsLayout>
+        }
+      />
+      <Route
+        path="/bm/dashboard-sales"
+        element={
+          <ReportsLayout>
+            <DashboardSales />
           </ReportsLayout>
         }
       />

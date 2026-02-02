@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,8 +7,8 @@ import {
   X,
   User,
   Loader2,
-  UserCircle,
-  RefreshCw,
+  // UserCircle,
+  // RefreshCw,
 } from "lucide-react";
 import {
   Select,
@@ -70,23 +70,23 @@ export default function ManagerPasscodeModal({
   branchId = 1,
 }: ManagerPasscodeModalProps) {
   // Check for existing manager session
-  const [savedSession, setSavedSession] = useState<ManagerSession | null>(null);
-  const [showSwitchUser, setShowSwitchUser] = useState(false);
+  // const [savedSession, setSavedSession] = useState<ManagerSession | null>(null);
+  // const [showSwitchUser, setShowSwitchUser] = useState(false);
 
   // Load saved session on modal open
-  useEffect(() => {
-    if (isOpen) {
-      const session = getManagerSession();
-      if (session) {
-        setSavedSession(session);
-        setSelectedUser(session.managerId.toString());
-        setShowSwitchUser(false);
-      } else {
-        setSavedSession(null);
-        setShowSwitchUser(true);
-      }
-    }
-  }, [isOpen]);
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     const session = getManagerSession();
+  //     if (session) {
+  //       setSavedSession(session);
+  //       setSelectedUser(session.managerId.toString());
+  //       setShowSwitchUser(false);
+  //     } else {
+  //       setSavedSession(null);
+  //       setShowSwitchUser(true);
+  //     }
+  //   }
+  // }, [isOpen]);
 
   // Fetch branch users from API
   const { data: branchUsers = [], isLoading: isLoadingUsers } =
@@ -126,13 +126,13 @@ export default function ManagerPasscodeModal({
   };
 
   // Switch to different user
-  const handleSwitchUser = () => {
-    setShowSwitchUser(true);
-    setSelectedUser("");
-    setPasscode([]);
-    setError(false);
-    setErrorMessage("");
-  };
+  // const handleSwitchUser = () => {
+  //   setShowSwitchUser(true);
+  //   setSelectedUser("");
+  //   setPasscode([]);
+  //   setError(false);
+  //   setErrorMessage("");
+  // };
 
   // API verification handler
   const handleConfirm = async () => {
@@ -183,7 +183,7 @@ export default function ManagerPasscodeModal({
       setPasscode([]);
       setError(false);
       setErrorMessage("");
-      setShowSwitchUser(false);
+      // setShowSwitchUser(false);
 
       // Return result with the correct fullName from dropdown
       onSuccess({
@@ -209,7 +209,7 @@ export default function ManagerPasscodeModal({
   };
 
   // Determine if showing saved user or user selection
-  const showingSavedUser = savedSession && !showSwitchUser;
+  // const showingSavedUser = savedSession && !showSwitchUser;
 
   return (
     <AnimatePresence>
@@ -245,7 +245,7 @@ export default function ManagerPasscodeModal({
             )}
 
             {/* Show saved user info or user dropdown */}
-            {showingSavedUser ? (
+            {/* {showingSavedUser ? (
               <div className="w-full">
                 <label className="block text-sm font-medium text-gray-600 mb-2">
                   Current Manager
@@ -269,45 +269,43 @@ export default function ManagerPasscodeModal({
                   Enter your passcode to continue
                 </p>
               </div>
-            ) : (
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Select Manager/User
-                </label>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger className="w-full h-11 rounded-xl border-gray-300 bg-gray-50 focus:ring-green-500">
-                    <div className="flex items-center gap-2">
-                      {isLoadingUsers ? (
-                        <Loader2
-                          size={16}
-                          className="text-gray-500 animate-spin"
-                        />
-                      ) : (
-                        <User size={16} className="text-gray-500" />
-                      )}
-                      <SelectValue
-                        placeholder={
-                          isLoadingUsers
-                            ? "Loading users..."
-                            : "Choose a user..."
-                        }
+            ) : ( */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Select Manager/User
+              </label>
+              <Select value={selectedUser} onValueChange={setSelectedUser}>
+                <SelectTrigger className="w-full h-11 rounded-xl border-gray-300 bg-gray-50 focus:ring-green-500">
+                  <div className="flex items-center gap-2">
+                    {isLoadingUsers ? (
+                      <Loader2
+                        size={16}
+                        className="text-gray-500 animate-spin"
                       />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="bg-white rounded-xl shadow-lg border-gray-200">
-                    {branchUsers.map((user) => (
-                      <SelectItem
-                        key={user.id}
-                        value={user.id.toString()}
-                        className="cursor-pointer hover:bg-gray-100 rounded-lg"
-                      >
-                        {getUserDisplayName(user)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+                    ) : (
+                      <User size={16} className="text-gray-500" />
+                    )}
+                    <SelectValue
+                      placeholder={
+                        isLoadingUsers ? "Loading users..." : "Choose a user..."
+                      }
+                    />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-white rounded-xl shadow-lg border-gray-200">
+                  {branchUsers.map((user) => (
+                    <SelectItem
+                      key={user.id}
+                      value={user.id.toString()}
+                      className="cursor-pointer hover:bg-gray-100 rounded-lg"
+                    >
+                      {getUserDisplayName(user)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {/* )} */}
 
             <motion.div
               animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
