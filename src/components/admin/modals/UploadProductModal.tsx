@@ -1,4 +1,3 @@
-import CustomDialog from "@/components/reusables/CustomDialog";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -7,15 +6,11 @@ import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import ExcelJS from "exceljs";
 import {
-  useAddBranchMutation,
-  useAddBranchTemplateMutation,
   useAddClientProductTemplateMutation,
-  useGetAddressExcelQuery,
   useGetBranchExcelQuery,
   useGetCategoryExcelQuery,
   useGetClientExcelQuery,
 } from "@/store/api/Admin";
-import { exportUploadBranch } from "@/components/reusables/ExportUploadBranch";
 import { toast } from "sonner";
 import { exportUploadProduct } from "@/components/reusables/ExportUploadProduct";
 
@@ -56,8 +51,8 @@ type bpAddress = {
 export default function UploadProductModal({
   isOpen,
   onClose,
-  onSubmit,
-  type,
+  // onSubmit,
+  // type,
 }: UploadBranchModalProps) {
   console.log(isOpen);
 

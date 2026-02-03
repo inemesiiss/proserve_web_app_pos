@@ -1,9 +1,6 @@
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
-const indentName = (name: string, level: number, indent?: number) =>
-  `${" ".repeat(indent ? indent : (level - 1) * 6)}${name}`;
-
 async function downloadWorkbook(workbook: ExcelJS.Workbook, filename: string) {
   const buffer = await workbook.xlsx.writeBuffer();
   saveAs(new Blob([buffer]), filename);
