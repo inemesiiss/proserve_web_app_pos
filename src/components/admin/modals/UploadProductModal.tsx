@@ -270,38 +270,43 @@ export default function UploadProductModal({
                           }
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.branch_code}
+                          {item?.branch === 0 ? `All` : item?.branch}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.branch_name}
+                          {
+                            getCategoryExcel?.data?.data.find(
+                              (item1: any) => item?.category_id === item1.id,
+                            ).name
+                          }
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.contact_person}
+                          {item?.name}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.contact_no}
+                          {item?.unit_of_measure}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.email?.text ?? item?.email}
+                          {item?.size}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.block_no}
+                          {item?.price}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.building_subdivision}
+                          {item?.product_cost}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.street}
+                          {item?.vatable === "Y" ? "Yes" : "No"}
                         </td>
                         <td className="p-1 border border-black">
-                          {/* {
-                            getAddressExcel?.data?.data?.find(
-                              (item1: any) => item?.barangay_id === item1.id,
-                            )?.barangay
-                          } */}
+                          {item?.barcode}
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.city}
+                          {item?.purchase_type === "I"
+                            ? "Individual"
+                            : "Bundle"}
+                        </td>
+                        <td className="p-1 border border-black">
+                          {item?.has_variants === "Y" ? "Yes" : "No"}
                         </td>
                       </tr>
                     ))}
