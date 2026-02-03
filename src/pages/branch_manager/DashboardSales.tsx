@@ -105,13 +105,6 @@ function DashboardSales() {
     },
   } satisfies ChartConfig;
 
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(value);
-  };
-
   return (
     <>
       <div
