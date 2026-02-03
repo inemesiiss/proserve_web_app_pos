@@ -1,4 +1,3 @@
-import CustomDialog from "@/components/reusables/CustomDialog";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -7,7 +6,6 @@ import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import ExcelJS from "exceljs";
 import {
-  useAddBranchMutation,
   useAddBranchTemplateMutation,
   useGetAddressExcelQuery,
   useGetClientExcelQuery,
@@ -52,8 +50,8 @@ type bpAddress = {
 export default function UploadBranchModal({
   isOpen,
   onClose,
-  onSubmit,
-  type,
+  // onSubmit,
+  // type,
 }: UploadBranchModalProps) {
   console.log(isOpen);
 
