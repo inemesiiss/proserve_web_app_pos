@@ -9,9 +9,9 @@ import LoadingOverlay from "@/components/reusables/transition-loader";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
-import Logo from "@/assets/PROSERVELOGO.png";
-import RightDesign from "@/assets/loginRight.png";
-import LeftDesign from "@/assets/loginLeft.png";
+// import Logo from "@/assets/PROSERVELOGO.png";
+// import RightDesign from "@/assets/loginRight.png";
+// import LeftDesign from "@/assets/loginLeft.png";
 
 type LoginProps = {
   onLogin?: () => void;

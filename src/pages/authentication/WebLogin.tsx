@@ -8,11 +8,11 @@ import LoadingOverlay from "@/components/reusables/transition-loader";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
-import Logo from "@/assets/PROSERVELOGO.png";
-import RightDesign from "@/assets/loginRight.png";
-import LeftDesign from "@/assets/loginLeft.png";
+// import Logo from "@/assets/PROSERVELOGO.png";
+// import RightDesign from "@/assets/loginRight.png";
+// import LeftDesign from "@/assets/loginLeft.png";
 import { useAuth } from "@/context/AuthProvider";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

@@ -6,12 +6,12 @@ import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import ExcelJS from "exceljs";
 import {
-  useAddBranchTemplateMutation,
+  //   useAddBranchTemplateMutation,
   useAddCategoryTemplateMutation,
-  useGetAddressExcelQuery,
+  //   useGetAddressExcelQuery,
   useGetClientExcelQuery,
 } from "@/store/api/Admin";
-import { exportUploadBranch } from "@/components/reusables/ExportUploadBranch";
+// import { exportUploadBranch } from "@/components/reusables/ExportUploadBranch";
 import { toast } from "sonner";
 import { exportUploadCategory } from "@/components/reusables/ExportUploadCategory";
 
@@ -63,7 +63,7 @@ export default function UploadCategoryModal({
   };
 
   const getClientExcel = useGetClientExcelQuery({});
-  const getAddressExcel = useGetAddressExcelQuery({});
+  //   const getAddressExcel = useGetAddressExcelQuery({});
 
   const [uploadTemplate, setUploadTemplate] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
