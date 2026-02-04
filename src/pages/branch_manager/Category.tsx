@@ -17,6 +17,7 @@ import { useGetCategoriesQuery, useGetClientsQuery } from "@/store/api/Admin";
 import { PencilLine } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
+import UploadCategoryModal from "@/components/admin/modals/UploadCategoryModal";
 
 const productColumns = [
   { key: "client", label: "Client Name" },
@@ -44,6 +45,7 @@ function BMCategory() {
   const [data, setData] = useState();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpModalOpen, setIsUpModalOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -67,7 +69,8 @@ function BMCategory() {
   };
 
   const handleImportCSV = () => {
-    console.log("Import CSV clicked");
+    // console.log("Import CSV clicked");
+    setIsUpModalOpen(true);
   };
 
   const handleGo = () => {
@@ -98,7 +101,7 @@ function BMCategory() {
       const updated = data.map((item: any) => ({
         ...item,
         client: getClientDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.client
+          (item1: any) => item1.id === item.client,
         ).name,
         status: (
           <div
@@ -214,6 +217,15 @@ function BMCategory() {
         type={type}
         setType={setType}
         data={data}
+      />
+
+      <UploadCategoryModal
+        isOpen={isUpModalOpen}
+        onClose={() => {
+          setIsUpModalOpen(false);
+        }}
+        onSubmit={handleSubmitProduct}
+        type={type}
       />
     </div>
   );

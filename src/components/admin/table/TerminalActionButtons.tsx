@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface TerminalActionButtonsProps {
   onAddTerminal?: () => void;
@@ -8,7 +8,7 @@ interface TerminalActionButtonsProps {
 
 export default function TerminalActionButtons({
   onAddTerminal,
-  onImportCSV,
+  // onImportCSV,
 }: TerminalActionButtonsProps) {
   return (
     <div className="flex gap-3">
@@ -19,13 +19,13 @@ export default function TerminalActionButtons({
         <Plus className="w-4 h-4 mr-2" />
         Add Terminal
       </Button>
-      <Button
+      {/* <Button
         className="bg-blue-500 hover:bg-blue-600 text-white"
         onClick={onImportCSV}
       >
         <Upload className="w-4 h-4 mr-2" />
         Import CSV
-      </Button>
+      </Button> */}
     </div>
   );
 }

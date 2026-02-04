@@ -24,7 +24,7 @@ export default function BranchActionButtons({
         onClick={onImportCSV}
       >
         <Upload className="w-4 h-4 mr-2" />
-        Import CSV
+        Import Excel
       </Button>
     </div>
   );

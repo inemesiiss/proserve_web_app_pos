@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 
 interface CategoryActionButtonsProps {
   onAddProduct?: () => void;
@@ -20,13 +20,13 @@ export default function CategoryActionButtons({
         <Plus className="w-4 h-4 mr-2" />
         Add Category
       </Button>
-      {/* <Button
+      <Button
         className="bg-blue-500 hover:bg-blue-600 text-white"
         onClick={onImportCSV}
       >
         <Upload className="w-4 h-4 mr-2" />
-        Import CSV
-      </Button> */}
+        Import Excel
+      </Button>
     </div>
   );
 }
