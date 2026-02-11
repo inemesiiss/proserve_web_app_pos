@@ -15,7 +15,7 @@ import type {
  * Returns a FLATTENED structure without redundant wrapper or duplicate fields
  */
 export const categorizeProduct = (
-  wrapper: ProductWrapper
+  wrapper: ProductWrapper,
 ): CategorizedProduct => {
   const product = wrapper.product;
   const branch_prod_id = wrapper.id;
@@ -136,9 +136,7 @@ export const transactionApi = createApi({
       },
       {
         purchase: {
-          clientId: number;
-          branchId: number;
-          outletId: number;
+          cashierId: number;
           grandTotal: number;
           subTotal: number;
           cashReceived: number;

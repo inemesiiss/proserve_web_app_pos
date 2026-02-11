@@ -198,6 +198,48 @@ export default function FoodTransactionPage() {
     };
   }, [cashierSession]);
 
+  // WebSocket listener for real-time events
+  useEffect(() => {
+    const WS_URL = import.meta.env.VITE_WS_URL;
+    if (!WS_URL) return;
+
+    const ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      console.log("✅ WebSocket Connected");
+    };
+
+    ws.onmessage = (event) => {
+      console.log("📨 WebSocket Data Received:", event.data);
+      toast.success("📨 Real-time update received", {
+        duration: 3000,
+        position: "top-right",
+      });
+    };
+    ws.onmessage = (event) => {
+      const payload = JSON.parse(event.data);
+      console.log("📨 WebSocket Purchase Updated:", payload);
+
+      if (payload.event === "created") {
+        toast.success("🛒 New purchase created!");
+        // optionally refetch purchases using payload.id
+      } else if (payload.event === "updated") {
+        toast.info("🔄 Purchase updated");
+      } else if (payload.event === "deleted") {
+        toast.error("🗑️ Purchase deleted");
+      }
+    };
+    ws.onerror = (error) => {
+      console.error("❌ WebSocket Error:", error);
+    };
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, []);
+
   // Session expiry checker - runs every minute
   useEffect(() => {
     if (!cashierSession) return;
