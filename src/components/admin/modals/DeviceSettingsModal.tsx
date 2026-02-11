@@ -65,28 +65,28 @@ export default function DeviceSettingsModal({
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Log settings changes
-  useEffect(() => {
-    console.log("📊 [DeviceSettingsModal] Settings updated:", settings);
-  }, [settings]);
+  // useEffect(() => {
+  //   console.log("📊 [DeviceSettingsModal] Settings updated:", settings);
+  // }, [settings]);
 
   // Load saved settings from localStorage on mount
   useEffect(() => {
-    console.log(
-      "🔍 [DeviceSettingsModal] Component mounted, loading settings..."
-    );
+    // console.log(
+    //   "🔍 [DeviceSettingsModal] Component mounted, loading settings..."
+    // );
     const savedSettings = localStorage.getItem("deviceSettings");
-    console.log(
-      "📦 [DeviceSettingsModal] Raw localStorage data:",
-      savedSettings
-    );
+    // console.log(
+    //   "📦 [DeviceSettingsModal] Raw localStorage data:",
+    //   savedSettings
+    // );
 
     if (savedSettings) {
       try {
         const parsedSettings = JSON.parse(savedSettings);
-        console.log(
-          "✅ [DeviceSettingsModal] Parsed settings from localStorage:",
-          parsedSettings
-        );
+        // console.log(
+        //   "✅ [DeviceSettingsModal] Parsed settings from localStorage:",
+        //   parsedSettings,
+        // );
         // Merge with defaults to ensure all fields exist
         setSettings({
           defaultPrinter: "",
@@ -102,12 +102,12 @@ export default function DeviceSettingsModal({
       } catch (e) {
         console.error(
           "❌ [DeviceSettingsModal] Error parsing saved settings:",
-          e
+          e,
         );
       }
     } else {
       console.warn(
-        "⚠️ [DeviceSettingsModal] No saved settings found in localStorage"
+        "⚠️ [DeviceSettingsModal] No saved settings found in localStorage",
       );
     }
     loadAvailableDevices();
@@ -118,10 +118,10 @@ export default function DeviceSettingsModal({
     try {
       // Fetch real printers from Tauri
       const printerList = await invoke<string[]>("list_printers");
-      console.log(
-        "✅ [DeviceSettingsModal] Printers loaded from Tauri:",
-        printerList
-      );
+      // console.log(
+      //   "✅ [DeviceSettingsModal] Printers loaded from Tauri:",
+      //   printerList,
+      // );
 
       setAvailableDevices({
         printers: printerList && printerList.length > 0 ? printerList : [],
@@ -148,11 +148,11 @@ export default function DeviceSettingsModal({
     } catch (error) {
       console.error(
         "❌ [DeviceSettingsModal] Error loading printers from Tauri:",
-        error
+        error,
       );
-      console.log(
-        "⚠️ [DeviceSettingsModal] No printers found or error occurred"
-      );
+      // console.log(
+      //   "⚠️ [DeviceSettingsModal] No printers found or error occurred",
+      // );
 
       // Show empty list when Tauri command fails - no static fallback
       setAvailableDevices({
@@ -181,38 +181,38 @@ export default function DeviceSettingsModal({
   };
 
   const handleSave = () => {
-    console.log("💾 [DeviceSettingsModal] Saving settings...");
-    console.log("📝 [DeviceSettingsModal] Current settings state:", settings);
+    // console.log("💾 [DeviceSettingsModal] Saving settings...");
+    // console.log("📝 [DeviceSettingsModal] Current settings state:", settings);
 
     setIsSaving(true);
     // Save to localStorage
     const settingsJSON = JSON.stringify(settings);
     localStorage.setItem("deviceSettings", settingsJSON);
-    console.log(
-      "✅ [DeviceSettingsModal] Settings saved to localStorage:",
-      settingsJSON
-    );
-    console.log(
-      "🔍 [DeviceSettingsModal] Receipt Printer specifically:",
-      settings.receiptPrinter
-    );
-    console.log("🔍 [DeviceSettingsModal] All printers:", {
-      defaultPrinter: settings.defaultPrinter,
-      receiptPrinter: settings.receiptPrinter,
-      kitchenPrinter: settings.kitchenPrinter,
-    });
+    // console.log(
+    //   "✅ [DeviceSettingsModal] Settings saved to localStorage:",
+    //   settingsJSON,
+    // );
+    // console.log(
+    //   "🔍 [DeviceSettingsModal] Receipt Printer specifically:",
+    //   settings.receiptPrinter,
+    // );
+    // console.log("🔍 [DeviceSettingsModal] All printers:", {
+    //   defaultPrinter: settings.defaultPrinter,
+    //   receiptPrinter: settings.receiptPrinter,
+    //   kitchenPrinter: settings.kitchenPrinter,
+    // });
 
     // Dispatch custom event to notify other components in the same tab
     window.dispatchEvent(new CustomEvent("deviceSettingsUpdated"));
-    console.log(
-      "📡 [DeviceSettingsModal] Dispatched deviceSettingsUpdated event"
-    );
+    // console.log(
+    //   "📡 [DeviceSettingsModal] Dispatched deviceSettingsUpdated event",
+    // );
 
     // Simulate save delay
     setTimeout(() => {
       setIsSaving(false);
       setSaveSuccess(true);
-      console.log("✨ [DeviceSettingsModal] Save complete!");
+      // console.log("✨ [DeviceSettingsModal] Save complete!");
 
       // Hide success message after 2 seconds
       setTimeout(() => {
@@ -305,7 +305,7 @@ export default function DeviceSettingsModal({
                       <Select
                         value={settings.defaultPrinter}
                         onValueChange={(value) => {
-                          console.log("🖨️ [DEFAULT PRINTER] Selected:", value);
+                          // console.log("🖨️ [DEFAULT PRINTER] Selected:", value);
                           setSettings({ ...settings, defaultPrinter: value });
                         }}
                       >

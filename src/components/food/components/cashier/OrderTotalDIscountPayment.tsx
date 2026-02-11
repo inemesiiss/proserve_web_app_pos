@@ -7,6 +7,7 @@ import PaymentModal from "../../modals/food/PaymentCashLessModal";
 import OrderTotalDiscountModal from "../../modals/security/OrderTotalDiscountModal";
 import { X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { getCashierSession } from "@/utils/cashierSession";
 
 export default function FoodTotalDiscountPaymentSection() {
   const {
@@ -24,15 +25,6 @@ export default function FoodTotalDiscountPaymentSection() {
   const [createTransaction, { isLoading: isCreatingTransaction }] =
     useCreateCashierTransactionMutation();
 
-  console.log(
-    "📊 [OrderTotalDiscountPayment] Device Settings:",
-    deviceSettings,
-  );
-  console.log(
-    "📊 [OrderTotalDiscountPayment] Receipt Printer:",
-    deviceSettings.receiptPrinter,
-  );
-
   const [paymentMode, setPaymentMode] = useState<
     "cash" | "cashless" | "paymaya" | "card"
   >("cash");
@@ -42,7 +34,7 @@ export default function FoodTotalDiscountPaymentSection() {
   const [orderNum, setOrderNum] = useState<string>("");
   const [cashlessModalisOpen, setCashlessModalOpen] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
-
+  const cashierSession = getCashierSession();
   // Derived values - Separate vatable and VAT-exempt (SC/PWD) items
   // NOTE: Prices in OrderItem are already INCLUSIVE of VAT (12%)
   const allItems = [...meals, ...products];
@@ -82,11 +74,25 @@ export default function FoodTotalDiscountPaymentSection() {
   // 🔄 Handle transaction creation (before printing)
   const handleCreateTransaction = async () => {
     try {
+      // Check if cashierId exists
+      if (!cashierSession?.cashierId) {
+        toast.error("Cashier ID Required", {
+          description:
+            "Please log in as a cashier to proceed with the transaction",
+          duration: 3000,
+          style: {
+            background: "#EF4444",
+            color: "white",
+            border: "none",
+          },
+        });
+        return;
+      }
+
       const transactionPayload = {
         purchase: {
-          clientId: 1, // TODO: Get from context/user
-          branchId: 1, // TODO: Get from context/user
-          outletId: 1, // TODO: Get from context/user
+          cashierId: cashierSession?.cashierId,
+          terminalId: 1,
           grandTotal: grandTotal,
           subTotal: grandTotal + vat_amount,
           cashReceived,
@@ -161,14 +167,11 @@ export default function FoodTotalDiscountPaymentSection() {
         transactionPayload.items.length,
       );
       if (transactionPayload.items.length === 0) {
-        console.warn("⚠️ [handleCreateTransaction] NO ITEMS FOUND!");
         alert("No items in cart. Please add items first.");
         return;
       }
 
       const response = await createTransaction(transactionPayload).unwrap();
-
-      console.log("✅ [handleCreateTransaction] Success:", response);
 
       if (response.success && response.invoiceNum) {
         setInvoiceNum(response.invoiceNum);
@@ -188,7 +191,6 @@ export default function FoodTotalDiscountPaymentSection() {
         });
       }
     } catch (error) {
-      console.error("❌ [handleCreateTransaction] Error:", error);
       alert("Failed to create transaction. Please try again.");
     }
   };
@@ -485,14 +487,8 @@ export default function FoodTotalDiscountPaymentSection() {
             className="bg-green-400 hover:bg-green-500 text-white rounded-full px-10 py-2 text-base font-bold disabled:bg-green-200 disabled:cursor-not-allowed"
             disabled={!deviceSettings.receiptPrinter}
             onClick={() => {
-              console.log("🖱️ [CASHLESS PROCEED BUTTON] Clicked");
-              console.log("💾 Printer:", deviceSettings.receiptPrinter);
-              console.log("📋 Grand Total:", grandTotal);
               if (deviceSettings.receiptPrinter) {
-                console.log("✅ Opening cashless payment modal...");
                 setCashlessModalOpen(true);
-              } else {
-                console.warn("⚠️ Cannot proceed - no printer configured");
               }
             }}
           >
@@ -526,12 +522,6 @@ export default function FoodTotalDiscountPaymentSection() {
         deviceSettings.receiptPrinter &&
         invoiceNum && (
           <>
-            {console.log(
-              "🖨️ [ReceiptPrinter] Rendering with printer:",
-              deviceSettings.receiptPrinter,
-              "Invoice:",
-              invoiceNum,
-            )}
             <ReceiptPrinter
               mode="cash"
               cashReceived={cashReceived}

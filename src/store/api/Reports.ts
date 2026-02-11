@@ -13,6 +13,86 @@ import type {
   GetSalesReportDetailsParams,
 } from "@/types/reports";
 
+export interface SalesDashboardParams {
+  bid: number;
+  start_date: string;
+  end_date: string;
+}
+
+export interface TopProduct {
+  branch_prod__id: number;
+  branch_prod__prod_name: string | null;
+  total_qty: number;
+  total_sales: number;
+}
+
+export interface TopCashier {
+  cashier__id: number | null;
+  total_sales: number;
+  num_transactions: number;
+  fullname: string;
+}
+
+export interface HourlySales {
+  hour: number;
+  label: string;
+  total_sales: number;
+  num_transactions: number;
+  avg_sales: number;
+}
+
+export interface SalesDashboardResponse {
+  success: boolean;
+  data?: {
+    num_of_sales: number;
+    cash_sales: number;
+    total_discount: number;
+    average_transaction_value: number;
+    top_products_by_sales: TopProduct[];
+    top_products_by_qty: TopProduct[];
+    top_cashiers: TopCashier[];
+    hourly_sales: HourlySales[];
+  };
+  message?: string;
+}
+
+export interface MonthlySalesItem {
+  month: number;
+  label: string;
+  total_sales: number;
+  num_transactions: number;
+}
+
+export interface MonthlySalesResponse {
+  success: boolean;
+  data?: MonthlySalesItem[];
+  message?: string;
+}
+
+export interface MonthlySalesParams {
+  bid: number;
+  year: number;
+}
+
+export interface WeeklySalesItem {
+  day: number;
+  label: string;
+  total_sales: number;
+  num_transactions: number;
+}
+
+export interface WeeklySalesResponse {
+  success: boolean;
+  data?: WeeklySalesItem[];
+  message?: string;
+}
+
+export interface WeeklySalesParams {
+  bid: number;
+  start_date: string;
+  end_date: string;
+}
+
 export const reportsApi = createApi({
   reducerPath: "reportsApi",
   baseQuery: baseQueryWithReauth,
@@ -185,6 +265,59 @@ export const reportsApi = createApi({
       }),
       invalidatesTags: ["reports"],
     }),
+
+    /**
+     * GET /api/transactions/get_sales_dashboard
+     * Get sales dashboard metrics for a specific branch and date range
+     *
+     * Query params:
+     *  - bid: branch id (required)
+     *  - start_date: filter from date (required, format: YYYY-MM-DD)
+     *  - end_date: filter to date (required, format: YYYY-MM-DD)
+     */
+    getSalesDashboard: builder.query<
+      SalesDashboardResponse,
+      SalesDashboardParams
+    >({
+      query: ({ bid, start_date, end_date }) => ({
+        url: `/transactions/reports/get_sales_dashboard/?bid=${bid}&start_date=${start_date}&end_date=${end_date}`,
+        method: "GET",
+      }),
+      providesTags: ["reports"],
+    }),
+
+    /**
+     * GET /api/transactions/reports/get_monthly_sales
+     * Get sales per month for a given year
+     *
+     * Query params:
+     *  - bid: branch id (required)
+     *  - year: year to filter (required)
+     */
+    getMonthlySales: builder.query<MonthlySalesResponse, MonthlySalesParams>({
+      query: ({ bid, year }) => ({
+        url: `/transactions/reports/get_monthly_sales/?bid=${bid}&year=${year}`,
+        method: "GET",
+      }),
+      providesTags: ["reports"],
+    }),
+
+    /**
+     * GET /api/transactions/reports/get_weekly_sales
+     * Get sales per day of the week for a given date range
+     *
+     * Query params:
+     *  - bid: branch id (required)
+     *  - start_date: start of week (required, format: YYYY-MM-DD)
+     *  - end_date: end of week (required, format: YYYY-MM-DD)
+     */
+    getWeeklySales: builder.query<WeeklySalesResponse, WeeklySalesParams>({
+      query: ({ bid, start_date, end_date }) => ({
+        url: `/transactions/reports/get_weekly_sales/?bid=${bid}&start_date=${start_date}&end_date=${end_date}`,
+        method: "GET",
+      }),
+      providesTags: ["reports"],
+    }),
   }),
 });
 
@@ -195,4 +328,7 @@ export const {
   useGetSalesReportQuery,
   useGetSalesReportDetailsQuery,
   useRefundPurchaseMutation,
+  useGetSalesDashboardQuery,
+  useGetMonthlySalesQuery,
+  useGetWeeklySalesQuery,
 } = reportsApi;
