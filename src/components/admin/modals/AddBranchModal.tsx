@@ -28,7 +28,7 @@ interface AddBranchModalProps {
   type: number;
   data?: any;
   count?: number;
-  setType: React.Dispatch<React.SetStateAction<number>>;
+  setType?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 type bpAddress = {
@@ -120,7 +120,7 @@ export default function AddBranchModal({
         cityName: "",
       },
     });
-    setType(1);
+    setType?.(1);
     onClose();
   };
 

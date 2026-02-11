@@ -17,7 +17,6 @@ import { useGetClientsQuery, useGetProductsQuery } from "@/store/api/Admin";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PencilLine } from "lucide-react";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
-import UploadBranchModal from "@/components/admin/modals/UploadBranchModal";
 import UploadProductModal from "@/components/admin/modals/UploadProductModal";
 
 // Mock data for products

@@ -6,14 +6,16 @@ import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import ExcelJS from "exceljs";
 import {
-  useAddBranchTemplateMutation,
-  useGetAddressExcelQuery,
+  //   useAddBranchTemplateMutation,
+  useAddCategoryTemplateMutation,
+  //   useGetAddressExcelQuery,
   useGetClientExcelQuery,
 } from "@/store/api/Admin";
-import { exportUploadBranch } from "@/components/reusables/ExportUploadBranch";
+// import { exportUploadBranch } from "@/components/reusables/ExportUploadBranch";
 import { toast } from "sonner";
+import { exportUploadCategory } from "@/components/reusables/ExportUploadCategory";
 
-interface UploadBranchModalProps {
+interface UploadCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (data: BranchFormData) => void;
@@ -47,12 +49,12 @@ type bpAddress = {
   cityName: string;
 };
 
-export default function UploadBranchModal({
+export default function UploadCategoryModal({
   isOpen,
   onClose,
   // onSubmit,
   // type,
-}: UploadBranchModalProps) {
+}: UploadCategoryModalProps) {
   console.log(isOpen);
 
   const handleClose = () => {
@@ -61,7 +63,7 @@ export default function UploadBranchModal({
   };
 
   const getClientExcel = useGetClientExcelQuery({});
-  const getAddressExcel = useGetAddressExcelQuery({});
+  //   const getAddressExcel = useGetAddressExcelQuery({});
 
   const [uploadTemplate, setUploadTemplate] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,12 +110,9 @@ export default function UploadBranchModal({
           rowObject[header] = values[index + 1] ?? "";
         });
 
-        const hasCode =
-          rowObject.branch_code !== "" && rowObject.branch_code != null;
-        const hasName =
-          rowObject.branch_name !== "" && rowObject.branch_name != null;
+        const hasCode = rowObject.name !== "";
 
-        if (hasCode && hasName) {
+        if (hasCode) {
           rows.push(rowObject);
         }
       });
@@ -123,13 +122,13 @@ export default function UploadBranchModal({
     }
   };
 
-  const [addBranch] = useAddBranchTemplateMutation();
+  const [addCategory] = useAddCategoryTemplateMutation();
   const submitData = async () => {
     try {
       const formData1 = new FormData();
       formData1.append("datas", JSON.stringify(uploadTemplate));
 
-      const checkstat = await addBranch(formData1).unwrap();
+      const checkstat = await addCategory(formData1).unwrap();
 
       if (checkstat.success) {
         handleClose();
@@ -166,7 +165,7 @@ export default function UploadBranchModal({
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Upload Branch
+                  Upload Category
                 </h2>
                 <button
                   onClick={handleClose}
@@ -200,9 +199,8 @@ export default function UploadBranchModal({
                         variant="link"
                         className="text-blue-600 underline"
                         onClick={async () => {
-                          await exportUploadBranch(
+                          await exportUploadCategory(
                             getClientExcel?.data?.data,
-                            getAddressExcel?.data?.data,
                           );
                         }}
                       >
@@ -224,34 +222,7 @@ export default function UploadBranchModal({
                         Client
                       </td>
                       <td className="p-1 font-medium border border-black bg-gray-300">
-                        Branch Code
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Branch Name
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Contact Person
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Contact No
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Email
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Block No / Unit No
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Building Subdivision
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Street
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        Barangay
-                      </td>
-                      <td className="p-1 font-medium border border-black bg-gray-300">
-                        City
+                        Category Name
                       </td>
                     </tr>
 
@@ -265,38 +236,7 @@ export default function UploadBranchModal({
                           }
                         </td>
                         <td className="p-1 border border-black">
-                          {item?.branch_code}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.branch_name}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.contact_person}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.contact_no}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.email?.text ?? item?.email}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.block_no}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.building_subdivision}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.street}
-                        </td>
-                        <td className="p-1 border border-black">
-                          {
-                            getAddressExcel?.data?.data?.find(
-                              (item1: any) => item?.barangay_id === item1.id,
-                            )?.barangay
-                          }
-                        </td>
-                        <td className="p-1 border border-black">
-                          {item?.city}
+                          {item?.name}
                         </td>
                       </tr>
                     ))}

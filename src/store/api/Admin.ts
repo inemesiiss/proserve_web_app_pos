@@ -430,6 +430,17 @@ export const adminApi = createApi({
       },
       invalidatesTags: ["admin"],
     }),
+    ///api/adminpos/add_category_template
+    addCategoryTemplate: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_category_template/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
   }),
 });
 
@@ -475,4 +486,5 @@ export const {
   useGetBranchExcelQuery,
   useGetCategoryExcelQuery,
   useAddClientProductTemplateMutation,
+  useAddCategoryTemplateMutation,
 } = adminApi;

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface AccountActionButtonsProps {
   onAddAccount?: () => void;
@@ -8,7 +8,7 @@ interface AccountActionButtonsProps {
 
 export default function AccountActionButtons({
   onAddAccount,
-  onImportCSV,
+  // onImportCSV,
 }: AccountActionButtonsProps) {
   return (
     <div className="flex gap-3">
