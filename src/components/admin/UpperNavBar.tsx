@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
+import { useState, useEffect } from "react";
 // import { useDispatch } from "react-redux";
 // import { useNavigate } from "react-router-dom";
 import BackButton from "../food/components/cashier/BackButton";
@@ -23,6 +24,22 @@ export default function UpperNavBar({
   setLoggedIn,
   isBlank = false,
 }: UpperNavBarProps) {
+  const [managerName, setManagerName] = useState("User");
+
+  useEffect(() => {
+    try {
+      const storedManagerSession = localStorage.getItem("manager_session");
+      if (storedManagerSession) {
+        const parsedSession = JSON.parse(storedManagerSession);
+        if (parsedSession.managerFullName) {
+          setManagerName(parsedSession.managerFullName);
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing manager_session:", error);
+    }
+  }, []);
+
   console.log(setLoggedIn);
   // const navigate = useNavigate();
   // const dispatch = useDispatch();
@@ -74,7 +91,7 @@ export default function UpperNavBar({
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition cursor-pointer">
           <User className="text-gray-700 dark:text-gray-200 w-5 h-5" />
           <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
-            User
+            {managerName}
           </span>
         </div>
         <div className="flex items-center gap-4">
