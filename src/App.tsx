@@ -48,10 +48,10 @@ export default function App() {
                   {getDirectorRoutes({})}
                   {getBMRoutes({})}
 
-                  <Route
+                  {/* <Route
                     path="*"
                     element={<Navigate to="/bm/dashboard" replace />}
-                  />
+                  /> */}
                 </>
               )}
             </Routes>
