@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import { Eye, EyeOff } from "lucide-react";
 // import RightDesign from "@/assets/loginRight.png";
 // import LeftDesign from "@/assets/loginLeft.png";
 import { useAuth } from "@/context/AuthProvider";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 // import { Checkbox } from "@/components/ui/checkbox";
 
 export default function LoginPage() {
@@ -22,6 +24,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const currentRole = useSelector((state: RootState) => state.auth.role);
 
   // const handleLogin = async (e: React.FormEvent) => {
   //   e.preventDefault();
@@ -59,13 +62,27 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       console.log("Logged In");
-      navigate("/food/main");
+      console.log("Curent Role: ", currentRole);
+
+      // navigate("/food/main");
+      console.log();
     } catch (err: any) {
       setError(err?.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (currentRole) {
+      console.log("Updated Role: ", currentRole);
+      if (currentRole === "4" || currentRole === "3") {
+        navigate("/bm/dashboard");
+      } else {
+        navigate("/food/main");
+      }
+    }
+  }, [currentRole]);
 
   const [remember, setRemember] = useState(false);
 

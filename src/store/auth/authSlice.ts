@@ -6,6 +6,8 @@ interface AuthState {
   role: string | null;
   loading: boolean;
   error: string | null;
+  client: string | null;
+  branch: string | null;
 }
 
 const initialState: AuthState = {
@@ -13,6 +15,8 @@ const initialState: AuthState = {
   role: null,
   loading: false,
   error: null,
+  client: null,
+  branch: null,
 };
 
 const authSlice = createSlice({
@@ -26,6 +30,8 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.role = null;
+      state.client = null;
+      state.branch = null;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -33,8 +39,17 @@ const authSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
+    viewUser: (
+      state,
+      action: PayloadAction<{ role: string; client: string; branch: string }>,
+    ) => {
+      state.role = action.payload.role;
+      state.client = action.payload.client;
+      state.branch = action.payload.branch;
+    },
   },
 });
 
-export const { loginSuccess, logout, setLoading, setError } = authSlice.actions;
+export const { loginSuccess, logout, setLoading, setError, viewUser } =
+  authSlice.actions;
 export default authSlice.reducer;

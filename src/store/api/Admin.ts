@@ -441,6 +441,16 @@ export const adminApi = createApi({
       },
       invalidatesTags: ["admin"],
     }),
+    //get_client_details
+    getClientDetails: builder.query({
+      query: (id) => {
+        return {
+          url: `/adminpos/${id}/get_client_details`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
   }),
 });
 
@@ -487,4 +497,5 @@ export const {
   useGetCategoryExcelQuery,
   useAddClientProductTemplateMutation,
   useAddCategoryTemplateMutation,
+  useGetClientDetailsQuery,
 } = adminApi;

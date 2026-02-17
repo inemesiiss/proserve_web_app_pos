@@ -1,4 +1,6 @@
 import api from "./api";
+import { viewUser } from "@/store/auth/authSlice";
+import { store } from "@/store";
 
 export interface LoginCredentials {
   email: string;
@@ -28,11 +30,12 @@ class AuthService {
   /**
    * Login user with email and password
    */
+
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     try {
       const response = await api.post<LoginResponse>(
         "api/user/login/",
-        credentials
+        credentials,
       );
       return response.data;
     } catch (error: any) {
@@ -67,6 +70,14 @@ class AuthService {
         localStorage.setItem("client", String(response.data.client));
         localStorage.setItem("role", String(response.data.role));
         localStorage.setItem("branch", String(response.data.branch));
+
+        store.dispatch(
+          viewUser({
+            role: String(response.data.role),
+            client: String(response.data.client),
+            branch: String(response.data.branch),
+          }),
+        );
       }
       return {
         id: response.data.id,

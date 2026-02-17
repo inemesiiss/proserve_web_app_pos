@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import Lottie from "lottie-react";
 import ManagerPasscodeModal from "@/components/food/modals/security/ManagerPasscodeModal";
 import type { VerifiedUser } from "@/store/api/User";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { current } from "@reduxjs/toolkit";
+import { useGetClientDetailsQuery } from "@/store/api/Admin";
 
 // Helper function to get branch ID from localStorage
 const getBranchIdFromStorage = (): number => {
@@ -29,7 +33,10 @@ export default function DirectorySelection() {
   const [roleId, setRoleId] = useState<number>(() =>
     parseInt(localStorage.getItem("role") ?? "0"),
   );
-  const isRestrictedRole = [4].includes(roleId);
+  const isRestrictedRole = [3, 4].includes(roleId);
+
+  const currentRole = useSelector((state: RootState) => state.auth.role);
+  const currentBranch = useSelector((state: RootState) => state.auth.branch);
 
   // Debug log
   console.log("roleId:", roleId, "isRestrictedRole:", isRestrictedRole);
@@ -79,14 +86,6 @@ export default function DirectorySelection() {
       ]
     : [
         {
-          id: "dashboard",
-          name: "Admin Access",
-          animation: animations.dashboard,
-          path: "/bm/dashboard",
-          textMessage: "Select user and enter PIN to access Analytics",
-          digitCount: 6,
-        },
-        {
           id: "reports",
           name: "Managers Access",
           animation: animations.reports,
@@ -129,6 +128,8 @@ export default function DirectorySelection() {
     }
   };
 
+  const getCli = useGetClientDetailsQuery(currentBranch);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4 relative gap-16 py-8">
       {/* Header */}
@@ -139,10 +140,10 @@ export default function DirectorySelection() {
         className="flex flex-col items-center gap-3"
       >
         <h1 className="text-5xl font-bold text-blue-600 dark:text-blue-400">
-          Proserv Cafe
+          {getCli?.data?.account}
         </h1>
         <p className="text-xl text-gray-700 dark:text-gray-300 font-semibold">
-          Makati Branch
+          {getCli?.data?.branch}
         </p>
         <div className="h-1.5 w-32 bg-blue-500 rounded-full mt-2 shadow-sm"></div>
       </motion.div>

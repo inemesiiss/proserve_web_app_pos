@@ -1,9 +1,14 @@
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 // import { useDispatch } from "react-redux";
 // import { useNavigate } from "react-router-dom";
 import BackButton from "../food/components/cashier/BackButton";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { logout as logoutAction } from "@/store/auth/authSlice";
+import { useLogoutMutation } from "@/store/api/authApi";
+import { useNavigate } from "react-router-dom";
 // import {
 //   Link,
 //   //  useNavigate
@@ -25,6 +30,22 @@ export default function UpperNavBar({
   isBlank = false,
 }: UpperNavBarProps) {
   const [managerName, setManagerName] = useState("User");
+  const currentRole = useSelector((state: RootState) => state.auth.role);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [logout] = useLogoutMutation();
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      localStorage.clear();
+      dispatch(logoutAction());
+      navigate("/login");
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -96,7 +117,17 @@ export default function UpperNavBar({
         </div>
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold text-blue-700">{""}</h2>
-          {<BackButton to={"/food/main"} label="Home" />}
+          {currentRole === "2" ? (
+            <BackButton to={"/food/main"} label="Home" />
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition shadow-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
+          )}
         </div>
 
         {/* <button
