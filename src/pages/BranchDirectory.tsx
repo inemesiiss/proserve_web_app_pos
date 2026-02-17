@@ -7,7 +7,6 @@ import ManagerPasscodeModal from "@/components/food/modals/security/ManagerPassc
 import type { VerifiedUser } from "@/store/api/User";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
-import { current } from "@reduxjs/toolkit";
 import { useGetClientDetailsQuery } from "@/store/api/Admin";
 
 // Helper function to get branch ID from localStorage
@@ -35,7 +34,6 @@ export default function DirectorySelection() {
   );
   const isRestrictedRole = [3, 4].includes(roleId);
 
-  const currentRole = useSelector((state: RootState) => state.auth.role);
   const currentBranch = useSelector((state: RootState) => state.auth.branch);
 
   // Debug log
