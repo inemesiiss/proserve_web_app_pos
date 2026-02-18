@@ -52,6 +52,15 @@ export interface SalesDashboardResponse {
     top_products_by_qty: TopProduct[];
     top_cashiers: TopCashier[];
     hourly_sales: HourlySales[];
+    this_month_sales: number;
+    last_month_sales: number;
+    month_pct_change: number;
+    this_week_sales: number;
+    last_week_sales: number;
+    week_pct_change: number;
+    today_sales: number;
+    yesterday_sales: number;
+    today_pct_change: number;
   };
   message?: string;
 }

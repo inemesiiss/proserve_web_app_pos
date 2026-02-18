@@ -14,7 +14,9 @@ import {
   HourlySalesChart,
   TopProductsSection,
   CashierPerformanceSection,
+  SalesWidgets,
 } from "@/components/dashboard";
+import type { WidgetKey } from "@/components/dashboard";
 
 // Get first and last day of the current month as YYYY-MM-DD
 function getCurrentMonthRange() {
@@ -88,6 +90,11 @@ function DashboardSales() {
   const [showByQty, setShowByQty] = useState(false);
   const [presetFilter, setPresetFilter] = useState("this-month");
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const [visibleWidgets, setVisibleWidgets] = useState<WidgetKey[]>([
+    "this_month",
+    "this_week",
+    "today",
+  ]);
 
   // Handle preset filter changes
   const handlePresetFilter = (preset: string) => {
@@ -274,6 +281,18 @@ function DashboardSales() {
     : dashboardData?.data?.top_products_by_sales || [];
   const topCashiers = dashboardData?.data?.top_cashiers || [];
 
+  const widgetData = {
+    this_month_sales: dashboardData?.data?.this_month_sales ?? 0,
+    last_month_sales: dashboardData?.data?.last_month_sales ?? 0,
+    month_pct_change: dashboardData?.data?.month_pct_change ?? 0,
+    this_week_sales: dashboardData?.data?.this_week_sales ?? 0,
+    last_week_sales: dashboardData?.data?.last_week_sales ?? 0,
+    week_pct_change: dashboardData?.data?.week_pct_change ?? 0,
+    today_sales: dashboardData?.data?.today_sales ?? 0,
+    yesterday_sales: dashboardData?.data?.yesterday_sales ?? 0,
+    today_pct_change: dashboardData?.data?.today_pct_change ?? 0,
+  };
+
   // Loading states
   const dashboardLoading = isDashboardLoading || isDashboardFetching;
   const monthlyLoading = isMonthlyLoading || isMonthlyFetching;
@@ -299,6 +318,15 @@ function DashboardSales() {
             setPresetFilter={setPresetFilter}
             isFilterExpanded={isFilterExpanded}
             setIsFilterExpanded={setIsFilterExpanded}
+            visibleWidgets={visibleWidgets}
+            setVisibleWidgets={setVisibleWidgets}
+          />
+
+          {/* Sales Widgets */}
+          <SalesWidgets
+            data={widgetData}
+            isLoading={dashboardLoading}
+            visibleWidgets={visibleWidgets}
           />
 
           {/* Metrics Cards */}

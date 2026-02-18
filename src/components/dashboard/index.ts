@@ -7,3 +7,5 @@ export { default as PaymentChannelsChart } from "./PaymentChannelsChart";
 export { default as HourlySalesChart } from "./HourlySalesChart";
 export { default as TopProductsSection } from "./TopProductsSection";
 export { default as CashierPerformanceSection } from "./CashierPerformanceSection";
+export { default as SalesWidgets } from "./SalesWidgets";
+export type { WidgetKey } from "./SalesWidgets";
