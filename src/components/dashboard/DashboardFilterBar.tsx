@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import type { WidgetKey } from "./SalesWidgets";
 
 // Format date to readable format (e.g., "Jan 1")
 function formatDateShort(dateStr: string): string {
@@ -17,7 +18,15 @@ interface DashboardFilterBarProps {
   setPresetFilter: (v: string) => void;
   isFilterExpanded: boolean;
   setIsFilterExpanded: (v: boolean) => void;
+  visibleWidgets: WidgetKey[];
+  setVisibleWidgets: (v: WidgetKey[]) => void;
 }
+
+// const WIDGET_OPTIONS: { key: WidgetKey; label: string }[] = [
+//   { key: "this_month", label: "This Month Sales" },
+//   { key: "this_week", label: "This Week Sales" },
+//   { key: "today", label: "Today's Sales" },
+// ];
 
 export default function DashboardFilterBar({
   fromDate,
@@ -29,6 +38,8 @@ export default function DashboardFilterBar({
   setPresetFilter,
   isFilterExpanded,
   setIsFilterExpanded,
+  // visibleWidgets,
+  // setVisibleWidgets,
 }: DashboardFilterBarProps) {
   const presets = [
     { key: "today", label: "Today" },
@@ -37,7 +48,7 @@ export default function DashboardFilterBar({
   ];
 
   return (
-    <div className="fixed top-16.5 left-185 right-0 z-50 w-[50%] bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border-b-2 border-blue-200 rounded-b-2xl transition-all duration-300">
+    <div className="fixed top-15 left-185 right-0 z-50 w-[50%] bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border-b-2 border-blue-200 rounded-b-2xl transition-all duration-300">
       {/* Header with Toggle Button */}
       <div className="px-8 py-4 flex items-center justify-between border-b border-blue-100">
         <div className="flex items-center gap-3">
@@ -84,6 +95,44 @@ export default function DashboardFilterBar({
               ))}
             </div>
           </div>
+
+          {/* Widget Toggles */}
+          {/* <div className="mb-5">
+            <label className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3 block">
+              Widgets
+            </label>
+            <div className="flex gap-4">
+              {WIDGET_OPTIONS.map((w) => {
+                const checked = visibleWidgets.includes(w.key);
+                return (
+                  <label
+                    key={w.key}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all duration-200 select-none ${
+                      checked
+                        ? "bg-blue-50 border-2 border-blue-400 text-blue-700"
+                        : "bg-white border border-gray-300 text-gray-600 hover:border-blue-300"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => {
+                        if (checked) {
+                          setVisibleWidgets(
+                            visibleWidgets.filter((k) => k !== w.key),
+                          );
+                        } else {
+                          setVisibleWidgets([...visibleWidgets, w.key]);
+                        }
+                      }}
+                      className="accent-blue-600 w-4 h-4"
+                    />
+                    {w.label}
+                  </label>
+                );
+              })}
+            </div>
+          </div> */}
 
           {/* Custom Date Range */}
           <div>
