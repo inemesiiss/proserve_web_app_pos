@@ -89,7 +89,10 @@ fn list_printers() -> Result<Vec<String>, String> {
 }
 
 #[command]
-fn print_receipt(window: Window, content: String) -> Result<(), String> {
+fn print_receipt(window: Window, printer_name: Option<String>, content: String) -> Result<(), String> {
+    println!("🖨️ [print_receipt] Command invoked for printer: '{}'", printer_name.as_deref().unwrap_or("(auto)"));
+    let _ = window.emit("log_event", format!("🖨️ Print requested for: {}", printer_name.as_deref().unwrap_or("(auto)")));
+
     let printer_list = safe_get_printers();
 
     // If no printers are connected
@@ -99,26 +102,56 @@ fn print_receipt(window: Window, content: String) -> Result<(), String> {
         return Err("No printers available".to_string());
     }
 
-    // Select the first available printer
-    let selected = &printer_list[0];
+    // Find the selected printer by name, fall back to first printer
+    let selected = if let Some(ref name) = printer_name {
+        printer_list
+            .iter()
+            .find(|p| p.name == *name)
+            .unwrap_or_else(|| {
+                println!("⚠️ Printer '{}' not found, falling back to first printer: '{}'", name, printer_list[0].name);
+                &printer_list[0]
+            })
+    } else {
+        println!("ℹ️ No printer name specified, using first printer: '{}'", printer_list[0].name);
+        &printer_list[0]
+    };
 
     println!("🖨️ Printing to: {}", selected.name);
     let _ = window.emit("log_event", format!("🖨️ Printing to: {}", selected.name));
 
-    // Write HTML content to a temp file with .html extension so printer can render it
+    // Wrap plain text content in minimal HTML with monospace pre formatting
+    // This ensures the thermal printer renders it correctly
+    let html_content = format!(
+        r#"<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+@page {{ size: 80mm auto; margin: 0; }}
+body {{ margin: 0; padding: 2mm; font-family: 'Courier New', monospace; font-size: 10px; }}
+pre {{ margin: 0; white-space: pre; font-family: 'Courier New', monospace; font-size: 10px; line-height: 1.3; }}
+</style>
+</head>
+<body><pre>{}</pre></body>
+</html>"#,
+        content
+    );
+
+    // Write to temp file
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis();
     let temp_path = std::env::temp_dir().join(format!("receipt_{}.html", timestamp));
     
-    if let Err(e) = std::fs::write(&temp_path, &content) {
+    if let Err(e) = std::fs::write(&temp_path, &html_content) {
         println!("❌ Failed to write receipt file: {:?}", e);
         let _ = window.emit("log_event", format!("❌ Failed to write receipt file: {:?}", e));
         return Err(format!("Failed to write receipt file: {:?}", e));
     }
 
     println!("📝 Receipt file created at: {:?}", temp_path);
+    println!("📄 Content length: {} chars", content.len());
 
     // Send the print job using print_file
     let options = PrinterJobOptions {
@@ -127,8 +160,8 @@ fn print_receipt(window: Window, content: String) -> Result<(), String> {
     };
     match selected.print_file(temp_path.to_str().unwrap_or(""), options) {
         Ok(_) => {
-            println!("✅ Printing succeeded");
-            let _ = window.emit("log_event", "✅ Printing succeeded".to_string());
+            println!("✅ Printing succeeded to '{}'", selected.name);
+            let _ = window.emit("log_event", format!("✅ Printing succeeded to '{}'", selected.name));
             // Clean up temp file after a delay
             std::thread::sleep(std::time::Duration::from_millis(500));
             let _ = std::fs::remove_file(&temp_path);

@@ -224,8 +224,90 @@ export const transactionApi = createApi({
         body: payload,
       }),
     }),
+
+    /**
+     * Query: Get EOD details (shift summary)
+     * GET /api/transactions/cashier/get_eod_details?branchId=1&cashierId=1
+     * Returns cashier's shift summary for today
+     */
+    getEodDetails: builder.query<
+      EodDetailsResponse,
+      { branchId: number; cashierId: number }
+    >({
+      query: ({ branchId, cashierId }) => ({
+        url: `/transactions/cashier/get_eod_details?branchId=${branchId}&cashierId=${cashierId}`,
+        method: "GET",
+      }),
+    }),
+
+    /**
+     * Mutation: Confirm EOD
+     * POST /api/transactions/cashier/confirm_eod
+     * Creates SalesReport and links all cashier purchases for today
+     */
+    confirmEod: builder.mutation<
+      ConfirmEodResponse,
+      { branchId: number; cashierId: number }
+    >({
+      query: (payload) => ({
+        url: `/transactions/cashier/confirm_eod/`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
+
+// ---- EOD Types ----
+
+export interface EodProductBreakdown {
+  branch_prod__id: number;
+  branch_prod__prod_name: string;
+  total_qty: number;
+  total_sales: number;
+}
+
+export interface EodDetailsResponse {
+  success: boolean;
+  data?: {
+    init_cash_fund: number;
+    total_sales: number;
+    total_discount: number;
+    total_cash_received: number;
+    total_cashless_received: number;
+    num_transactions: number;
+    expected_cash: number;
+    product_breakdown: EodProductBreakdown[];
+  };
+  message?: string;
+}
+
+export interface EodPurchase {
+  id: number;
+  cashier: number;
+  grand_total: string;
+  invoice_num: string;
+  vat_exempt_sales: string;
+  total_items_discount: string;
+  total_discount: string;
+  completed_at: string;
+}
+
+export interface ConfirmEodResponse {
+  success: boolean;
+  data?: {
+    sales_report_id: number;
+    tracking_num: string;
+    total_sales: number;
+    total_cash: number;
+    total_cashless: number;
+    total_discount: number;
+    net_sales: number;
+    init_cash_fund: number;
+    purchases: EodPurchase[];
+  };
+  message?: string;
+}
 
 /**
  * Auto-generated hooks
@@ -236,4 +318,7 @@ export const {
   useCreateCashierTransactionMutation,
   useCreateCashFundMutation,
   useCreateTimeRecordMutation,
+  useGetEodDetailsQuery,
+  useLazyGetEodDetailsQuery,
+  useConfirmEodMutation,
 } = transactionApi;
