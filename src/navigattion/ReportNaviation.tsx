@@ -13,11 +13,11 @@ export const reportNavs = [
 
     icon: <BookText className="w-6 h-6" />,
   },
-  // {
-  //   label: "Sales Collection",
-  //   path: "/bm/reports/sales",
-  //   icon: <BookText className="w-6 h-6" />,
-  // },
+  {
+    label: "Sales Report",
+    path: "/bm/reports/sales",
+    icon: <BookText className="w-6 h-6" />,
+  },
   {
     label: "Sales & Transactions",
     path: "/bm/reports/transaction",

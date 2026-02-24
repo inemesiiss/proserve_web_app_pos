@@ -8,7 +8,7 @@ import CameraModal from "./CameraModal";
 import CashFundModal from "./CashFundModal";
 import type { CashFundData } from "./CashFundModal";
 import { Button } from "@/components/ui/button";
-import { Settings, Coffee, UserCircle, LogOut } from "lucide-react";
+import { Settings, Coffee, UserCircle, LogOut, Moon } from "lucide-react";
 import {
   isOnBreak as checkIsOnBreak,
   updateBreakUntil,
@@ -16,6 +16,7 @@ import {
 } from "@/utils/cashierSession";
 import { useCreateTimeRecordMutation } from "@/store/api/Transaction";
 import { toast } from "sonner";
+import EndOfDayModal from "./EndOfDayModal";
 
 interface HeaderProps {
   headerText: string;
@@ -23,9 +24,11 @@ interface HeaderProps {
   showSettings?: boolean; // controls visibility of settings button
   showBreak?: boolean; // controls visibility of break button
   showCashFund?: boolean; // controls visibility of cash fund button
+  showEndOfDay?: boolean; // controls visibility of end of day button
   cashierName?: string; // cashier name to display
   onCashierLogout?: () => void; // callback when cashier clicks logout
   onBreakStart?: () => void; // callback when break starts (to show OnBreakModal)
+  onEndOfDay?: () => void; // callback when end of day is confirmed
 }
 
 export default function Header({
@@ -34,9 +37,11 @@ export default function Header({
   showSettings = false,
   showBreak = false,
   showCashFund = false,
+  showEndOfDay = false,
   cashierName,
   onCashierLogout,
   onBreakStart,
+  onEndOfDay,
 }: HeaderProps) {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
   const [showBreakModal, setShowBreakModal] = useState(false);
@@ -44,10 +49,11 @@ export default function Header({
   const [showCashFundModal, setShowCashFundModal] = useState(false);
   const [selectedBreak, setSelectedBreak] = useState<BreakType | null>(null);
   const [breakType, setBreakType] = useState<"break-in" | "break-out">(
-    "break-in"
+    "break-in",
   );
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [createTimeRecord] = useCreateTimeRecordMutation();
+  const [showEndOfDayModal, setShowEndOfDayModal] = useState(false);
 
   // Helper to get branchId from localStorage
   const getBranchId = (): number => {
@@ -70,20 +76,20 @@ export default function Header({
 
     // Listen for break status changes from other components
     const handleBreakStatusChange = (
-      event: CustomEvent<{ isOnBreak: boolean }>
+      event: CustomEvent<{ isOnBreak: boolean }>,
     ) => {
       setIsOnBreak(event.detail.isOnBreak);
     };
 
     window.addEventListener(
       "breakStatusChanged",
-      handleBreakStatusChange as EventListener
+      handleBreakStatusChange as EventListener,
     );
 
     return () => {
       window.removeEventListener(
         "breakStatusChanged",
-        handleBreakStatusChange as EventListener
+        handleBreakStatusChange as EventListener,
       );
     };
   }, []);
@@ -150,7 +156,9 @@ export default function Header({
 
         // Dispatch event to notify all components that break has started
         window.dispatchEvent(
-          new CustomEvent("breakStatusChanged", { detail: { isOnBreak: true } })
+          new CustomEvent("breakStatusChanged", {
+            detail: { isOnBreak: true },
+          }),
         );
 
         toast.success(`${selectedBreak.name} started successfully`);
@@ -251,6 +259,16 @@ export default function Header({
               {isOnBreak ? "On Break" : "Take a Break"}
             </Button>
           )}
+          {showEndOfDay && (
+            <Button
+              onClick={() => setShowEndOfDayModal(true)}
+              className="px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-semibold bg-orange-600 hover:bg-orange-700 text-white"
+              title="End of Day"
+            >
+              <Moon size={18} />
+              End of Day
+            </Button>
+          )}
           {/* {showCashFund && (
             <Button
               onClick={() => setShowCashFundModal(true)}
@@ -318,6 +336,17 @@ export default function Header({
           isOpen={showCashFundModal}
           onClose={() => setShowCashFundModal(false)}
           onConfirmFund={handleCashFundConfirm}
+        />
+      )}
+
+      {showEndOfDay && (
+        <EndOfDayModal
+          isOpen={showEndOfDayModal}
+          onClose={() => setShowEndOfDayModal(false)}
+          onConfirm={() => {
+            setShowEndOfDayModal(false);
+            if (onEndOfDay) onEndOfDay();
+          }}
         />
       )}
     </>

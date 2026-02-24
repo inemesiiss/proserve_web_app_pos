@@ -725,14 +725,19 @@ export default function FoodTransactionPage() {
         transition={{ duration: 0.4 }}
       >
         <Header
-          headerText="🍔 Food Menu"
+          headerText=" Transaction Cashier"
           to="/food/main"
           showSettings={true}
           showBreak={true}
           showCashFund={true}
+          showEndOfDay={true}
           cashierName={cashierSession?.cashierFullname}
           onCashierLogout={handleCashierLogout}
           onBreakStart={() => setShowBreakModal(true)}
+          onEndOfDay={() => {
+            clearCashierSession();
+            navigate("/food/main");
+          }}
         />
 
         {/* 📡 Scanner Mode Toggle - STICKY */}

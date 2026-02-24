@@ -53,6 +53,7 @@ export interface GetTransactionsParams {
   page_size?: number;
   start_date?: string;
   end_date?: string;
+  cashier?: number;
 }
 
 /**
