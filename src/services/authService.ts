@@ -18,12 +18,44 @@ export interface LoginResponse {
   message: string;
 }
 
+export interface BranchReceiptFormat {
+  id: number;
+  branch: number | null;
+  address: string | null;
+  vat_reg_tin: string | null;
+  vat_reg_date: string | null;
+  min: string | null;
+  t_discount: boolean;
+  t_vat_sales: boolean;
+  t_vat_twelve: boolean;
+  t_vat_exempt: boolean;
+  t_total: boolean;
+  t_cash: boolean;
+  t_change: boolean;
+  t_total_items: boolean;
+  t_invoice: boolean;
+  t_cashier: boolean;
+  t_order_no: boolean;
+  t_date_time: boolean;
+  line: boolean;
+  l_name: boolean;
+  l_address: boolean;
+  l_tin: boolean;
+  l_bus_style: boolean;
+  qr: boolean;
+  qr_image: string | null;
+  created_at: string;
+  b_name: string | null;
+  c_name: string | null;
+}
+
 export interface UserResponse {
   success: boolean;
   id: number;
   client: number;
   role: number;
   branch: number;
+  br_format: BranchReceiptFormat;
 }
 
 class AuthService {
@@ -70,6 +102,10 @@ class AuthService {
         localStorage.setItem("client", String(response.data.client));
         localStorage.setItem("role", String(response.data.role));
         localStorage.setItem("branch", String(response.data.branch));
+        localStorage.setItem(
+          "receipt_format",
+          JSON.stringify(response.data.br_format),
+        );
 
         store.dispatch(
           viewUser({

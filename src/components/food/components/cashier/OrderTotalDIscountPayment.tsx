@@ -5,9 +5,10 @@ import { useCreateCashierTransactionMutation } from "@/store/api/Transaction";
 import ReceiptPrinter from "@/components/food/components/Print/PrintReceipt";
 import PaymentModal from "../../modals/food/PaymentCashLessModal";
 import OrderTotalDiscountModal from "../../modals/security/OrderTotalDiscountModal";
-import { X, CheckCircle } from "lucide-react";
+import { X, CheckCircle, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { getCashierSession } from "@/utils/cashierSession";
+import { saveOfflineTransaction } from "@/services/offlineTransactionService";
 
 export default function FoodTotalDiscountPaymentSection() {
   const {
@@ -73,104 +74,102 @@ export default function FoodTotalDiscountPaymentSection() {
 
   // 🔄 Handle transaction creation (before printing)
   const handleCreateTransaction = async () => {
-    try {
-      // Check if cashierId exists
-      if (!cashierSession?.cashierId) {
-        toast.error("Cashier ID Required", {
-          description:
-            "Please log in as a cashier to proceed with the transaction",
-          duration: 3000,
-          style: {
-            background: "#EF4444",
-            color: "white",
-            border: "none",
-          },
-        });
-        return;
-      }
-
-      const transactionPayload = {
-        purchase: {
-          cashierId: cashierSession?.cashierId,
-          terminalId: 1,
-          grandTotal: grandTotal,
-          subTotal: grandTotal + vat_amount,
-          cashReceived,
-          totalDiscount:
-            allItems.reduce(
-              (sum, item) => sum + (item.itemTotalDiscount || 0),
-              0,
-            ) + orderTotalDiscount,
-          status: "completed",
+    // Check if cashierId exists
+    if (!cashierSession?.cashierId) {
+      toast.error("Cashier ID Required", {
+        description:
+          "Please log in as a cashier to proceed with the transaction",
+        duration: 3000,
+        style: {
+          background: "#EF4444",
+          color: "white",
+          border: "none",
         },
-        items: [
-          ...meals.map((meal) => ({
-            productId: meal.id,
-            branchProdId: meal.branchProdId || 0,
-            quantity: meal.qty,
-            unitPrice: meal.price,
-            totalPrice: meal.price * meal.qty,
-            productName: meal.name,
-            customization: meal.customization,
-            // Void tracking
-            is_voided: meal.isVoid || false,
-            voided_at: meal.isVoid ? new Date().toISOString() : undefined,
-            voided_reason: meal.isVoid
-              ? "Item voided at transaction"
-              : undefined,
-            // Discount tracking
-            discount: meal.itemTotalDiscount || 0,
-            discounted_at:
-              meal.itemTotalDiscount && meal.itemTotalDiscount > 0
-                ? new Date().toISOString()
-                : undefined,
-            discount_type: meal.discount_type,
-            discount_note: meal.discount_note,
-            discount_id: meal.discountId,
-          })),
-          ...products.map((product) => ({
-            productId: product.id,
-            branchProdId: product.branchProdId || 0,
-            quantity: product.qty,
-            unitPrice: product.price,
-            totalPrice: product.price * product.qty,
-            productName: product.name,
-            customization: product.customization,
-            // Void tracking
-            is_voided: product.isVoid || false,
-            voided_at: product.isVoid ? new Date().toISOString() : undefined,
-            voided_reason: product.isVoid
-              ? "Item voided at transaction"
-              : undefined,
-            // Discount tracking
-            discount: product.itemTotalDiscount || 0,
-            discounted_at:
-              product.itemTotalDiscount && product.itemTotalDiscount > 0
-                ? new Date().toISOString()
-                : undefined,
-            discount_type: product.discount_type,
-            discount_note: product.discount_note,
-            discount_id: product.discountId,
-            discount_card_num: product.discountCardCode,
-            discount_card_name: product.discountCardName,
-            discount_card_exp: product.discountCardExp,
-          })),
-        ],
-      };
+      });
+      return;
+    }
 
-      console.log(
-        "📦 [handleCreateTransaction] Full Payload:",
-        transactionPayload,
-      );
-      console.log(
-        "📊 [handleCreateTransaction] Items count:",
-        transactionPayload.items.length,
-      );
-      if (transactionPayload.items.length === 0) {
-        alert("No items in cart. Please add items first.");
-        return;
-      }
+    const transactionPayload = {
+      purchase: {
+        cashierId: cashierSession?.cashierId,
+        terminalId: 1,
+        grandTotal: grandTotal,
+        subTotal: grandTotal + vat_amount,
+        cashReceived,
+        totalDiscount:
+          allItems.reduce(
+            (sum, item) => sum + (item.itemTotalDiscount || 0),
+            0,
+          ) + orderTotalDiscount,
+        status: "completed",
+      },
+      items: [
+        ...meals.map((meal) => ({
+          productId: meal.id,
+          branchProdId: meal.branchProdId || 0,
+          quantity: meal.qty,
+          unitPrice: meal.price,
+          totalPrice: meal.price * meal.qty,
+          productName: meal.name,
+          customization: meal.customization,
+          // Void tracking
+          is_voided: meal.isVoid || false,
+          voided_at: meal.isVoid ? new Date().toISOString() : undefined,
+          voided_reason: meal.isVoid ? "Item voided at transaction" : undefined,
+          // Discount tracking
+          discount: meal.itemTotalDiscount || 0,
+          discounted_at:
+            meal.itemTotalDiscount && meal.itemTotalDiscount > 0
+              ? new Date().toISOString()
+              : undefined,
+          discount_type: meal.discount_type,
+          discount_note: meal.discount_note,
+          discount_id: meal.discountId,
+        })),
+        ...products.map((product) => ({
+          productId: product.id,
+          branchProdId: product.branchProdId || 0,
+          quantity: product.qty,
+          unitPrice: product.price,
+          totalPrice: product.price * product.qty,
+          productName: product.name,
+          customization: product.customization,
+          // Void tracking
+          is_voided: product.isVoid || false,
+          voided_at: product.isVoid ? new Date().toISOString() : undefined,
+          voided_reason: product.isVoid
+            ? "Item voided at transaction"
+            : undefined,
+          // Discount tracking
+          discount: product.itemTotalDiscount || 0,
+          discounted_at:
+            product.itemTotalDiscount && product.itemTotalDiscount > 0
+              ? new Date().toISOString()
+              : undefined,
+          discount_type: product.discount_type,
+          discount_note: product.discount_note,
+          discount_id: product.discountId,
+          discount_card_num: product.discountCardCode,
+          discount_card_name: product.discountCardName,
+          discount_card_exp: product.discountCardExp,
+        })),
+      ],
+    };
 
+    console.log(
+      "📦 [handleCreateTransaction] Full Payload:",
+      transactionPayload,
+    );
+    console.log(
+      "📊 [handleCreateTransaction] Items count:",
+      transactionPayload.items.length,
+    );
+    if (transactionPayload.items.length === 0) {
+      alert("No items in cart. Please add items first.");
+      return;
+    }
+
+    try {
       const response = await createTransaction(transactionPayload).unwrap();
 
       if (response.success && response.invoiceNum) {
@@ -191,7 +190,41 @@ export default function FoodTotalDiscountPaymentSection() {
         });
       }
     } catch (error) {
-      alert("Failed to create transaction. Please try again.");
+      console.error(
+        "❌ [handleCreateTransaction] API failed, saving offline:",
+        error,
+      );
+
+      try {
+        await saveOfflineTransaction(transactionPayload);
+
+        toast.warning("Saved Offline", {
+          description:
+            "Transaction could not reach the server. It has been saved locally and will sync automatically when the connection is restored.",
+          duration: 5000,
+          icon: <WifiOff className="text-yellow-500" size={20} />,
+          style: {
+            background: "#F59E0B",
+            color: "white",
+            border: "none",
+          },
+        });
+      } catch (offlineErr) {
+        console.error(
+          "❌ [handleCreateTransaction] Offline save also failed:",
+          offlineErr,
+        );
+        toast.error("Transaction Failed", {
+          description:
+            "Failed to create transaction and could not save offline. Please try again.",
+          duration: 5000,
+          style: {
+            background: "#EF4444",
+            color: "white",
+            border: "none",
+          },
+        });
+      }
     }
   };
 
@@ -528,7 +561,7 @@ export default function FoodTotalDiscountPaymentSection() {
               p_name={deviceSettings.receiptPrinter}
               invoiceNum={invoiceNum}
               orderNum={orderNum}
-              cashierName="Cashier" // TODO: Get from auth context
+              cashierName={cashierSession?.cashierFullname ?? "Cashier"}
               onSuccess={handlePayment}
             />
           </>

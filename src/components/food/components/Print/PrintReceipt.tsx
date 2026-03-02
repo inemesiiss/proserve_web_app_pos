@@ -4,6 +4,7 @@ import { Printer, CheckCircle2, AlertCircle } from "lucide-react";
 import { useFoodOrder } from "@/context/food/FoodOrderProvider";
 import { invoke } from "@tauri-apps/api/core";
 import dayjs from "dayjs";
+import type { BranchReceiptFormat } from "@/services/authService";
 
 type PaymentMode = "cash" | "cashless";
 type CashlessType = "maya" | "qrph" | "card";
@@ -36,17 +37,10 @@ export default function ReceiptPrinter({
 
   // VAT Calculations (12% VAT)
   const vatRate = 0.12;
-  const vatableSales = subTotal / (1 + vatRate); // VAT-exclusive amount
+  const vatableSales = subTotal / (1 + vatRate);
   const vatAmount = subTotal - vatableSales;
-  const vatExemptSales = 0; // Adjust if you have VAT-exempt items
+  const vatExemptSales = 0;
   const totalItems = meals.length + products.length;
-
-  const LINE_WIDTH = 32;
-
-  function centerText(text: string, width: number = LINE_WIDTH) {
-    const spaces = Math.floor((width - text.length) / 2);
-    return " ".repeat(Math.max(0, spaces)) + text;
-  }
 
   const effectivePayment = mode === "cashless" ? paymentValue : cashReceived;
   const change = mode === "cash" ? effectivePayment - grandTotal : 0;
@@ -73,7 +67,7 @@ export default function ReceiptPrinter({
     ) {
       console.log(
         "🖨️ [AutoPrint] New invoice detected, auto-printing:",
-        invoiceNum
+        invoiceNum,
       );
       lastPrintedInvoiceRef.current = invoiceNum;
       handlePrint();
@@ -84,104 +78,214 @@ export default function ReceiptPrinter({
   const generateTextReceipt = (): string => {
     const dateTime = dayjs().format("MM/DD/YYYY HH:mm:ss");
 
-    // Header
-    let receipt = centerText("KIOSK OUTPUT RECEIPT") + "\n\n";
-    receipt += centerText("Proserv  Food Retail") + "\n";
-    receipt += centerText("Unit 11-A GF Century Plaza") + "\n";
-    receipt += centerText("Perea Makati City, Philippines") + "\n";
-    receipt += centerText("VAT Reg. TIN: 123-456-000-000") + "\n";
-    receipt += centerText("VAT Reg. Date: 05/05/2020") + "\n";
-    receipt += centerText("MIN: 123456789000000") + "\n\n";
-    receipt += "================================\n\n";
+    // Read receipt format directly from localStorage to avoid stale closure
+    let rf: BranchReceiptFormat | null = null;
+    try {
+      const stored = localStorage.getItem("receipt_format");
+      if (stored) rf = JSON.parse(stored) as BranchReceiptFormat;
+    } catch (e) {
+      console.error("Failed to parse receipt_format:", e);
+    }
 
-    // Items
-    receipt += "QTY  Item                 Amount\n";
+    // Read printer width directly from localStorage to avoid stale closure
+    let lineWidth = 32; // default for 57mm
+    try {
+      const ds = localStorage.getItem("deviceSettings");
+      if (ds) {
+        const parsed = JSON.parse(ds);
+        // 57mm = ~32 chars, 80/88mm = ~48 chars
+        lineWidth = parsed.receiptPrinterSize === 88 ? 48 : 32;
+      }
+    } catch (e) {
+      console.error("Failed to parse deviceSettings:", e);
+    }
+
+    const SEP = "=".repeat(lineWidth);
+
+    // ESC/POS alignment commands — printer hardware handles centering
+    const ALIGN_CENTER = "\x1B\x61\x01";
+    const ALIGN_LEFT = "\x1B\x61\x00";
+
+    function padLR(label: string, value: string) {
+      const gap = lineWidth - label.length - value.length;
+      return label + " ".repeat(Math.max(1, gap)) + value;
+    }
+
+    // Use receipt format values or fallback to defaults
+    const branchName = rf?.b_name || "KIOSK OUTPUT RECEIPT";
+    const companyName = rf?.c_name || "Proserv  Food Retail";
+    const addr = rf?.address || "Unit 11-A GF Century Plaza";
+    const vatTin = rf?.vat_reg_tin || "123-456-000-000";
+    const vatDate = rf?.vat_reg_date || "05/05/2020";
+    const minVal = rf?.min || "123456789000000";
+
+    // ── HEADER (centered by printer) ──
+    let receipt = ALIGN_CENTER;
+    receipt += branchName + "\n\n";
+    receipt += companyName + "\n";
+
+    if (rf?.l_address !== false) {
+      receipt += addr + "\n";
+    }
+
+    if (rf?.t_vat_sales !== false) {
+      receipt += `VAT Reg. TIN: ${vatTin}` + "\n";
+    }
+
+    if (rf?.vat_reg_date !== null && rf?.vat_reg_date !== undefined) {
+      receipt += `VAT Reg. Date: ${vatDate}` + "\n";
+    }
+
+    if (rf?.min && rf.min !== null) {
+      receipt += `MIN: ${minVal}` + "\n";
+    }
+
+    receipt += "\n" + SEP + "\n\n";
+
+    // ── ITEMS (left-aligned) ──
+    receipt += ALIGN_LEFT;
+    const qtyColW = 4;
+    const amtColW = 10;
+    const nameColW = lineWidth - qtyColW - amtColW;
+
+    receipt +=
+      "QTY".padEnd(qtyColW) +
+      "Item".padEnd(nameColW) +
+      "Amount".padStart(amtColW) +
+      "\n";
+
     allItems.forEach((item) => {
       const discountCode =
         item.discount_type === "pwd"
           ? "(PWD)"
           : item.discount_type === "sc"
-          ? "(SC)"
-          : "";
+            ? "(SC)"
+            : "";
       const itemName = (
         item.name + (discountCode ? " " + discountCode : "")
       ).trim();
       const amount = (item.price * item.qty).toFixed(2);
       const qty = String(item.qty).padStart(2);
-      const name = itemName.padEnd(18).slice(0, 18);
-      const amt = amount.padStart(7);
-      receipt += `${qty}   ${name} ${amt}\n`;
+      const name = itemName.padEnd(nameColW).slice(0, nameColW);
+      const amt = amount.padStart(amtColW);
+      receipt += `${qty}  ${name}${amt}\n`;
     });
 
-    receipt +=
-      "\nSubtotal:".padEnd(25) + subTotal.toFixed(2).padStart(7) + "\n\n";
-    receipt += "================================\n\n";
+    receipt += "\n" + padLR("Subtotal:", subTotal.toFixed(2)) + "\n\n";
+    receipt += SEP + "\n\n";
 
-    // VAT and totals
-    if (totalDiscount > 0) {
+    // ── TOTALS ──
+    if (rf?.t_discount !== false && totalDiscount > 0) {
+      receipt += padLR("Discount:", `-${totalDiscount.toFixed(2)}`) + "\n";
+    }
+
+    if (rf?.t_vat_sales !== false) {
+      receipt += padLR("VAT Sales:", vatableSales.toFixed(2)) + "\n";
+    }
+
+    if (rf?.t_vat_twelve !== false) {
+      receipt += padLR("VAT (12%):", vatAmount.toFixed(2)) + "\n";
+    }
+
+    if (rf?.t_vat_exempt !== false) {
+      receipt += padLR("VAT Exempt Sales:", vatExemptSales.toFixed(2)) + "\n";
+    }
+
+    if (rf?.t_total !== false) {
+      receipt += padLR("Total:", grandTotal.toFixed(2)) + "\n";
+    }
+
+    if (rf?.t_cash !== false && mode === "cash") {
+      receipt += padLR("Cash:", cashReceived.toFixed(2)) + "\n";
+    } else if (rf?.t_cash !== false) {
       receipt +=
-        "Discount:".padEnd(25) +
-        `-${totalDiscount.toFixed(2)}`.padStart(7) +
+        padLR(
+          `Payment (${cashlessType?.toUpperCase() || "CASHLESS"}):`,
+          paymentValue.toFixed(2),
+        ) + "\n";
+    }
+
+    if (rf?.t_change !== false) {
+      receipt += padLR("Change:", change.toFixed(2)) + "\n\n";
+    }
+
+    receipt += SEP + "\n\n";
+
+    // ── TRANSACTION DETAILS ──
+    if (rf?.t_total_items !== false) {
+      receipt += padLR("TOTAL ITEM (S):", String(totalItems)) + "\n";
+    }
+
+    if (rf?.t_invoice !== false) {
+      receipt += padLR("INV #:", invoiceNum) + "\n";
+    }
+
+    if (rf?.t_cashier !== false) {
+      receipt += padLR("CASHIER:", cashierName) + "\n";
+    }
+
+    if (rf?.t_order_no !== false) {
+      receipt += padLR("Order #:", orderNum) + "\n";
+    }
+
+    if (rf?.t_date_time !== false) {
+      receipt += padLR("Date and Time:", dateTime) + "\n";
+    }
+
+    if (rf?.t_cash !== false) {
+      receipt +=
+        padLR("Cash:", mode === "cash" ? cashReceived.toFixed(2) : "0.00") +
         "\n";
     }
-    receipt +=
-      "VAT Sales:".padEnd(25) + vatableSales.toFixed(2).padStart(7) + "\n";
-    receipt +=
-      "VAT (12%):".padEnd(25) + vatAmount.toFixed(2).padStart(7) + "\n";
-    receipt +=
-      "VAT Exempt Sales:".padEnd(25) +
-      vatExemptSales.toFixed(2).padStart(7) +
-      "\n";
-    receipt += "Total:".padEnd(25) + grandTotal.toFixed(2).padStart(7) + "\n";
 
-    if (mode === "cash") {
-      receipt +=
-        "Cash:".padEnd(25) + cashReceived.toFixed(2).padStart(7) + "\n";
-    } else {
-      receipt +=
-        `Payment (${cashlessType?.toUpperCase() || "CASHLESS"}):`.padEnd(25) +
-        paymentValue.toFixed(2).padStart(7) +
-        "\n";
+    if (rf?.t_change !== false) {
+      receipt += padLR("Change:", change.toFixed(2)) + "\n\n";
     }
-    receipt += "Change:".padEnd(25) + change.toFixed(2).padStart(7) + "\n\n";
 
-    receipt += "================================\n\n";
+    // ── SIGNATURE LINES ──
+    if (rf?.line !== false) {
+      const underline = "_".repeat(Math.max(10, lineWidth - 12));
+      if (rf?.l_name !== false) {
+        receipt += `Name: ${underline}\n`;
+      }
+      if (rf?.l_address !== false) {
+        receipt += `Address: ${underline}\n`;
+      }
+      if (rf?.l_tin !== false) {
+        receipt += `TIN No.: ${underline}\n`;
+      }
+      if (rf?.l_bus_style !== false) {
+        receipt += `Bus Style: ${underline}\n`;
+      }
+      receipt += "\n";
+    }
 
-    // Transaction details
-    receipt += `TOTAL ITEM (S):          ${totalItems}\n`;
-    receipt += `INV #:                   ${invoiceNum}\n`;
-    receipt += `CASHIER:                 ${cashierName}\n`;
-    receipt += `Order #:                 ${orderNum}\n`;
-    receipt += `Date and Time:           ${dateTime}\n`;
-    receipt += `Cash:                    ${
-      mode === "cash" ? cashReceived.toFixed(2) : "0.00"
-    }\n`;
-    receipt += `Change:                  ${change.toFixed(2)}\n\n`;
+    // ── CENTERED SECTIONS ──
+    receipt += ALIGN_CENTER;
+    receipt += "This serves as your invoice." + "\n\n";
+    receipt += SEP + "\n\n";
 
-    // Signature section
-    receipt += "Name: _________________________\n";
-    receipt += "Address: ______________________\n";
-    receipt += "TIN No.: ______________________\n";
-    receipt += "Bus Style: ____________________\n\n";
+    // ── QR CODE (centered) ──
+    if (rf?.qr !== false) {
+      receipt += "Scan for your feedback" + "\n";
+      if (rf?.qr_image) {
+        receipt += "[QR CODE]" + "\n\n";
+      } else {
+        receipt += "[QR CODE PLACEHOLDER]" + "\n\n";
+      }
+    }
 
-    receipt += centerText("This serves as your invoice.") + "\n\n";
-    receipt += "================================\n\n";
+    receipt += SEP + "\n\n";
 
-    // QR Code section
-    receipt += centerText("Scan for your feedback") + "\n";
-    receipt += centerText("[QR CODE PLACEHOLDER]") + "\n\n";
-
-    receipt += "================================\n\n";
-
-    // Supplier info
-    receipt += centerText("ProServ Communication") + "\n";
-    receipt += centerText("Unit 11-A GF Century Plaza") + "\n";
-    receipt += centerText("Perea Makati City, Philippines") + "\n";
-    receipt += centerText("Marikao Luzada 1014 PHL") + "\n";
-    receipt += centerText("VAT Reg. TIN: 123-456-000-000") + "\n";
-    receipt += centerText("VAT Reg. Date: 05/05/2020") + "\n";
-    receipt += centerText("Accred No: 0000-000000000-000000") + "\n";
-    receipt += centerText("PTU No.: ARSP202300168") + "\n\n";
+    // ── FOOTER / SUPPLIER INFO (centered, fixed mandatory values) ──
+    receipt += "ProServ Communication" + "\n";
+    receipt += "Unit 11-A GF Century Plaza" + "\n";
+    receipt += "Perea Makati City, Philippines" + "\n";
+    receipt += "Marikao Luzada 1014 PHL" + "\n";
+    receipt += "VAT Reg. TIN: 123-456-000-000" + "\n";
+    receipt += "VAT Reg. Date: 05/05/2020" + "\n";
+    receipt += "Accred No: 0000-000000000-000000" + "\n";
+    receipt += "PTU No.: ARSP202300168" + "\n\n";
 
     return receipt;
   };
@@ -192,7 +296,7 @@ export default function ReceiptPrinter({
     console.log("🖨️ [PrintReceipt] Printer Name:", p_name);
     console.log(
       "💵 [PrintReceipt] Amount:",
-      mode === "cash" ? cashReceived : paymentValue
+      mode === "cash" ? cashReceived : paymentValue,
     );
 
     try {
@@ -206,7 +310,7 @@ export default function ReceiptPrinter({
       if (!printers || printers.length === 0) {
         console.error("❌ [PrintReceipt] No printers detected");
         setPrintError(
-          "No printer detected. Please connect a printer and try again."
+          "No printer detected. Please connect a printer and try again.",
         );
         setIsPrinting(false);
         return;
@@ -215,17 +319,17 @@ export default function ReceiptPrinter({
       if (!printers.includes(p_name)) {
         console.error(
           `❌ [PrintReceipt] Printer "${p_name}" not found in list:`,
-          printers
+          printers,
         );
         setPrintError(
-          `Printer "${p_name}" not found. Please select a valid printer.`
+          `Printer "${p_name}" not found. Please select a valid printer.`,
         );
         setIsPrinting(false);
         return;
       }
 
       console.log(
-        "✅ [PrintReceipt] Printer verified, constructing receipt..."
+        "✅ [PrintReceipt] Printer verified, constructing receipt...",
       );
 
       // TODO: Save transaction to database here before printing
@@ -237,7 +341,7 @@ export default function ReceiptPrinter({
 
       console.log(
         "📝 [PrintReceipt] Receipt content generated, sending to printer:",
-        p_name
+        p_name,
       );
       await invoke("print_receipt", { printerName: p_name, content: receipt });
 
