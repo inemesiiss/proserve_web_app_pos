@@ -156,14 +156,14 @@ function BMSalesReport() {
   const { data: detailsData, isLoading: detailsLoading } =
     useGetSalesReportDetailsQuery(
       { salesReportId: selectedSalesReport?.id || 0 },
-      { skip: !selectedSalesReport || !isDetailsModalOpen }
+      { skip: !selectedSalesReport || !isDetailsModalOpen },
     );
 
   // Get unique cashier names from API data
   const cashierList = useMemo(() => {
     if (!salesData?.results) return [];
     const cashiers = Array.from(
-      new Set(salesData.results.map((item) => item.cashier_name))
+      new Set(salesData.results.map((item) => item.cashier_name)),
     );
     return cashiers.sort();
   }, [salesData]);
@@ -175,7 +175,7 @@ function BMSalesReport() {
     // Filter by selected cashier if not "all"
     if (selectedCashier !== "all") {
       return salesData.results.filter(
-        (item) => item.cashier_name === selectedCashier
+        (item) => item.cashier_name === selectedCashier,
       );
     }
     return salesData.results;
@@ -212,24 +212,24 @@ function BMSalesReport() {
     const results = filteredByDate;
     const totalSales = results.reduce(
       (sum, item) => sum + parseFloat(item.total_sales),
-      0
+      0,
     );
     const totalTransactions = results.length;
     const cashSales = results.reduce(
       (sum, item) => sum + parseFloat(item.total_cash),
-      0
+      0,
     );
     const digitalSales = results.reduce(
       (sum, item) => sum + parseFloat(item.total_cashless),
-      0
+      0,
     );
     const totalDiscount = results.reduce(
       (sum, item) => sum + parseFloat(item.total_discount),
-      0
+      0,
     );
     const netSales = results.reduce(
       (sum, item) => sum + parseFloat(item.net_sales),
-      0
+      0,
     );
 
     return {
@@ -284,7 +284,7 @@ function BMSalesReport() {
       <h1 className="text-2xl font-bold mb-4 dark:text-white">Sales Report</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <SummaryCard
           title="Total Sales"
           value={formatCurrency(summaryStats.totalSales)}
@@ -310,7 +310,7 @@ function BMSalesReport() {
           value={formatCurrency(summaryStats.totalDiscount)}
           icon={<ShoppingCart className="h-5 w-5" />}
         />
-      </div>
+      </div> */}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 mb-4">

@@ -130,6 +130,7 @@ export const reportsApi = createApi({
         page_size = 10,
         start_date,
         end_date,
+        cashier,
       }) => {
         let url = `/transactions/reports/get_transactions_per_branch?bid=${bid}&page_size=${page_size}&page=${page}`;
         if (search) {
@@ -140,6 +141,9 @@ export const reportsApi = createApi({
         }
         if (end_date) {
           url += `&end_date=${end_date}`;
+        }
+        if (cashier) {
+          url += `&cashier=${cashier}`;
         }
         return {
           url,

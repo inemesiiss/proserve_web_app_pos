@@ -36,7 +36,7 @@ function hexToRgb(hex: string): string {
   if (!result) return "0, 0, 0";
   return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
     result[3],
-    16
+    16,
   )}`;
 }
 
@@ -82,11 +82,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.setProperty("--color-secondary", themeColors.secondary);
     root.style.setProperty(
       "--color-primary-rgb",
-      themeColors.primaryRgb || hexToRgb(themeColors.primary)
+      themeColors.primaryRgb || hexToRgb(themeColors.primary),
     );
     root.style.setProperty(
       "--color-secondary-rgb",
-      themeColors.secondaryRgb || hexToRgb(themeColors.secondary)
+      themeColors.secondaryRgb || hexToRgb(themeColors.secondary),
     );
   };
 
@@ -106,8 +106,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         // Then fetch from API
         // Replace with your actual API endpoint
         const response = await fetch("/api/theme/colors");
+        const contentType = response.headers.get("content-type");
 
-        if (response.ok) {
+        if (response.ok && contentType?.includes("application/json")) {
           const data = await response.json();
           const newColors: ThemeColors = {
             primary: data.primary || DEFAULT_COLORS.primary,

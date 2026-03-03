@@ -72,6 +72,7 @@ function BMReportTransaction() {
   // Dynamic branchId from localStorage
   const [branchId, setBranchId] = useState<number | null>(null);
   const [isCheckingBranch, setIsCheckingBranch] = useState(true);
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
   // Check for branchId on mount
   useEffect(() => {
@@ -96,6 +97,9 @@ function BMReportTransaction() {
       search: searchQuery,
       page: currentPage,
       page_size: pageSize,
+      ...(filters.cashier && { cashier: filters.cashier }),
+      ...(filters.start_date && { start_date: filters.start_date }),
+      ...(filters.end_date && { end_date: filters.end_date }),
     },
     { skip: !branchId },
   );
@@ -184,6 +188,11 @@ function BMReportTransaction() {
   const handleClearSearch = () => {
     setSearchQuery("");
     setCurrentPage(1);
+  };
+
+  const handleFiltersChange = (appliedFilters: Record<string, any>) => {
+    setFilters(appliedFilters);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handlePageSizeChange = (newSize: number) => {
@@ -292,7 +301,12 @@ function BMReportTransaction() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-        <FiltersBar showClientFilter={false} />
+        <FiltersBar
+          showClientFilter={false}
+          showBranchUserFilter={true}
+          branchId={branchId || undefined}
+          onFilterChange={handleFiltersChange}
+        />
       </div>
 
       {isError && (
