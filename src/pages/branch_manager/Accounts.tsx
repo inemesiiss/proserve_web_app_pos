@@ -20,7 +20,8 @@ import {
 import AddAccountModal, {
   type IdName,
 } from "@/components/admin/modals/AddAccountModal";
-import { PencilLine } from "lucide-react";
+import { PencilLine, ReceiptText } from "lucide-react";
+import AddClientReceiptModal from "@/components/admin/modals/AddClientReceipt";
 
 const accountColumns = [
   { key: "name", label: "Account" },
@@ -30,6 +31,7 @@ const accountColumns = [
   { key: "renewal", label: "Renewal Date" },
   { key: "subscription_n", label: "Plan" },
   { key: "no_license", label: "No of Licenses" },
+  { key: "receipt", label: "Receipt" },
   { key: "edit", label: "EDIT" },
 ];
 
@@ -46,6 +48,11 @@ function BMAccounts() {
   const [accountFilter1, setAccountFilter1] = useState("0");
   const [planFilter1, setPlanFilter1] = useState("0");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const [isUpReceipt, setIsUpReceipt] = useState(false);
+  const [activeClientN, setActiveClientN] = useState("");
+  const [activeClient, setActiveClient] = useState("0");
+  const [activeReceipt, setActiveReceipt] = useState("0");
 
   const [accountData, setAccountData] = useState([]);
 
@@ -107,6 +114,29 @@ function BMAccounts() {
       let data = getClients?.data?.results;
       const updated = data.map((item: any) => ({
         ...item,
+        receipt: (
+          <ReceiptText
+            size={18}
+            className="cursor-pointer text-blue-500"
+            onClick={() => {
+              setType(1);
+              setActiveClientN(item?.name);
+              setActiveClient(item?.id);
+              setIsUpReceipt(true);
+              setActiveReceipt(item?.rid);
+            }}
+          />
+          // <Button size={"sm"}>View</Button>
+          // <PencilLine
+          //   size={18}
+          //   className="cursor-pointer text-orange-500"
+          //   onClick={() => {
+          //     setType(2);
+          //     setData(item);
+          //     setIsAddModalOpen(true);
+          //   }}
+          // />
+        ),
         edit: (
           <PencilLine
             size={18}
@@ -227,6 +257,21 @@ function BMAccounts() {
         type={type}
         setType={setType}
         data={data}
+      />
+
+      {/* Add Receipt Modal */}
+      <AddClientReceiptModal
+        isOpen={isUpReceipt}
+        onClose={() => {
+          setIsUpReceipt(false);
+          // setData(undefined);
+        }}
+        onSubmit={handleSubmitAccount}
+        type={type}
+        setType={setType}
+        data={activeReceipt}
+        name={activeClientN}
+        id={activeClient}
       />
     </div>
   );

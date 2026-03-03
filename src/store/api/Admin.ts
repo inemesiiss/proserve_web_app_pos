@@ -451,6 +451,37 @@ export const adminApi = createApi({
       },
       providesTags: ["admin"],
     }),
+    ///api/adminpos/add_client_receipt
+    addClientReceipt: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_client_receipt/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
+    ///api/adminpos/get_receipt_footer
+    getReceiptFooter: builder.query({
+      query: () => {
+        return {
+          url: `/adminpos/get_receipt_footer`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    ///api/adminpos/get_receipt_client
+    getReceiptClient: builder.query({
+      query: ({ id, count }) => {
+        return {
+          url: `/adminpos/get_receipt_client?id=${id}&count=${count}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
   }),
 });
 
@@ -498,4 +529,7 @@ export const {
   useAddClientProductTemplateMutation,
   useAddCategoryTemplateMutation,
   useGetClientDetailsQuery,
+  useAddClientReceiptMutation,
+  useGetReceiptFooterQuery,
+  useGetReceiptClientQuery,
 } = adminApi;

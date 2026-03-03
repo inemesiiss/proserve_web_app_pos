@@ -97,10 +97,10 @@ function BMUserAccess() {
       const updated = data.map((item: any) => ({
         ...item,
         account: getClientDropdown?.data?.data.find(
-          (item1: any) => String(item1.id) === String(item.client)
+          (item1: any) => String(item1.id) === String(item.client),
         ).name,
         branch: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch
+          (item1: any) => item1.id === item.branch,
         ).name,
         status: (
           <div
@@ -139,12 +139,13 @@ function BMUserAccess() {
       >
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            User Access Management
+            Branch Access Management
           </h1>
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1"></div>
             <UserActionButtons
+              title="Add Branch User"
               onAddUser={handleAddUser}
               onImportCSV={handleImportCSV}
             />
