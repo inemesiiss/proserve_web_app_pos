@@ -51,7 +51,6 @@ const getDateRange = (
 
 export default function FiltersBar({
   onFilterChange,
-  showSearch = false,
   showClientFilter = true,
   showBranchUserFilter = false,
   branchId,
