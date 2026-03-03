@@ -100,14 +100,14 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
           ...(role !== 2
             ? [
                 {
-                  label: "Manager",
+                  label: "Admin User",
                   path: "/bm/users/manager",
                   icon: <BookText className="w-6 h-6" />,
                 },
               ]
             : []),
           {
-            label: "Cashier",
+            label: "Branch User",
             path: "/bm/users/user",
             icon: <BookText className="w-6 h-6" />,
           },
