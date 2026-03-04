@@ -23,11 +23,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
 
 const terminalColumns = [
+  { key: "client", label: "Account" },
+  { key: "branch", label: "Branch" },
+  { key: "contract_term", label: "Term(months)" },
   { key: "terminal_id", label: "Terminal ID" },
-  { key: "branchCode", label: "Branch Code" },
-  { key: "branchName", label: "Branch Name" },
   { key: "renewal", label: "Renewal Date" },
-  { key: "accountName", label: "Account Name" },
   { key: "status", label: "Status" },
   { key: "edit", label: "EDIT" },
 ];
@@ -110,15 +110,12 @@ function BMTerminal() {
       let data = getTerminal?.data?.results;
       const updated = data.map((item: any) => ({
         ...item,
-        branchCode: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch,
-        ).code,
-        branchName: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch,
-        ).name,
-        accountName: getClientDropdown?.data?.data.find(
+        branch: getBranchDropdown?.data?.data.find(
+          (item1: any) => String(item1.id) === String(item.branch),
+        )?.name,
+        client: getClientDropdown?.data?.data.find(
           (item1: any) => String(item1.id) === String(item.client),
-        ).name,
+        )?.name,
         status: (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -140,9 +137,11 @@ function BMTerminal() {
         ),
       }));
       console.log("Terminal", updated);
-      setTerminalData(updated);
-      setTotalPages(Math.ceil(getTerminal?.data?.count / pageSize));
-      setCount(getTerminal.data.count);
+      setTimeout(() => {
+        setTerminalData(updated);
+        setTotalPages(Math.ceil(getTerminal?.data?.count / pageSize));
+        setCount(getTerminal.data.count);
+      }, 100);
     }
   }, [getTerminal.isSuccess, getTerminal.data]);
 

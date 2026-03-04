@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useAddClientReceiptMutation,
-  useGetReceiptClientQuery,
+  useAddBranchReceiptMutation,
+  useGetReceiptBranchQuery,
   useGetReceiptFooterQuery,
 } from "@/store/api/Admin";
 import { toast } from "sonner";
 import YesNoDropdown from "@/components/reusables/YesNoDropdown";
 
-interface AddClientReceiptProps {
+interface AddBranchReceiptProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (data: AccountFormData) => void;
@@ -20,6 +20,7 @@ interface AddClientReceiptProps {
   setType: React.Dispatch<React.SetStateAction<number>>;
   data?: any;
   name: string;
+  cname: string;
   id: string;
 }
 
@@ -63,7 +64,7 @@ const getVal = (e: boolean) => {
   }
 };
 
-export default function AddClientReceiptModal({
+export default function AddBranchReceiptModal({
   isOpen,
   onClose,
   onSubmit,
@@ -71,8 +72,9 @@ export default function AddClientReceiptModal({
   setType,
   data,
   name,
+  cname,
   id,
-}: AddClientReceiptProps) {
+}: AddBranchReceiptProps) {
   const initial = {
     id: "0",
     client: id,
@@ -180,7 +182,7 @@ export default function AddClientReceiptModal({
 
   const getRfooter = useGetReceiptFooterQuery({});
 
-  const getCR = useGetReceiptClientQuery(
+  const getCR = useGetReceiptBranchQuery(
     { id: data, count: counter },
     { skip: data === "0" },
   );
@@ -231,12 +233,12 @@ export default function AddClientReceiptModal({
     }
   }, [isOpen]);
 
-  const [addClient] = useAddClientReceiptMutation();
+  const [addClient] = useAddBranchReceiptMutation();
   const submitAccount = async () => {
     try {
       const formData1 = new FormData();
       formData1.append("datas", JSON.stringify(formData));
-      formData1.append("cid", id);
+      formData1.append("bid", id);
       formData1.append("rid", data);
       if (formData.qr_image) {
         formData1.append("logo", formData.qr_image);
@@ -299,8 +301,18 @@ export default function AddClientReceiptModal({
                     <Input
                       type="text"
                       placeholder="Account Name"
-                      value={name}
+                      value={cname}
                       // onChange={(e) => handleChange("client", e.target.value)}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="grid max-w-lg items-center gap-1 ">
+                    <Label htmlFor="date">Branch</Label>
+                    <Input
+                      type="text"
+                      placeholder="Account Name"
+                      value={name}
                       readOnly
                     />
                   </div>

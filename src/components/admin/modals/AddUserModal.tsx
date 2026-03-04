@@ -87,7 +87,7 @@ export default function AddUserModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const getProfiles = useGetProfileQuery({});
+  const getProfiles = useGetProfileQuery({ type: 1 });
   const getClientDropdown = useGetClientsQuery({});
   useEffect(() => {
     if (getClientDropdown.isSuccess && getClientDropdown.data) {
@@ -322,8 +322,8 @@ export default function AddUserModal({
                         type === 1
                           ? String(formData.profile)
                           : formData.profile !== 0
-                          ? String(formData.profile)
-                          : String(data.profile)
+                            ? String(formData.profile)
+                            : String(data.profile)
                       }
                       onValueChange={(value) => handleChange("profile", value)}
                     >

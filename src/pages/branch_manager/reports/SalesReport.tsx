@@ -3,7 +3,7 @@ import { Search } from "@/components/ui/search";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -18,11 +18,11 @@ import {
 import type { SalesReportItem } from "@/types/reports";
 import { SalesReportDetailsModal } from "./SalesReportDetailsModal";
 import {
-  DollarSign,
-  TrendingUp,
-  ShoppingCart,
-  CreditCard,
-  Banknote,
+  // DollarSign,
+  // TrendingUp,
+  // ShoppingCart,
+  // CreditCard,
+  // Banknote,
   Loader2,
 } from "lucide-react";
 
@@ -77,53 +77,53 @@ const columns = [
 ];
 
 // Summary Card Component
-interface SummaryCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  trend?: string;
-  trendUp?: boolean;
-  className?: string;
-}
+// interface SummaryCardProps {
+//   title: string;
+//   value: string;
+//   icon: React.ReactNode;
+//   trend?: string;
+//   trendUp?: boolean;
+//   className?: string;
+// }
 
-function SummaryCard({
-  title,
-  value,
-  icon,
-  trend,
-  trendUp,
-  className = "",
-}: SummaryCardProps) {
-  return (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          {title}
-        </CardTitle>
-        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-gray-900 dark:text-white">
-          {value}
-        </div>
-        {trend && (
-          <p
-            className={`text-xs mt-1 flex items-center gap-1 ${
-              trendUp
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
-            }`}
-          >
-            <TrendingUp className={`h-3 w-3 ${!trendUp ? "rotate-180" : ""}`} />
-            {trend}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+// function SummaryCard({
+//   title,
+//   value,
+//   icon,
+//   trend,
+//   trendUp,
+//   className = "",
+// }: SummaryCardProps) {
+//   return (
+//     <Card className={className}>
+//       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//         <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+//           {title}
+//         </CardTitle>
+//         <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+//           {icon}
+//         </div>
+//       </CardHeader>
+//       <CardContent>
+//         <div className="text-2xl font-bold text-gray-900 dark:text-white">
+//           {value}
+//         </div>
+//         {trend && (
+//           <p
+//             className={`text-xs mt-1 flex items-center gap-1 ${
+//               trendUp
+//                 ? "text-green-600 dark:text-green-400"
+//                 : "text-red-600 dark:text-red-400"
+//             }`}
+//           >
+//             <TrendingUp className={`h-3 w-3 ${!trendUp ? "rotate-180" : ""}`} />
+//             {trend}
+//           </p>
+//         )}
+//       </CardContent>
+//     </Card>
+//   );
+// }
 
 function BMSalesReport() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -197,50 +197,50 @@ function BMSalesReport() {
   }, [salesData]);
 
   // Calculate summary statistics from API data
-  const summaryStats = useMemo(() => {
-    if (!filteredByDate || filteredByDate.length === 0) {
-      return {
-        totalSales: 0,
-        totalTransactions: 0,
-        cashSales: 0,
-        digitalSales: 0,
-        totalDiscount: 0,
-        netSales: 0,
-      };
-    }
+  // const summaryStats = useMemo(() => {
+  //   if (!filteredByDate || filteredByDate.length === 0) {
+  //     return {
+  //       totalSales: 0,
+  //       totalTransactions: 0,
+  //       cashSales: 0,
+  //       digitalSales: 0,
+  //       totalDiscount: 0,
+  //       netSales: 0,
+  //     };
+  //   }
 
-    const results = filteredByDate;
-    const totalSales = results.reduce(
-      (sum, item) => sum + parseFloat(item.total_sales),
-      0,
-    );
-    const totalTransactions = results.length;
-    const cashSales = results.reduce(
-      (sum, item) => sum + parseFloat(item.total_cash),
-      0,
-    );
-    const digitalSales = results.reduce(
-      (sum, item) => sum + parseFloat(item.total_cashless),
-      0,
-    );
-    const totalDiscount = results.reduce(
-      (sum, item) => sum + parseFloat(item.total_discount),
-      0,
-    );
-    const netSales = results.reduce(
-      (sum, item) => sum + parseFloat(item.net_sales),
-      0,
-    );
+  //   const results = filteredByDate;
+  //   const totalSales = results.reduce(
+  //     (sum, item) => sum + parseFloat(item.total_sales),
+  //     0,
+  //   );
+  //   const totalTransactions = results.length;
+  //   const cashSales = results.reduce(
+  //     (sum, item) => sum + parseFloat(item.total_cash),
+  //     0,
+  //   );
+  //   const digitalSales = results.reduce(
+  //     (sum, item) => sum + parseFloat(item.total_cashless),
+  //     0,
+  //   );
+  //   const totalDiscount = results.reduce(
+  //     (sum, item) => sum + parseFloat(item.total_discount),
+  //     0,
+  //   );
+  //   const netSales = results.reduce(
+  //     (sum, item) => sum + parseFloat(item.net_sales),
+  //     0,
+  //   );
 
-    return {
-      totalSales,
-      totalTransactions,
-      cashSales,
-      digitalSales,
-      totalDiscount,
-      netSales,
-    };
-  }, [filteredByDate]);
+  //   return {
+  //     totalSales,
+  //     totalTransactions,
+  //     cashSales,
+  //     digitalSales,
+  //     totalDiscount,
+  //     netSales,
+  //   };
+  // }, [filteredByDate]);
 
   const totalItems = filteredByDate.length;
   const totalPages = Math.ceil(totalItems / pageSize);

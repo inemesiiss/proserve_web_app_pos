@@ -8,11 +8,19 @@ import {
   useAddBranchUserMutation,
   useGetAllBranchQuery,
   useGetClientsQuery,
+  useGetProfileQuery,
   useUpBranchUserMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
 import { ComboBox } from "@/components/reusables/Barangay";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -30,6 +38,7 @@ interface UserFormData {
   fullname: string;
   password: string;
   status: number;
+  profile: number;
 }
 
 export default function AddUserAccessModal({
@@ -56,7 +65,7 @@ export default function AddUserAccessModal({
   const [formData, setFormData] = useState<UserFormData>(initial);
   const [client, setClient] = useState<IdName[]>([]);
   const [branch, setBranch] = useState<IdName[]>([]);
-  //   const [profile, setProfile] = useState<IdName[]>([]);
+  const [profile, setProfile] = useState<IdName[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +98,13 @@ export default function AddUserAccessModal({
     }
   }, [getBranchDropdown.isSuccess, getBranchDropdown.data]);
 
+  const getProfiles = useGetProfileQuery({ type: 2 });
+  useEffect(() => {
+    if (getProfiles.isSuccess && getProfiles.data) {
+      setProfile(getProfiles.data.data);
+    }
+  }, [getProfiles.isSuccess, getProfiles.data]);
+
   //   useEffect(() => {
   //     if (getProfiles.isSuccess && getProfiles.data) {
   //       setProfile(getProfiles.data.data);
@@ -103,6 +119,7 @@ export default function AddUserAccessModal({
         branch: data.branch,
         fullname: data.fullname,
         password: "",
+        profile: Number(data.profile),
         status: 1,
       });
     } else if (isOpen) {
@@ -262,6 +279,31 @@ export default function AddUserAccessModal({
                         }
                       }}
                     />
+                  </div>
+
+                  <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">User Profile</Label>
+                    <Select
+                      value={
+                        type === 1
+                          ? String(formData.profile)
+                          : formData.profile !== 0
+                            ? String(formData.profile)
+                            : String(data.profile)
+                      }
+                      onValueChange={(value) => handleChange("profile", value)}
+                    >
+                      <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                        <SelectValue placeholder="Select client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profile.map((item1: IdName) => (
+                          <SelectItem key={item1.id} value={String(item1.id)}>
+                            {item1.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

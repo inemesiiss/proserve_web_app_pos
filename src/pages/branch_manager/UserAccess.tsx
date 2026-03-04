@@ -8,6 +8,7 @@ import {
   useGetAllBranchQuery,
   useGetBranchUsersQuery,
   useGetClientsQuery,
+  useGetProfileQuery,
 } from "@/store/api/Admin";
 import { PencilLine } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +26,7 @@ const userColumns = [
   { key: "account", label: "Account" },
   { key: "branch", label: "Branch" },
   { key: "fullname", label: "Fullname" },
+  { key: "profile", label: "Profile" },
   //   { key: "password", label: "Password" },
   { key: "status", label: "Status" },
   { key: "edit", label: "Edit" },
@@ -82,6 +84,7 @@ function BMUserAccess() {
 
   const getClientDropdown = useGetClientsQuery({});
   const getBranchDropdown = useGetAllBranchQuery({ cid: client });
+  const getProfiles = useGetProfileQuery({ type: 2 });
 
   const getUsers = useGetBranchUsersQuery({
     search: searchQuery,
@@ -98,10 +101,13 @@ function BMUserAccess() {
         ...item,
         account: getClientDropdown?.data?.data.find(
           (item1: any) => String(item1.id) === String(item.client),
-        ).name,
+        )?.name,
+        profile: getProfiles?.data?.data.find(
+          (item1: any) => String(item1.id) === String(item.profile),
+        )?.name,
         branch: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch,
-        ).name,
+          (item1: any) => String(item1.id) === String(item.branch),
+        )?.name,
         status: (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -123,9 +129,11 @@ function BMUserAccess() {
         ),
       }));
 
-      setUsers(updated);
-      setTotalPages(Math.ceil(getUsers?.data?.count / pageSize));
-      setCount(getUsers.data.count);
+      setTimeout(() => {
+        setUsers(updated);
+        setTotalPages(Math.ceil(getUsers?.data?.count / pageSize));
+        setCount(getUsers.data.count);
+      }, 300);
     }
   }, [getUsers.isSuccess, getUsers.data]);
 
