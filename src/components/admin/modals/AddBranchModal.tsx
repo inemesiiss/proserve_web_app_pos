@@ -160,28 +160,32 @@ export default function AddBranchModal({
 
   useEffect(() => {
     if (data && isOpen) {
-      setFormData({
-        id: data.id,
-        client: String(data.client),
-        code: data.code,
-        name: data.name,
-        block_no: data.block_no,
-        subdivision: data.subdivision,
-        street: data.street,
-        barangay: data.barangay,
-        contact_person: data.contact_person,
-        contact_no: data.contact_no,
-        email: data.email,
-        status: data.status,
-        bp_address: {
-          regionId: data.bp_address.regionId,
-          provinceId: data.bp_address.provinceId,
-          cityId: data.bp_address.cityId,
-          barangayId: data.bp_address.barangayId,
-          barangayName: data.bp_address.barangayName,
-          cityName: data.bp_address.cityName,
-        },
-      });
+      if (type === 1) {
+        setFormData(initial);
+      } else {
+        setFormData({
+          id: data.id,
+          client: String(data.client),
+          code: data.code,
+          name: data.name,
+          block_no: data.block_no,
+          subdivision: data.subdivision,
+          street: data.street,
+          barangay: data.barangay,
+          contact_person: data.contact_person,
+          contact_no: data.contact_no,
+          email: data.email,
+          status: data.status,
+          bp_address: {
+            regionId: data.bp_address.regionId,
+            provinceId: data.bp_address.provinceId,
+            cityId: data.bp_address.cityId,
+            barangayId: data.bp_address.barangayId,
+            barangayName: data.bp_address.barangayName,
+            cityName: data.bp_address.cityName,
+          },
+        });
+      }
     }
   }, [data, isOpen]);
 

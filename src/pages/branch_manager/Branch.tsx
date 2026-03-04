@@ -15,15 +15,17 @@ import {
 } from "@/components/ui/select";
 import { useGetBranchListQuery, useGetClientsQuery } from "@/store/api/Admin";
 import type { IdName } from "@/components/admin/modals/AddAccountModal";
-import { PencilLine } from "lucide-react";
+import { PencilLine, ReceiptText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import UploadBranchModal from "@/components/admin/modals/UploadBranchModal";
+import AddBranchReceiptModal from "@/components/admin/modals/AddBranchReceipt";
 
 const branchColumns = [
   { key: "client", label: "Account Name" },
   { key: "code", label: "Branch Code" },
   { key: "name", label: "Branch" },
   { key: "address", label: "ADDRESS" },
+  { key: "receipt", label: "Receipt" },
   { key: "status", label: "ACTIVE" },
   { key: "edit", label: "EDIT" },
 ];
@@ -40,6 +42,12 @@ function BMBranch() {
   const [accountFilter1, setAccountFilter1] = useState("0");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUpModalOpen, setIsUpModalOpen] = useState(false);
+
+  const [isUpReceipt, setIsUpReceipt] = useState(false);
+  const [activeClientN, setActiveClientN] = useState("");
+  const [activeBranchN, setActiveBranchN] = useState("");
+  const [activeBranch, setActiveBranch] = useState("0");
+  const [activeReceipt, setActiveReceipt] = useState("0");
 
   const [branchData, setBranchData] = useState([]);
 
@@ -100,6 +108,24 @@ function BMBranch() {
       let data = getBranches?.data?.results;
       const updated = data.map((item: any) => ({
         ...item,
+        receipt: (
+          <ReceiptText
+            size={18}
+            className="cursor-pointer text-blue-500"
+            onClick={() => {
+              setType(1);
+              setActiveClientN(
+                getClientDropdown?.data?.data.find(
+                  (item1: any) => item1.id === item.client,
+                ).name,
+              );
+              setActiveBranchN(item?.name);
+              setActiveBranch(item?.id);
+              setIsUpReceipt(true);
+              setActiveReceipt(item?.rid);
+            }}
+          />
+        ),
         client: getClientDropdown?.data?.data.find(
           (item1: any) => item1.id === item.client,
         ).name,
@@ -231,6 +257,21 @@ function BMBranch() {
         }}
         onSubmit={handleSubmitBranch}
         type={type}
+      />
+
+      {/* Add Receipt Modal */}
+      <AddBranchReceiptModal
+        isOpen={isUpReceipt}
+        onClose={() => {
+          setIsUpReceipt(false);
+        }}
+        onSubmit={handleSubmitBranch}
+        type={type}
+        setType={setType}
+        data={activeReceipt}
+        name={activeBranchN}
+        cname={activeClientN}
+        id={activeBranch}
       />
     </div>
   );

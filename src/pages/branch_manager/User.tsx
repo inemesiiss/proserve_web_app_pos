@@ -83,7 +83,7 @@ function BMUser() {
 
   const getClientDropdown = useGetClientsQuery({});
   const getBranchDropdown = useGetAllBranchQuery({ cid: client });
-  const getProfiles = useGetProfileQuery({});
+  const getProfiles = useGetProfileQuery({ type: 1 });
 
   const getUsers = useGetUsersQuery({
     search: searchQuery,
@@ -100,13 +100,13 @@ function BMUser() {
         ...item,
         account: getClientDropdown?.data?.data.find(
           (item1: any) => String(item1.id) === String(item.client),
-        ).name,
+        )?.name,
         branch: getBranchDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.branch,
-        ).name,
+          (item1: any) => String(item1.id) === String(item.branch),
+        )?.name,
         profile: getProfiles?.data?.data.find(
-          (item1: any) => item1.id === item.profile,
-        ).name,
+          (item1: any) => String(item1.id) === String(item.profile),
+        )?.name,
         status: (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -128,9 +128,11 @@ function BMUser() {
         ),
       }));
 
-      setUsers(updated);
-      setTotalPages(Math.ceil(getUsers?.data?.count / pageSize));
-      setCount(getUsers.data.count);
+      setTimeout(() => {
+        setUsers(updated);
+        setTotalPages(Math.ceil(getUsers?.data?.count / pageSize));
+        setCount(getUsers.data.count);
+      }, 300);
     }
   }, [getUsers.isSuccess, getUsers.data]);
 

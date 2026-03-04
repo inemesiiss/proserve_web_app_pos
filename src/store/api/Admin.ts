@@ -192,9 +192,9 @@ export const adminApi = createApi({
     }),
     ///api/adminpos/get_profile
     getProfile: builder.query({
-      query: () => {
+      query: ({ type }) => {
         return {
-          url: `/adminpos/get_profile`,
+          url: `/adminpos/get_profile?type=${type}`,
           method: "GET",
         };
       },
@@ -482,6 +482,27 @@ export const adminApi = createApi({
       },
       providesTags: ["admin"],
     }),
+    ///api/adminpos/get_receipt_branch
+    getReceiptBranch: builder.query({
+      query: ({ id, count }) => {
+        return {
+          url: `/adminpos/get_receipt_branch?id=${id}&count=${count}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["admin"],
+    }),
+    ///api/adminpos/add_branch_receipt
+    addBranchReceipt: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/add_branch_receipt/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
   }),
 });
 
@@ -532,4 +553,6 @@ export const {
   useAddClientReceiptMutation,
   useGetReceiptFooterQuery,
   useGetReceiptClientQuery,
+  useGetReceiptBranchQuery,
+  useAddBranchReceiptMutation,
 } = adminApi;
