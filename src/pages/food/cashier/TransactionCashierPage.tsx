@@ -39,6 +39,7 @@ import {
   updateBreakUntil,
   type CashierSession,
 } from "@/utils/cashierSession";
+import { useAutoSync } from "@/hooks/useAutoSync";
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
@@ -124,6 +125,9 @@ export default function FoodTransactionPage() {
 
   // Break modal state - shows when cashier is on break
   const [showBreakModal, setShowBreakModal] = useState(false);
+
+  // Auto-sync offline transactions when internet is available
+  const { pendingCount, isSyncing, isOnline, triggerSync } = useAutoSync();
 
   // Listen for break status changes
   useEffect(() => {
@@ -739,6 +743,44 @@ export default function FoodTransactionPage() {
             navigate("/food/main");
           }}
         />
+
+        {/* 📡 Offline Sync Status Bar */}
+        {pendingCount > 0 && (
+          <div
+            className={`mb-3 px-4 py-2 rounded-lg flex items-center justify-between text-sm font-medium border ${
+              isOnline
+                ? "bg-amber-50 text-amber-800 border-amber-300"
+                : "bg-red-50 text-red-800 border-red-300"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  isOnline
+                    ? isSyncing
+                      ? "bg-amber-500 animate-pulse"
+                      : "bg-amber-500"
+                    : "bg-red-500"
+                }`}
+              />
+              <span>
+                {isSyncing
+                  ? "Syncing offline transactions…"
+                  : isOnline
+                    ? `${pendingCount} offline transaction${pendingCount > 1 ? "s" : ""} pending`
+                    : `Offline — ${pendingCount} transaction${pendingCount > 1 ? "s" : ""} saved locally`}
+              </span>
+            </div>
+            {isOnline && !isSyncing && (
+              <button
+                onClick={triggerSync}
+                className="px-3 py-1 text-xs bg-amber-200 hover:bg-amber-300 rounded transition-colors"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
 
         {/* 📡 Scanner Mode Toggle - STICKY */}
         <div className="sticky top-[20px] z-40 mb-4 p-3 bg-white rounded-lg shadow-sm border border-gray-200">

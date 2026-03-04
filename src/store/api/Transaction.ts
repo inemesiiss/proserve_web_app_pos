@@ -255,6 +255,48 @@ export const transactionApi = createApi({
         body: payload,
       }),
     }),
+
+    /**
+     * Mutation: Sync a single offline transaction
+     * POST /api/transactions/cashier/sync_offline_transaction
+     * Re-creates a transaction that was saved offline when the network was down.
+     */
+    syncOfflineTransaction: builder.mutation<
+      { success: boolean },
+      {
+        purchase: {
+          cashierId: number;
+          grandTotal: number;
+          subTotal: number;
+          cashReceived: number;
+          totalDiscount: number;
+          status: string;
+        };
+        items: Array<{
+          productId: number;
+          branchProdId: number;
+          quantity: number;
+          unitPrice: number;
+          totalPrice: number;
+          productName: string;
+          customization?: any;
+          is_voided?: boolean;
+          voided_at?: string;
+          voided_reason?: string;
+          discount_id?: number;
+          discount?: number;
+          discounted_at?: string;
+          discount_type?: string;
+          discount_note?: string;
+        }>;
+      }
+    >({
+      query: (payload) => ({
+        url: `/transactions/cashier/sync_offline_transaction/`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -321,4 +363,5 @@ export const {
   useGetEodDetailsQuery,
   useLazyGetEodDetailsQuery,
   useConfirmEodMutation,
+  useSyncOfflineTransactionMutation,
 } = transactionApi;
