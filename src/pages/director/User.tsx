@@ -108,6 +108,7 @@ function DirectorUser() {
             <UserActionButtons
               onAddUser={handleAddUser}
               onImportCSV={handleImportCSV}
+              title="Add User"
             />
           </div>
 

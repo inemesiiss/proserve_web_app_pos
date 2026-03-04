@@ -2,12 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 interface UserActionButtonsProps {
+  title: string;
   onAddUser?: () => void;
   onImportCSV?: () => void;
 }
 
 export default function UserActionButtons({
   onAddUser,
+  title,
   // onImportCSV,
 }: UserActionButtonsProps) {
   return (
@@ -17,7 +19,7 @@ export default function UserActionButtons({
         onClick={onAddUser}
       >
         <Plus className="w-4 h-4 mr-2" />
-        Add User
+        {title}
       </Button>
       {/* <Button
         className="bg-blue-500 hover:bg-blue-600 text-white"
