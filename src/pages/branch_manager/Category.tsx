@@ -75,6 +75,7 @@ function BMCategory() {
 
   const handleGo = () => {
     setClient1(client);
+    setCurrentPage(1);
   };
 
   const handleDownloadCSV = () => {

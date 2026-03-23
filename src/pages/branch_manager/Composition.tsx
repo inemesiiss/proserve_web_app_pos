@@ -80,6 +80,7 @@ function BMComposition() {
   const handleGo = () => {
     // console.log("Go clicked with filter:", accountFilter);
     setClient1(client);
+    setCurrentPage(1);
   };
 
   const handleDownloadCSV = () => {
@@ -105,7 +106,7 @@ function BMComposition() {
       const updated = data.map((item: any) => ({
         ...item,
         client: getClientDropdown?.data?.data.find(
-          (item1: any) => item1.id === item.client
+          (item1: any) => item1.id === item.client,
         ).name,
         image: (
           <div>

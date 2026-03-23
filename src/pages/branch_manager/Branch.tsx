@@ -82,6 +82,7 @@ function BMBranch() {
 
   const handleGo = () => {
     setAccountFilter1(accountFilter);
+    setCurrentPage(1);
   };
 
   const handleDownloadCSV = () => {
