@@ -18,7 +18,7 @@ import {
   useUpBranchMutation,
 } from "@/store/api/Admin";
 import type { IdName } from "./AddAccountModal";
-import Barangay from "@/components/reusables/Barangay";
+// import Barangay from "@/components/reusables/Barangay";
 import { toast } from "sonner";
 
 interface AddBranchModalProps {
@@ -53,6 +53,7 @@ interface BranchFormData {
   contact_no: string;
   email: string;
   status: number;
+  bp_address1: string;
   bp_address: bpAddress;
 }
 
@@ -78,6 +79,7 @@ export default function AddBranchModal({
     contact_no: "",
     email: "",
     status: 1,
+    bp_address1: "",
     bp_address: {
       regionId: 0,
       provinceId: 0,
@@ -111,6 +113,7 @@ export default function AddBranchModal({
       contact_no: "",
       email: "",
       status: 1,
+      bp_address1: "",
       bp_address: {
         regionId: 0,
         provinceId: 0,
@@ -176,6 +179,7 @@ export default function AddBranchModal({
           contact_no: data.contact_no,
           email: data.email,
           status: data.status,
+          bp_address1: "",
           bp_address: {
             regionId: data.bp_address.regionId,
             provinceId: data.bp_address.provinceId,
@@ -276,7 +280,11 @@ export default function AddBranchModal({
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Client Name</Label>
                     <Select
-                      value={String(formData.client)}
+                      value={
+                        type === 1
+                          ? String(formData.client)
+                          : String(data.client)
+                      }
                       onValueChange={(value) => {
                         handleChange("client", value);
                       }}
@@ -373,9 +381,8 @@ export default function AddBranchModal({
                       onChange={(e) => handleChange("street", e.target.value)}
                     />
                   </div>
-                  <div className="grid max-w-md items-center gap-1 ">
+                  {/* <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Barangay</Label>
-                    {/* <Input type="text" placeholder="Barangay" /> */}
                     <Barangay
                       value={formData.bp_address}
                       onChange={(val) => {
@@ -386,14 +393,16 @@ export default function AddBranchModal({
                         });
                       }}
                     />
-                  </div>
+                  </div> */}
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">City</Label>
+                    <Label htmlFor="date">Barangay, City</Label>
                     <Input
                       type="text"
-                      placeholder="City"
-                      value={formData.bp_address.cityName}
-                      readOnly
+                      placeholder="Barangay, City"
+                      value={type === 1 ? formData.bp_address1 : data.address1}
+                      onChange={(e) =>
+                        handleChange("bp_address1", e.target.value)
+                      }
                     />
                   </div>
                 </div>
