@@ -276,9 +276,9 @@ export const adminApi = createApi({
     }),
     ///api/adminpos/get_products
     getProducts: builder.query({
-      query: ({ id }) => {
+      query: ({ id, page, search }) => {
         return {
-          url: `/adminpos/get_products?id=${id}`,
+          url: `/adminpos/get_products?id=${id}&page=${page}&search=${search}`,
           method: "GET",
         };
       },

@@ -129,7 +129,14 @@ function BMBranch() {
         client: getClientDropdown?.data?.data.find(
           (item1: any) => item1.id === item.client,
         ).name,
-        address: item.block_no + " " + item.subdivision + " " + item.street,
+        address:
+          item.block_no +
+          " " +
+          item.subdivision +
+          " " +
+          item.street +
+          " " +
+          (item.address1 ?? ""),
         status: (
           <div
             onClick={(e) => e.stopPropagation()}
