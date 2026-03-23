@@ -87,6 +87,7 @@ function BMAccounts() {
   const handleGo = () => {
     setAccountFilter1(accountFilter);
     setPlanFilter1(planFilter);
+    setCurrentPage(1);
   };
 
   const handleDownloadCSV = () => {

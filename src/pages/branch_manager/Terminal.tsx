@@ -89,6 +89,7 @@ function BMTerminal() {
     // console.log("Go clicked with filter:", accountFilter);
     setClient1(client);
     setBranch1(branch);
+    setCurrentPage(1);
   };
 
   const handleDownloadCSV = () => {

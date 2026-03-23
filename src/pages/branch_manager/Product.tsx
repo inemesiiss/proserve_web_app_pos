@@ -83,6 +83,7 @@ function BMProduct() {
   const handleGo = () => {
     // console.log("Go clicked with filter:", accountFilter);
     setClient1(client);
+    setCurrentPage(1);
   };
 
   const handleDownloadCSV = () => {
