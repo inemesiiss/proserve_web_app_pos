@@ -21,6 +21,8 @@ import {
 import type { IdName } from "./AddAccountModal";
 import { ComboBox } from "@/components/reusables/Barangay";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -69,6 +71,11 @@ export default function AddUserModal({
   const [client, setClient] = useState<IdName[]>([]);
   const [branch, setBranch] = useState<IdName[]>([]);
   const [profile, setProfile] = useState<IdName[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const currentRole = useSelector((state: RootState) => state.auth.role);
+
+  const [open, setOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +127,7 @@ export default function AddUserModal({
         contact_no: data.contact_no,
         profile: Number(data.profile),
         email: data.email,
-        status: 1,
+        status: data.status,
       });
     } else if (isOpen) {
       setFormData(initial);
@@ -131,7 +138,11 @@ export default function AddUserModal({
   const [upUser] = useUpUserMutation();
   const submitTerminal = async () => {
     if (type === 1) {
-      if (
+      setLoading(true);
+      if (!formData.email.includes("@")) {
+        toast.error("Please enter a valid email.");
+        setLoading(false);
+      } else if (
         formData.user_id !== "" &&
         formData.password !== "" &&
         formData.branch !== 0
@@ -145,21 +156,28 @@ export default function AddUserModal({
           if (checkstat.success) {
             if (checkstat.error === 1) {
               toast.error(checkstat.message);
+              setLoading(false);
             } else {
               handleClose();
               toast.success("Successfully Added.");
+              setLoading(false);
             }
           } else {
             toast.error(checkstat.message);
+            setLoading(false);
           }
 
           console.log(checkstat);
-        } catch (error) {}
+        } catch (error) {
+          setLoading(false);
+        }
       } else {
+        setLoading(false);
         toast.error("Please complete required fields.");
       }
     } else {
       if (formData.user_id !== "" && formData.branch !== 0) {
+        setLoading(true);
         try {
           const formData1 = new FormData();
           formData1.append("datas", JSON.stringify(formData));
@@ -169,13 +187,18 @@ export default function AddUserModal({
           if (checkstat.success) {
             handleClose();
             toast.success("Successfully Updated.");
+            setLoading(false);
           } else {
             toast.error(checkstat.message);
+            setLoading(false);
           }
           console.log(checkstat);
-        } catch (error) {}
+        } catch (error) {
+          setLoading(false);
+        }
       } else {
         toast.error("Please complete required fields.");
+        setLoading(false);
       }
     }
   };
@@ -267,16 +290,6 @@ export default function AddUserModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
-                    <Label htmlFor="date">Email</Label>
-                    <Input
-                      type="text"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Contact Number</Label>
                     <Input
                       type="text"
@@ -289,6 +302,29 @@ export default function AddUserModal({
                   </div>
 
                   <div className="grid max-w-md items-center gap-1 ">
+                    <Label htmlFor="date">
+                      Email{" "}
+                      {type === 1 && (
+                        <span className="pl-1 text-blue-500 text-[10px]">
+                          (Enter an active email address to receive an
+                          activation link)
+                        </span>
+                      )}
+                    </Label>
+
+                    <Input
+                      type="text"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={(e) => {
+                        handleChange("email", e.target.value);
+                        handleChange("user_id", e.target.value);
+                      }}
+                      readOnly={type === 2}
+                    />
+                  </div>
+
+                  {/* <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">Username</Label>
                     <Input
                       type="text"
@@ -297,14 +333,16 @@ export default function AddUserModal({
                       onChange={(e) => handleChange("user_id", e.target.value)}
                       autoComplete="new-user"
                     />
-                  </div>
+                  </div> */}
 
                   <div className="grid max-w-md items-center gap-1 ">
                     <Label htmlFor="date">
-                      Password
-                      <span className="pl-1 text-blue-500 text-[9px]">
-                        (leave blank if not going to change)
-                      </span>
+                      Password{" "}
+                      {type === 2 && (
+                        <span className="pl-1 text-blue-500 text-[10px]">
+                          (leave blank if not going to change)
+                        </span>
+                      )}
                     </Label>
                     <Input
                       type="password"
@@ -333,12 +371,30 @@ export default function AddUserModal({
                       <SelectContent>
                         {profile.map((item1: IdName) => (
                           <SelectItem key={item1.id} value={String(item1.id)}>
-                            {item1.name}
+                            {item1.id === 2 ? "Branch" : item1.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {currentRole === "4" && (
+                    <div className="grid max-w-md items-center gap-1 ">
+                      <Label htmlFor="date">Active </Label>
+                      <Select
+                        value={String(data?.status)}
+                        onValueChange={(value) => handleChange("status", value)}
+                      >
+                        <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                          <SelectValue placeholder="Yes" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Yes</SelectItem>
+                          <SelectItem value="2">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -354,6 +410,7 @@ export default function AddUserModal({
                   <Button
                     type="submit"
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                    disabled={loading}
                   >
                     {type === 1 ? `Add` : `Update`} User
                   </Button>

@@ -100,7 +100,7 @@ export const SideBar = React.forwardRef<HTMLDivElement, SideBarProps>(
           ...(role !== 2
             ? [
                 {
-                  label: "Admin User",
+                  label: "Licenses",
                   path: "/bm/users/manager",
                   icon: <BookText className="w-6 h-6" />,
                 },

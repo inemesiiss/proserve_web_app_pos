@@ -503,6 +503,17 @@ export const adminApi = createApi({
       },
       invalidatesTags: ["admin"],
     }),
+    ///api/adminpos/act_account
+    activateAccount: builder.mutation({
+      query: (formBody) => {
+        return {
+          url: `/adminpos/act_account/`,
+          method: "POST",
+          body: formBody,
+        };
+      },
+      invalidatesTags: ["admin"],
+    }),
   }),
 });
 
@@ -555,4 +566,5 @@ export const {
   useGetReceiptClientQuery,
   useGetReceiptBranchQuery,
   useAddBranchReceiptMutation,
+  useActivateAccountMutation,
 } = adminApi;
