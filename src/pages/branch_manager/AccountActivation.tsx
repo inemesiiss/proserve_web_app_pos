@@ -1,5 +1,5 @@
 import Lottie from "lottie-react";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Success from "./../../components/reusables/Success.json";
 import Loading from "./../../components/reusables/Loading.json";
 import Error from "./../../components/reusables/Error.json";
@@ -12,7 +12,7 @@ function AccountActivation() {
   const navigate = useNavigate();
   const hasRun = useRef(false);
   const [view, setView] = useState(1);
-  const [validate, setValidate] = useState(false);
+  //   const [validate, setValidate] = useState(false);
 
   const { key } = useParams();
 

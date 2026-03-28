@@ -75,7 +75,7 @@ export default function AddUserModal({
 
   const currentRole = useSelector((state: RootState) => state.auth.role);
 
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
