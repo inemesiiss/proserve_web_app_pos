@@ -104,9 +104,12 @@ function BMUser() {
         branch: getBranchDropdown?.data?.data.find(
           (item1: any) => String(item1.id) === String(item.branch),
         )?.name,
-        profile: getProfiles?.data?.data.find(
-          (item1: any) => String(item1.id) === String(item.profile),
-        )?.name,
+        profile:
+          String(item.profile) === "2"
+            ? "Branch"
+            : getProfiles?.data?.data.find(
+                (item1: any) => String(item1.id) === String(item.profile),
+              )?.name,
         status: (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -152,7 +155,7 @@ function BMUser() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1"></div>
             <UserActionButtons
-              title="Add Admin User"
+              title="Add License User"
               onAddUser={handleAddUser}
               onImportCSV={handleImportCSV}
             />

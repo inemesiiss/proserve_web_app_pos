@@ -19,6 +19,7 @@ import { useAuth } from "@/context/AuthProvider";
 import LoadingOverlay from "./components/reusables/transition-loader";
 import { Toaster } from "./components/ui/sonner";
 import { SessionExpiryListener } from "./components/reusables/SessionExpiryListener";
+import AccountActivation from "./pages/branch_manager/AccountActivation";
 
 export default function App() {
   // const [loggedIn, setLoggedIn] = useState(false);
@@ -27,6 +28,8 @@ export default function App() {
   if (isLoading) {
     return <LoadingOverlay />;
   }
+
+  console.log("isAuthenticated: ", isAuthenticated);
 
   return (
     <Provider store={store}>
@@ -37,6 +40,10 @@ export default function App() {
               {!isAuthenticated ? (
                 <>
                   <Route path="/login" element={<WebLoginPage />} />
+                  <Route
+                    path="/account-activation/:key"
+                    element={<AccountActivation />}
+                  />
                   <Route path="/" element={<Navigate to="/login" replace />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                   {/* {getKioskRoutes()} */}
