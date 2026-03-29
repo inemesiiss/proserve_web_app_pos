@@ -149,7 +149,7 @@ function BMUser() {
       >
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            Admin Access Management
+            License Management
           </h1>
 
           <div className="flex items-center justify-between mb-4">
