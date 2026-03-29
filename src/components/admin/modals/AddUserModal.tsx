@@ -382,7 +382,7 @@ export default function AddUserModal({
                     <div className="grid max-w-md items-center gap-1 ">
                       <Label htmlFor="date">Active </Label>
                       <Select
-                        value={String(data?.status)}
+                        value={String(formData.status)}
                         onValueChange={(value) => handleChange("status", value)}
                       >
                         <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
